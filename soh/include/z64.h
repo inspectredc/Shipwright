@@ -835,11 +835,20 @@ typedef enum {
 
 typedef enum {
     /* 0x00 */ PAUSE_ITEM,
-    /* 0x01 */ PAUSE_MAP,
-    /* 0x02 */ PAUSE_QUEST,
-    /* 0x03 */ PAUSE_EQUIP,
-    /* 0x04 */ PAUSE_WORLD_MAP
+    /* 0x01 */ PAUSE_ITEM_2,
+    /* 0x02 */ PAUSE_MAP,
+    /* 0x03 */ PAUSE_QUEST,
+    /* 0x04 */ PAUSE_EQUIP,
+    /* 0x05 */ PAUSE_WORLD_MAP
 } PauseMenuPage;
+
+#define PAUSE_T1 (1.376f)       //tan((3.0f/10.0f) * pi)
+#define PAUSE_C1 (0.309f)       //((sqrt(5.0f) - 1.0f)/4.0f)
+#define PAUSE_C2 (0.809f)       //((sqrt(5.0f) + 1.0f)/4.0f)
+#define PAUSE_S1 (0.951f)       //(sqrt(10.0f + 2.0f * sqrt(5.0f))/4.0f)
+#define PAUSE_S2 (0.588f)       //(sqrt(10.0f - 2.0f * sqrt(5.0f))/4.0f)
+#define PAUSE_EYE_DIST (64.0f)
+
 
 typedef struct {
     /* 0x0000 */ View   view;
@@ -851,11 +860,13 @@ typedef struct {
     /* 0x013C */ u8*    playerSegment;
     /* 0x0140 */ char   unk_140[0x04];
     /* 0x0144 */ Vtx*   itemPageVtx;
+                 Vtx*   itemPage2Vtx;
     /* 0x0148 */ Vtx*   equipPageVtx;
     /* 0x014C */ Vtx*   mapPageVtx;
     /* 0x0150 */ Vtx*   questPageVtx;
     /* 0x0154 */ Vtx*   infoPanelVtx;
     /* 0x0158 */ Vtx*   itemVtx;
+                 Vtx*   item2Vtx;
     /* 0x015C */ Vtx*   equipVtx;
     /* 0x0160 */ char   unk_160[0x04];
     /* 0x0164 */ Vtx*   questVtx;
@@ -876,6 +887,7 @@ typedef struct {
     /* 0x01EC */ u16    unk_1EC;
     /* 0x01F0 */ f32    unk_1F0;
     /* 0x01F4 */ f32    unk_1F4;
+                 f32    itemPage2Roll;
     /* 0x01F8 */ f32    unk_1F8;
     /* 0x01FC */ f32    unk_1FC;
     /* 0x0200 */ f32    unk_200;
@@ -885,15 +897,15 @@ typedef struct {
     /* 0x020C */ char   unk_20C[0x08];
     /* 0x0214 */ s16    stickRelX;
     /* 0x0216 */ s16    stickRelY;
-    /* 0x0218 */ s16    cursorPoint[5]; // "cursor_point"
-    /* 0x0222 */ s16    cursorX[5]; // "cur_xpt"
-    /* 0x022C */ s16    cursorY[5]; // "cur_ypt"
+    /* 0x0218 */ s16    cursorPoint[6]; // "cursor_point"
+    /* 0x0222 */ s16    cursorX[6]; // "cur_xpt"
+    /* 0x022C */ s16    cursorY[6]; // "cur_ypt"
     /* 0x0236 */ s16    dungeonMapSlot;
     /* 0x0238 */ s16    cursorSpecialPos; // "key_angle"
     /* 0x023A */ s16    pageSwitchTimer;
     /* 0x023C */ u16    namedItem; // "zoom_name"
-    /* 0x023E */ u16    cursorItem[4]; // "select_name"
-    /* 0x0246 */ u16    cursorSlot[4];
+    /* 0x023E */ u16    cursorItem[6]; // "select_name"
+    /* 0x0246 */ u16    cursorSlot[6];
     /* 0x024E */ u16    equipTargetItem; // "sl_item_no"
     /* 0x0250 */ u16    equipTargetSlot; // "sl_number"
     /* 0x0252 */ u16    equipTargetCBtn;

@@ -980,77 +980,186 @@ static u8 D_80853E7C[] = {
 
 // Used to map item IDs to action params
 static s8 sItemActionParams[] = {
-    PLAYER_IA_STICK,
-    PLAYER_IA_NUT,
-    PLAYER_IA_BOMB,
-    PLAYER_IA_BOW,
-    PLAYER_IA_BOW_FIRE,
-    PLAYER_IA_DINS_FIRE,
-    PLAYER_IA_SLINGSHOT,
-    PLAYER_IA_OCARINA_FAIRY,
-    PLAYER_IA_OCARINA_TIME,
-    PLAYER_IA_BOMBCHU,
-    PLAYER_IA_HOOKSHOT,
-    PLAYER_IA_LONGSHOT,
-    PLAYER_IA_BOW_ICE,
-    PLAYER_IA_FARORES_WIND,
-    PLAYER_IA_BOOMERANG,
-    PLAYER_IA_LENS,
-    PLAYER_IA_BEAN,
-    PLAYER_IA_HAMMER,
-    PLAYER_IA_BOW_LIGHT,
-    PLAYER_IA_NAYRUS_LOVE,
-    PLAYER_IA_BOTTLE,
-    PLAYER_IA_BOTTLE_POTION_RED,
-    PLAYER_IA_BOTTLE_POTION_GREEN,
-    PLAYER_IA_BOTTLE_POTION_BLUE,
-    PLAYER_IA_BOTTLE_FAIRY,
-    PLAYER_IA_BOTTLE_FISH,
-    PLAYER_IA_BOTTLE_MILK,
-    PLAYER_IA_BOTTLE_LETTER,
-    PLAYER_IA_BOTTLE_FIRE,
-    PLAYER_IA_BOTTLE_BUG,
-    PLAYER_IA_BOTTLE_BIG_POE,
-    PLAYER_IA_BOTTLE_MILK_HALF,
-    PLAYER_IA_BOTTLE_POE,
-    PLAYER_IA_WEIRD_EGG,
-    PLAYER_IA_CHICKEN,
-    PLAYER_IA_LETTER_ZELDA,
-    PLAYER_IA_MASK_KEATON,
-    PLAYER_IA_MASK_SKULL,
-    PLAYER_IA_MASK_SPOOKY,
-    PLAYER_IA_MASK_BUNNY,
-    PLAYER_IA_MASK_GORON,
-    PLAYER_IA_MASK_ZORA,
-    PLAYER_IA_MASK_GERUDO,
-    PLAYER_IA_MASK_TRUTH,
-    PLAYER_IA_SWORD_MASTER,
-    PLAYER_IA_POCKET_EGG,
-    PLAYER_IA_POCKET_CUCCO,
-    PLAYER_IA_COJIRO,
-    PLAYER_IA_ODD_MUSHROOM,
-    PLAYER_IA_ODD_POTION,
-    PLAYER_IA_SAW,
-    PLAYER_IA_SWORD_BROKEN,
-    PLAYER_IA_PRESCRIPTION,
-    PLAYER_IA_FROG,
-    PLAYER_IA_EYEDROPS,
-    PLAYER_IA_CLAIM_CHECK,
-    PLAYER_IA_BOW_FIRE,
-    PLAYER_IA_BOW_ICE,
-    PLAYER_IA_BOW_LIGHT,
-    PLAYER_IA_SWORD_KOKIRI,
-    PLAYER_IA_SWORD_MASTER,
-    PLAYER_IA_SWORD_BGS,
-    PLAYER_IA_SHIELD_DEKU,
-    PLAYER_IA_SHIELD_HYLIAN,
-    PLAYER_IA_SHIELD_MIRROR,
-    PLAYER_IA_TUNIC_KOKIRI,
-    PLAYER_IA_TUNIC_GORON,
-    PLAYER_IA_TUNIC_ZORA,
-    PLAYER_IA_BOOTS_KOKIRI,
-    PLAYER_IA_BOOTS_IRON,
-    PLAYER_IA_BOOTS_HOVER,
+    PLAYER_IA_STICK,                              // ITEM_STICK
+    PLAYER_IA_NUT,                                // ITEM_NUT
+    PLAYER_IA_BOMB,                               // ITEM_BOMB
+    PLAYER_IA_BOW,                                // ITEM_BOW
+    PLAYER_IA_BOW_FIRE,                           // ITEM_ARROW_FIRE
+    PLAYER_IA_DINS_FIRE,                          // ITEM_DINS_FIRE
+    PLAYER_IA_SLINGSHOT,                          // ITEM_SLINGSHOT
+    PLAYER_IA_OCARINA_FAIRY,                      // ITEM_OCARINA_FAIRY
+    PLAYER_IA_OCARINA_TIME,                       // ITEM_OCARINA_TIME
+    PLAYER_IA_BOMBCHU,                            // ITEM_BOMBCHU
+    PLAYER_IA_HOOKSHOT,                           // ITEM_HOOKSHOT
+    PLAYER_IA_LONGSHOT,                           // ITEM_LONGSHOT
+    PLAYER_IA_BOW_ICE,                            // ITEM_ARROW_ICE
+    PLAYER_IA_FARORES_WIND,                       // ITEM_FARORES_WIND
+    PLAYER_IA_BOOMERANG,                          // ITEM_BOOMERANG
+    PLAYER_IA_LENS,                               // ITEM_LENS
+    PLAYER_IA_BEAN,                               // ITEM_BEAN
+    PLAYER_IA_HAMMER,                             // ITEM_HAMMER
+    PLAYER_IA_BOW_LIGHT,                          // ITEM_ARROW_LIGHT
+    PLAYER_IA_NAYRUS_LOVE,                        // ITEM_NAYRUS_LOVE
+    PLAYER_IA_BOTTLE,                             // ITEM_BOTTLE
+    PLAYER_IA_BOTTLE_POTION_RED,                  // ITEM_POTION_RED
+    PLAYER_IA_BOTTLE_POTION_GREEN,                // ITEM_POTION_GREEN
+    PLAYER_IA_BOTTLE_POTION_BLUE,                 // ITEM_POTION_BLUE
+    PLAYER_IA_BOTTLE_FAIRY,                       // ITEM_FAIRY
+    PLAYER_IA_BOTTLE_FISH,                        // ITEM_FISH
+    PLAYER_IA_BOTTLE_MILK,                        // ITEM_MILK_BOTTLE
+    PLAYER_IA_BOTTLE_LETTER,                      // ITEM_LETTER_RUTO
+    PLAYER_IA_BOTTLE_FIRE,                        // ITEM_BLUE_FIRE
+    PLAYER_IA_BOTTLE_BUG,                         // ITEM_BUG
+    PLAYER_IA_BOTTLE_BIG_POE,                     // ITEM_BIG_POE
+    PLAYER_IA_BOTTLE_MILK_HALF,                   // ITEM_MILK_HALF
+    PLAYER_IA_BOTTLE_POE,                         // ITEM_POE
+    PLAYER_IA_WEIRD_EGG,                          // ITEM_WEIRD_EGG
+    PLAYER_IA_CHICKEN,                            // ITEM_CHICKEN
+    PLAYER_IA_LETTER_ZELDA,                       // ITEM_LETTER_ZELDA
+    PLAYER_IA_MASK_KEATON,                        // ITEM_MASK_KEATON
+    PLAYER_IA_MASK_SKULL,                         // ITEM_MASK_SKULL
+    PLAYER_IA_MASK_SPOOKY,                        // ITEM_MASK_SPOOKY
+    PLAYER_IA_MASK_BUNNY,                         // ITEM_MASK_BUNNY
+    PLAYER_IA_MASK_GORON,                         // ITEM_MASK_GORON
+    PLAYER_IA_MASK_ZORA,                          // ITEM_MASK_ZORA
+    PLAYER_IA_MASK_GERUDO,                        // ITEM_MASK_GERUDO
+    PLAYER_IA_MASK_TRUTH,                         // ITEM_MASK_TRUTH
+    PLAYER_IA_SWORD_MASTER,                       // ITEM_SOLD_OUT
+    PLAYER_IA_POCKET_EGG,                         // ITEM_POCKET_EGG
+    PLAYER_IA_POCKET_CUCCO,                       // ITEM_POCKET_CUCCO
+    PLAYER_IA_COJIRO,                             // ITEM_COJIRO
+    PLAYER_IA_ODD_MUSHROOM,                       // ITEM_ODD_MUSHROOM
+    PLAYER_IA_ODD_POTION,                         // ITEM_ODD_POTION
+    PLAYER_IA_SAW,                                // ITEM_SAW
+    PLAYER_IA_SWORD_BROKEN,                       // ITEM_SWORD_BROKEN
+    PLAYER_IA_PRESCRIPTION,                       // ITEM_PRESCRIPTION
+    PLAYER_IA_FROG,                               // ITEM_FROG
+    PLAYER_IA_EYEDROPS,                           // ITEM_EYEDROPS
+    PLAYER_IA_CLAIM_CHECK,                        // ITEM_CLAIM_CHECK
+    PLAYER_IA_BOW_FIRE,                           // ITEM_BOW_ARROW_FIRE
+    PLAYER_IA_BOW_ICE,                            // ITEM_BOW_ARROW_ICE
+    PLAYER_IA_BOW_LIGHT,                          // ITEM_BOW_ARROW_LIGHT
+    PLAYER_IA_SWORD_KOKIRI,                       // ITEM_SWORD_KOKIRI
+    PLAYER_IA_SWORD_MASTER,                       // ITEM_SWORD_MASTER
+    PLAYER_IA_SWORD_BGS,                          // ITEM_SWORD_BGS
+    PLAYER_IA_SHIELD_DEKU,                        // ITEM_SHIELD_DEKU
+    PLAYER_IA_SHIELD_HYLIAN,                      // ITEM_SHIELD_HYLIAN
+    PLAYER_IA_SHIELD_MIRROR,                      // ITEM_SHIELD_MIRROR
+    PLAYER_IA_TUNIC_KOKIRI,                       // ITEM_TUNIC_KOKIRI
+    PLAYER_IA_TUNIC_GORON,                        // ITEM_TUNIC_GORON
+    PLAYER_IA_TUNIC_ZORA,                         // ITEM_TUNIC_ZORA
+    PLAYER_IA_BOOTS_KOKIRI,                       // ITEM_BOOTS_KOKIRI
+    PLAYER_IA_BOOTS_IRON,                         // ITEM_BOOTS_IRON
+    PLAYER_IA_BOOTS_HOVER,                        // ITEM_BOOTS_HOVER
+    PLAYER_IA_NONE,                               // ITEM_BULLET_BAG_30
+    PLAYER_IA_NONE,                               // ITEM_BULLET_BAG_40
+    PLAYER_IA_NONE,                               // ITEM_BULLET_BAG_50
+    PLAYER_IA_NONE,                               // ITEM_QUIVER_30
+    PLAYER_IA_NONE,                               // ITEM_QUIVER_40
+    PLAYER_IA_NONE,                               // ITEM_QUIVER_50
+    PLAYER_IA_NONE,                               // ITEM_BOMB_BAG_20
+    PLAYER_IA_NONE,                               // ITEM_BOMB_BAG_30
+    PLAYER_IA_NONE,                               // ITEM_BOMB_BAG_40
+    PLAYER_IA_NONE,                               // ITEM_BRACELET
+    PLAYER_IA_NONE,                               // ITEM_GAUNTLETS_SILVER
+    PLAYER_IA_NONE,                               // ITEM_GAUNTLETS_GOLD
+    PLAYER_IA_NONE,                               // ITEM_SCALE_SILVER
+    PLAYER_IA_NONE,                               // ITEM_SCALE_GOLDEN
+    PLAYER_IA_NONE,                               // ITEM_SWORD_KNIFE
+    PLAYER_IA_NONE,                               // ITEM_WALLET_ADULT
+    PLAYER_IA_NONE,                               // ITEM_WALLET_GIANT
+    PLAYER_IA_NONE,                               // ITEM_SEEDS
+    PLAYER_IA_NONE,                               // ITEM_FISHING_POLE
+    PLAYER_IA_NONE,                               // ITEM_SONG_MINUET
+    PLAYER_IA_NONE,                               // ITEM_SONG_BOLERO
+    PLAYER_IA_NONE,                               // ITEM_SONG_SERENADE
+    PLAYER_IA_NONE,                               // ITEM_SONG_REQUIEM
+    PLAYER_IA_NONE,                               // ITEM_SONG_NOCTURNE
+    PLAYER_IA_NONE,                               // ITEM_SONG_PRELUDE
+    PLAYER_IA_NONE,                               // ITEM_SONG_LULLABY
+    PLAYER_IA_NONE,                               // ITEM_SONG_EPONA
+    PLAYER_IA_NONE,                               // ITEM_SONG_SARIA
+    PLAYER_IA_NONE,                               // ITEM_SONG_SUN
+    PLAYER_IA_NONE,                               // ITEM_SONG_TIME
+    PLAYER_IA_NONE,                               // ITEM_SONG_STORMS
+    PLAYER_IA_NONE,                               // ITEM_MEDALLION_FOREST
+    PLAYER_IA_NONE,                               // ITEM_MEDALLION_FIRE
+    PLAYER_IA_NONE,                               // ITEM_MEDALLION_WATER
+    PLAYER_IA_NONE,                               // ITEM_MEDALLION_SPIRIT
+    PLAYER_IA_NONE,                               // ITEM_MEDALLION_SHADOW
+    PLAYER_IA_NONE,                               // ITEM_MEDALLION_LIGHT
+    PLAYER_IA_NONE,                               // ITEM_KOKIRI_EMERALD
+    PLAYER_IA_NONE,                               // ITEM_GORON_RUBY
+    PLAYER_IA_NONE,                               // ITEM_ZORA_SAPPHIRE
+    PLAYER_IA_NONE,                               // ITEM_STONE_OF_AGONY
+    PLAYER_IA_NONE,                               // ITEM_GERUDO_CARD
+    PLAYER_IA_NONE,                               // ITEM_SKULL_TOKEN
+    PLAYER_IA_NONE,                               // ITEM_HEART_CONTAINER
+    PLAYER_IA_NONE,                               // ITEM_HEART_PIECE
+    PLAYER_IA_NONE,                               // ITEM_KEY_BOSS
+    PLAYER_IA_NONE,                               // ITEM_COMPASS
+    PLAYER_IA_NONE,                               // ITEM_DUNGEON_MAP
+    PLAYER_IA_NONE,                               // ITEM_KEY_SMALL
+    PLAYER_IA_NONE,                               // ITEM_MAGIC_SMALL
+    PLAYER_IA_NONE,                               // ITEM_MAGIC_LARGE
+    PLAYER_IA_NONE,                               // ITEM_HEART_PIECE_2
+    PLAYER_IA_NONE,                               // ITEM_SINGLE_MAGIC
+    PLAYER_IA_NONE,                               // ITEM_DOUBLE_MAGIC
+    PLAYER_IA_NONE,                               // ITEM_DOUBLE_DEFENSE
+    PLAYER_IA_NONE,                               // ITEM_INVALID_4
+    PLAYER_IA_NONE,                               // ITEM_INVALID_5
+    PLAYER_IA_NONE,                               // ITEM_INVALID_6
+    PLAYER_IA_NONE,                               // ITEM_INVALID_7
+    PLAYER_IA_NONE,                               // ITEM_MILK
+    PLAYER_IA_NONE,                               // ITEM_HEART
+    PLAYER_IA_NONE,                               // ITEM_RUPEE_GREEN
+    PLAYER_IA_NONE,                               // ITEM_RUPEE_BLUE
+    PLAYER_IA_NONE,                               // ITEM_RUPEE_RED
+    PLAYER_IA_NONE,                               // ITEM_RUPEE_PURPLE
+    PLAYER_IA_NONE,                               // ITEM_RUPEE_GOLD
+    PLAYER_IA_NONE,                               // ITEM_INVALID_8
+    PLAYER_IA_NONE,                               // ITEM_STICKS_5
+    PLAYER_IA_NONE,                               // ITEM_STICKS_10
+    PLAYER_IA_NONE,                               // ITEM_NUTS_5
+    PLAYER_IA_NONE,                               // ITEM_NUTS_10
+    PLAYER_IA_NONE,                               // ITEM_BOMBS_5
+    PLAYER_IA_NONE,                               // ITEM_BOMBS_10
+    PLAYER_IA_NONE,                               // ITEM_BOMBS_20
+    PLAYER_IA_NONE,                               // ITEM_BOMBS_30
+    PLAYER_IA_NONE,                               // ITEM_ARROWS_SMALL
+    PLAYER_IA_NONE,                               // ITEM_ARROWS_MEDIUM
+    PLAYER_IA_NONE,                               // ITEM_ARROWS_LARGE
+    PLAYER_IA_NONE,                               // ITEM_SEEDS_30
+    PLAYER_IA_NONE,                               // ITEM_BOMBCHUS_5
+    PLAYER_IA_NONE,                               // ITEM_BOMBCHUS_20
+    PLAYER_IA_NONE,                               // ITEM_STICK_UPGRADE_20
+    PLAYER_IA_NONE,                               // ITEM_STICK_UPGRADE_30
+    PLAYER_IA_NONE,                               // ITEM_NUT_UPGRADE_30
+    PLAYER_IA_NONE,                               // ITEM_NUT_UPGRADE_40
+    PLAYER_IA_NONE,                               // NEW_ITEM_1
+    PLAYER_IA_NONE,                               // NEW_ITEM_2
+    PLAYER_IA_NONE,                               // NEW_ITEM_3
+    PLAYER_IA_NONE,                               // NEW_ITEM_4
+    PLAYER_IA_NONE,                               // NEW_ITEM_5
+    PLAYER_IA_NONE,                               // NEW_ITEM_6
+    PLAYER_IA_NONE,                               // NEW_ITEM_7
+    PLAYER_IA_NONE,                               // NEW_ITEM_8
+    PLAYER_IA_NONE,                               // NEW_ITEM_9
+    PLAYER_IA_NONE,                               // NEW_ITEM_10
+    PLAYER_IA_NONE,                               // NEW_ITEM_11
+    PLAYER_IA_NONE,                               // NEW_ITEM_12
+    PLAYER_IA_NONE,                               // NEW_ITEM_13
+    PLAYER_IA_NONE,                               // NEW_ITEM_14
+    PLAYER_IA_NONE,                               // NEW_ITEM_15
+    PLAYER_IA_NONE,                               // NEW_ITEM_16
+    PLAYER_IA_NONE,                               // NEW_ITEM_17
+    PLAYER_IA_NONE,                               // NEW_ITEM_18
+    PLAYER_IA_NONE,                               // NEW_ITEM_19
+    PLAYER_IA_NONE,                               // NEW_ITEM_20
+    PLAYER_IA_NONE,                               // NEW_ITEM_21
+    PLAYER_IA_NONE,                               // NEW_ITEM_22
+    PLAYER_IA_NONE,                               // NEW_ITEM_23
+    PLAYER_IA_NONE,                               // NEW_ITEM_24
 };
 
 static u8 sMaskMemory;

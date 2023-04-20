@@ -18,6 +18,10 @@ static s16 sAmmoVtxOffset[] = {
     0, 2, 4, 6, 99, 99, 8, 99, 10, 99, 99, 99, 99, 99, 12,
 };
 
+static s16 bombOffset[] = {
+    0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46
+};
+
 extern const char* _gAmmoDigit0Tex[];
 
 void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx, s16 item, int slot) {
@@ -467,7 +471,9 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     for (i = 0, j = 24 * 4; i < ARRAY_COUNT(gSaveContext.equips.cButtonSlots); i++, j += 4) {
         if ((gSaveContext.equips.buttonItems[i + 1] != ITEM_NONE) &&
             !((gSaveContext.equips.buttonItems[i + 1] >= ITEM_SHIELD_DEKU) &&
-              (gSaveContext.equips.buttonItems[i + 1] <= ITEM_BOOTS_HOVER))) {
+              (gSaveContext.equips.buttonItems[i + 1] <= ITEM_BOOTS_HOVER)) &&
+            !((gSaveContext.equips.buttonItems[i + 1] >= NEW_ITEM_1) && 
+              (gSaveContext.equips.buttonItems[i + 1] <= NEW_ITEM_24))) {
             gSPVertex(POLY_KAL_DISP++, &pauseCtx->itemVtx[j], 4, 0);
             POLY_KAL_DISP = KaleidoScope_QuadTextureIA8(POLY_KAL_DISP, gEquippedItemOutlineTex, 32, 32, 0);
         }
@@ -540,6 +546,376 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
             KaleidoScope_DrawAmmoCount(pauseCtx, play->state.gfxCtx, gSaveContext.inventory.items[i], i);
         }
     }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+void KaleidoScope_DrawItem2Select(PlayState* play) {
+    Input* input = &play->state.input[0];
+    PauseContext* pauseCtx = &play->pauseCtx;
+    u16 i;
+    u16 j;
+    u16 cursorItem;
+    u16 cursorSlot = 0;
+    u16 index;
+    s16 cursorPoint;
+    s16 cursorX;
+    s16 cursorY;
+    s16 oldCursorPoint;
+    s16 moveCursorResult;
+    bool dpad = (CVarGetInteger("gDpadPause", 0) && !CHECK_BTN_ALL(input->cur.button, BTN_CUP));
+    bool pauseAnyCursor = (CVarGetInteger("gPauseAnyCursor", 0) == PAUSE_ANY_CURSOR_RANDO_ONLY && gSaveContext.n64ddFlag) ||
+                          (CVarGetInteger("gPauseAnyCursor", 0) == PAUSE_ANY_CURSOR_ALWAYS_ON);
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL_42Opa(play->state.gfxCtx);
+
+    gDPSetCombineMode(POLY_KAL_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
+
+    pauseCtx->cursorColorSet = 0;
+    pauseCtx->nameColorSet = 0;
+    // state 6 -- ready for player inputs
+    // unk_1E4 -- switch page timer
+    if ((pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0) && (pauseCtx->pageIndex == PAUSE_ITEM_2)) {
+        moveCursorResult = 0 || gSelectingMask || gSelectingAdultTrade;
+        oldCursorPoint = pauseCtx->cursorPoint[PAUSE_ITEM_2];
+
+        cursorItem = pauseCtx->cursorItem[PAUSE_ITEM_2];
+        cursorSlot = pauseCtx->cursorSlot[PAUSE_ITEM_2];
+        //if cursor inside page
+        if (pauseCtx->cursorSpecialPos == 0) {
+            pauseCtx->cursorColorSet = 4;
+            //set cursor to move off item_none
+            if (cursorItem == PAUSE_ITEM_NONE) {
+                pauseCtx->stickRelX = 40;
+            }
+            //if moving left or right
+            if ((ABS(pauseCtx->stickRelX) > 30) || (dpad && CHECK_BTN_ANY(input->press.button, BTN_DLEFT | BTN_DRIGHT))) {
+                cursorPoint = pauseCtx->cursorPoint[PAUSE_ITEM_2];
+                cursorX = pauseCtx->cursorX[PAUSE_ITEM_2];
+                cursorY = pauseCtx->cursorY[PAUSE_ITEM_2];
+
+                osSyncPrintf("now=%d  ccc=%d\n", cursorPoint, cursorItem);
+
+                // Seem necessary to match
+                if (pauseCtx->cursorX[PAUSE_ITEM_2]) {}
+                // if has the item?
+                if (gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24]) {}
+
+                //while the cursor can be moved around (and is not over item_none in regular pause mode)
+                while (moveCursorResult == 0) {
+                    // if moving left
+                    if ((pauseCtx->stickRelX < -30) || (dpad && CHECK_BTN_ALL(input->press.button, BTN_DLEFT))) {
+                        //section to move cursor onto available item. scans across row by row to the left of the current slot
+                        //point cursor to item to the left if not on left-most column
+                        if (pauseCtx->cursorX[PAUSE_ITEM_2] != 0) {
+                            pauseCtx->cursorX[PAUSE_ITEM_2] -= 1;
+                            pauseCtx->cursorPoint[PAUSE_ITEM_2] -= 1;
+                            //exit loop if on hoverable item 
+                            if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24] != ITEM_NONE) ||
+                                pauseAnyCursor) {
+                                moveCursorResult = 1;
+                            }
+                        } else { //checks row below from original column. if back on original row move to page left
+                            pauseCtx->cursorX[PAUSE_ITEM_2] = cursorX;
+                            pauseCtx->cursorY[PAUSE_ITEM_2] += 1;
+
+                            if (pauseCtx->cursorY[PAUSE_ITEM_2] >= 4) {
+                                pauseCtx->cursorY[PAUSE_ITEM_2] = 0;
+                            }
+
+                            pauseCtx->cursorPoint[PAUSE_ITEM_2] =
+                                pauseCtx->cursorX[PAUSE_ITEM_2] + (pauseCtx->cursorY[PAUSE_ITEM_2] * 6);
+
+                            if (pauseCtx->cursorPoint[PAUSE_ITEM_2] >= 24) {
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] = pauseCtx->cursorX[PAUSE_ITEM_2];
+                            }
+
+                            if (cursorY == pauseCtx->cursorY[PAUSE_ITEM_2]) {
+                                pauseCtx->cursorX[PAUSE_ITEM_2] = cursorX;
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] = cursorPoint;
+
+                                KaleidoScope_MoveCursorToSpecialPos(play, PAUSE_CURSOR_PAGE_LEFT);
+
+                                moveCursorResult = 2;
+                            }
+                        }
+                    // else if moving right: reverse of moving left section
+                    } else if ((pauseCtx->stickRelX > 30) || (dpad && CHECK_BTN_ALL(input->press.button, BTN_DRIGHT))) {
+                        if (pauseCtx->cursorX[PAUSE_ITEM_2] < 5) {
+                            pauseCtx->cursorX[PAUSE_ITEM_2] += 1;
+                            pauseCtx->cursorPoint[PAUSE_ITEM_2] += 1;
+                            if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24] != ITEM_NONE) ||
+                                pauseAnyCursor) {
+                                moveCursorResult = 1;
+                            }
+                        } else {
+                            pauseCtx->cursorX[PAUSE_ITEM_2] = cursorX;
+                            pauseCtx->cursorY[PAUSE_ITEM_2] += 1;
+
+                            if (pauseCtx->cursorY[PAUSE_ITEM_2] >= 4) {
+                                pauseCtx->cursorY[PAUSE_ITEM_2] = 0;
+                            }
+
+                            pauseCtx->cursorPoint[PAUSE_ITEM_2] =
+                                pauseCtx->cursorX[PAUSE_ITEM_2] + (pauseCtx->cursorY[PAUSE_ITEM_2] * 6);
+
+                            if (pauseCtx->cursorPoint[PAUSE_ITEM_2] >= 24) {
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] = pauseCtx->cursorX[PAUSE_ITEM_2];
+                            }
+
+                            if (cursorY == pauseCtx->cursorY[PAUSE_ITEM_2]) {
+                                pauseCtx->cursorX[PAUSE_ITEM_2] = cursorX;
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] = cursorPoint;
+
+                                KaleidoScope_MoveCursorToSpecialPos(play, PAUSE_CURSOR_PAGE_RIGHT);
+
+                                moveCursorResult = 2;
+                            }
+                        }
+                    }
+                }
+                //if cursor ended up on item
+                if (moveCursorResult == 1) {
+                    cursorItem = gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24];
+                }
+
+                osSyncPrintf("【Ｘ cursor=%d(%) (cur_xpt=%d)(ok_fg=%d)(ccc=%d)(key_angle=%d)】  ",
+                             pauseCtx->cursorPoint[PAUSE_ITEM_2], pauseCtx->cursorX[PAUSE_ITEM_2], moveCursorResult,
+                             cursorItem, pauseCtx->cursorSpecialPos);
+            }
+        } else if (pauseCtx->cursorSpecialPos == PAUSE_CURSOR_PAGE_LEFT) {
+            //if moving right
+            if ((pauseCtx->stickRelX > 30) || (dpad && CHECK_BTN_ALL(input->press.button, BTN_DRIGHT))) {
+                pauseCtx->nameDisplayTimer = 0;
+                pauseCtx->cursorSpecialPos = 0;
+
+                Audio_PlaySoundGeneral(NA_SE_SY_CURSOR, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
+
+                cursorPoint = cursorX = cursorY = 0;
+                //find left-most top-most item, if no items go to page right
+                while (true) {
+                    if (gSaveContext.inventory.items[cursorPoint + 24] != ITEM_NONE) {
+                        pauseCtx->cursorPoint[PAUSE_ITEM_2] = cursorPoint;
+                        pauseCtx->cursorX[PAUSE_ITEM_2] = cursorX;
+                        pauseCtx->cursorY[PAUSE_ITEM_2] = cursorY;
+                        moveCursorResult = 1;
+                        break;
+                    }
+
+                    cursorY = cursorY + 1;
+                    cursorPoint = cursorPoint + 6;
+                    if (cursorY < 4) {
+                        continue;
+                    }
+
+                    cursorY = 0;
+                    cursorPoint = cursorX + 1;
+                    cursorX = cursorPoint;
+                    if (cursorX < 6) {
+                        continue;
+                    }
+
+                    KaleidoScope_MoveCursorToSpecialPos(play, PAUSE_CURSOR_PAGE_RIGHT);
+                    break;
+                }
+            }
+        } else {
+            if ((pauseCtx->stickRelX < -30) || (dpad && CHECK_BTN_ALL(input->press.button, BTN_DLEFT))) {
+                pauseCtx->nameDisplayTimer = 0;
+                pauseCtx->cursorSpecialPos = 0;
+
+                Audio_PlaySoundGeneral(NA_SE_SY_CURSOR, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
+
+                cursorPoint = cursorX = 5;
+                cursorY = 0;
+                //find right-most top-most item, if no items go to page left
+                while (true) {
+                    if (gSaveContext.inventory.items[cursorPoint + 24] != ITEM_NONE) {
+                        pauseCtx->cursorPoint[PAUSE_ITEM_2] = cursorPoint;
+                        pauseCtx->cursorX[PAUSE_ITEM_2] = cursorX;
+                        pauseCtx->cursorY[PAUSE_ITEM_2] = cursorY;
+                        moveCursorResult = 1;
+                        break;
+                    }
+
+                    cursorY = cursorY + 1;
+                    cursorPoint = cursorPoint + 6;
+                    if (cursorY < 4) {
+                        continue;
+                    }
+
+                    cursorY = 0;
+                    cursorPoint = cursorX - 1;
+                    cursorX = cursorPoint;
+                    if (cursorX >= 0) {
+                        continue;
+                    }
+
+                    KaleidoScope_MoveCursorToSpecialPos(play, PAUSE_CURSOR_PAGE_LEFT);
+                    break;
+                }
+            }
+        }
+        //if cursor still inside page do same for up/down movements
+        if (pauseCtx->cursorSpecialPos == 0) {
+            if (cursorItem != PAUSE_ITEM_NONE) {
+                if ((ABS(pauseCtx->stickRelY) > 30) || (dpad && CHECK_BTN_ANY(input->press.button, BTN_DDOWN | BTN_DUP))) {
+                    moveCursorResult = 0 || gSelectingMask || gSelectingAdultTrade;
+
+                    cursorPoint = pauseCtx->cursorPoint[PAUSE_ITEM_2];
+                    cursorY = pauseCtx->cursorY[PAUSE_ITEM_2];
+                    while (moveCursorResult == 0) {
+                        if ((pauseCtx->stickRelY > 30) || (dpad && CHECK_BTN_ALL(input->press.button, BTN_DUP))) {
+                            if (pauseCtx->cursorY[PAUSE_ITEM_2] != 0) {
+                                pauseCtx->cursorY[PAUSE_ITEM_2] -= 1;
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] -= 6;
+                                if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24] != ITEM_NONE) ||
+                                    pauseAnyCursor) {
+                                    moveCursorResult = 1;
+                                }
+                            } else {
+                                pauseCtx->cursorY[PAUSE_ITEM_2] = cursorY;
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] = cursorPoint;
+
+                                moveCursorResult = 2;
+                            }
+                        } else if ((pauseCtx->stickRelY < -30) || (dpad && CHECK_BTN_ALL(input->press.button, BTN_DDOWN))) {
+                            if (pauseCtx->cursorY[PAUSE_ITEM_2] < 3) {
+                                pauseCtx->cursorY[PAUSE_ITEM_2] += 1;
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] += 6;
+                                if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24] != ITEM_NONE) ||
+                                    pauseAnyCursor) {
+                                    moveCursorResult = 1;
+                                }
+                            } else {
+                                pauseCtx->cursorY[PAUSE_ITEM_2] = cursorY;
+                                pauseCtx->cursorPoint[PAUSE_ITEM_2] = cursorPoint;
+
+                                moveCursorResult = 2;
+                            }
+                        }
+                    }
+
+                    cursorPoint = PAUSE_ITEM_2;
+                    osSyncPrintf("【Ｙ cursor=%d(%) (cur_ypt=%d)(ok_fg=%d)(ccc=%d)】  ",
+                                 pauseCtx->cursorPoint[cursorPoint], pauseCtx->cursorY[PAUSE_ITEM_2], moveCursorResult,
+                                 cursorItem);
+                }
+            }
+
+            cursorSlot = pauseCtx->cursorPoint[PAUSE_ITEM_2];
+
+            pauseCtx->cursorColorSet = 4;
+            //sets cursorItems if not on page left/page right
+            if (moveCursorResult == 1) {
+                cursorItem = gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24];
+            } else if (moveCursorResult != 2) {
+                cursorItem = gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM_2] + 24];
+            }
+
+            pauseCtx->cursorItem[PAUSE_ITEM_2] = cursorItem;
+            pauseCtx->cursorSlot[PAUSE_ITEM_2] = cursorSlot;
+
+            if (!CHECK_SLOT_AGE(cursorSlot)) {
+                pauseCtx->nameColorSet = 1;
+            }
+
+            if (cursorItem != PAUSE_ITEM_NONE) {
+                index = cursorSlot * 4; // required to match?
+                KaleidoScope_SetCursorVtx(pauseCtx, index, pauseCtx->item2Vtx);
+                //if menu ready for player inputs, equip items if possible
+                if ((pauseCtx->debugState == 0) && (pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0)) {
+                    u16 buttonsToCheck = BTN_CLEFT | BTN_CDOWN | BTN_CRIGHT;
+                    if (CVarGetInteger("gDpadEquips", 0) && (!CVarGetInteger("gDpadPause", 0) || CHECK_BTN_ALL(input->cur.button, BTN_CUP))) {
+                        buttonsToCheck |= BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT;
+                    }
+                    if (CHECK_BTN_ANY(input->press.button, buttonsToCheck)) {
+                        if (CHECK_SLOT_AGE(cursorSlot + 24) &&
+                            (cursorItem != ITEM_SOLD_OUT) && (cursorItem != ITEM_NONE)) {
+                            KaleidoScope_SetupItemEquip(play, cursorItem, cursorSlot + 0x1F,
+                                                        pauseCtx->item2Vtx[index].v.ob[0] * 10,
+                                                        pauseCtx->item2Vtx[index].v.ob[1] * 10);
+                        } else {
+                            Audio_PlaySoundGeneral(NA_SE_SY_ERROR, &D_801333D4, 4, &D_801333E0, &D_801333E0,
+                                                   &D_801333E8);
+                        }
+                    }
+                }
+            } else {
+                pauseCtx->cursorVtx[0].v.ob[0] = pauseCtx->cursorVtx[2].v.ob[0] = pauseCtx->cursorVtx[1].v.ob[0] =
+                    pauseCtx->cursorVtx[3].v.ob[0] = 0;
+
+                pauseCtx->cursorVtx[0].v.ob[1] = pauseCtx->cursorVtx[1].v.ob[1] = pauseCtx->cursorVtx[2].v.ob[1] =
+                    pauseCtx->cursorVtx[3].v.ob[1] = -200;
+            }
+        } else { //cursoritem set to none if on page changer
+            pauseCtx->cursorItem[PAUSE_ITEM_2] = PAUSE_ITEM_NONE;
+        }
+
+        if (oldCursorPoint != pauseCtx->cursorPoint[PAUSE_ITEM_2]) {
+            Audio_PlaySoundGeneral(NA_SE_SY_CURSOR, &D_801333D4, 4, &D_801333E0, &D_801333E0, &D_801333E8);
+        }
+    } else if ((pauseCtx->unk_1E4 == 3) && (pauseCtx->pageIndex == PAUSE_ITEM_2)) {
+        KaleidoScope_SetCursorVtx(pauseCtx, cursorSlot * 4, pauseCtx->item2Vtx);
+        pauseCtx->cursorColorSet = 4;
+    }
+
+    gDPSetCombineLERP(OVERLAY_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE,
+                      ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
+    gDPSetPrimColor(POLY_KAL_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
+    gDPSetEnvColor(POLY_KAL_DISP++, 0, 0, 0, 0);
+    //draws vertexes which are on item page
+    for (i = 0, j = 24 * 4; i < ARRAY_COUNT(gSaveContext.equips.cButtonSlots); i++, j += 4) {
+        if ((gSaveContext.equips.buttonItems[i + 1] != ITEM_NONE)  &&
+            (gSaveContext.equips.buttonItems[i + 1] >= NEW_ITEM_1) &&
+            (gSaveContext.equips.buttonItems[i + 1] <= NEW_ITEM_24)) {
+            gSPVertex(POLY_KAL_DISP++, &pauseCtx->item2Vtx[j], 4, 0);
+            POLY_KAL_DISP = KaleidoScope_QuadTextureIA8(POLY_KAL_DISP, gEquippedItemOutlineTex, 32, 32, 0);
+        }
+    }
+
+    gDPPipeSync(POLY_KAL_DISP++);
+    gDPSetCombineMode(POLY_KAL_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
+
+    for (i = 24, j = 0; i < 48; i++, j += 4) {
+        gDPSetPrimColor(POLY_KAL_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
+
+        if (gSaveContext.inventory.items[i] != ITEM_NONE) {
+            if ((pauseCtx->unk_1E4 == 0) && (pauseCtx->pageIndex == PAUSE_ITEM_2) && (pauseCtx->cursorSpecialPos == 0)) {
+                if (CHECK_SLOT_AGE(i)) {
+                    if (i - 24 == cursorSlot) {
+                        pauseCtx->item2Vtx[j + 0].v.ob[0] = pauseCtx->item2Vtx[j + 2].v.ob[0] =
+                            pauseCtx->item2Vtx[j + 0].v.ob[0] - 2;
+
+                        pauseCtx->item2Vtx[j + 1].v.ob[0] = pauseCtx->item2Vtx[j + 3].v.ob[0] =
+                            pauseCtx->item2Vtx[j + 0].v.ob[0] + 32;
+
+                        pauseCtx->item2Vtx[j + 0].v.ob[1] = pauseCtx->item2Vtx[j + 1].v.ob[1] =
+                            pauseCtx->item2Vtx[j + 0].v.ob[1] + 2;
+
+                        pauseCtx->item2Vtx[j + 2].v.ob[1] = pauseCtx->item2Vtx[j + 3].v.ob[1] =
+                            pauseCtx->item2Vtx[j + 0].v.ob[1] - 32;
+                    }
+                }
+            }
+
+            gSPVertex(POLY_KAL_DISP++, &pauseCtx->item2Vtx[j + 0], 4, 0);
+            
+            KaleidoScope_DrawQuadTextureRGBA32(play->state.gfxCtx, gNewItemIcons[i-24], 32, 32, 0);
+            
+            gSPGrayscale(POLY_KAL_DISP++, false);
+        }
+    }
+
+    if (pauseCtx->cursorSpecialPos == 0) {
+        KaleidoScope_DrawCursor(play, PAUSE_ITEM_2);
+    }
+
+    gDPPipeSync(POLY_KAL_DISP++);
+    gDPSetCombineLERP(POLY_KAL_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE,
+                      ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
