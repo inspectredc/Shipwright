@@ -77,6 +77,7 @@ typedef enum {
     /* 0x09 */ PLAYER_IA_BOW_FIRE,
     /* 0x0A */ PLAYER_IA_BOW_ICE,
     /* 0x0B */ PLAYER_IA_BOW_LIGHT,
+    /* NEW  */ PLAYER_IA_BOW_BOMB,
     /* 0x0C */ PLAYER_IA_BOW_0C,
     /* 0x0D */ PLAYER_IA_BOW_0D,
     /* 0x0E */ PLAYER_IA_BOW_0E,

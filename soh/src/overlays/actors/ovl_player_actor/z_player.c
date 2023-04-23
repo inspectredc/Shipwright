@@ -1139,7 +1139,7 @@ static s8 sItemActionParams[] = {
     PLAYER_IA_NONE,                               // NEW_ITEM_1
     PLAYER_IA_NONE,                               // NEW_ITEM_2
     PLAYER_IA_NONE,                               // NEW_ITEM_3
-    PLAYER_IA_NONE,                               // NEW_ITEM_4
+    PLAYER_IA_BOW_BOMB,                           // ITEM_ARROW_BOMB
     PLAYER_IA_NONE,                               // NEW_ITEM_5
     PLAYER_IA_NONE,                               // NEW_ITEM_6
     PLAYER_IA_NONE,                               // NEW_ITEM_7
@@ -1170,7 +1170,7 @@ u8 gWalkSpeedToggle2;
 static s32 (*D_80853EDC[])(Player* this, PlayState* play) = {
     func_8083485C, func_8083485C, func_8083485C, func_808349DC, func_808349DC, func_808349DC, func_8083485C,
     func_8083485C, func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_8083501C,
-    func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_808356E8, func_808356E8, func_80835800,
+    func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_808356E8, func_808356E8, func_80835800,
     func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C,
     func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C,
     func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C,
@@ -1183,7 +1183,7 @@ static s32 (*D_80853EDC[])(Player* this, PlayState* play) = {
 
 static void (*D_80853FE8[])(PlayState* play, Player* this) = {
     func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_8083377C,
-    func_80833790, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C,
+    func_80833790, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C,
     func_8083379C, func_8083379C, func_80833910, func_80833910, func_808337D4, func_808337D4, func_80833984,
     func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770,
     func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770,
@@ -1347,7 +1347,7 @@ static u8 sMagicSpellCosts[] = { 12, 24, 24, 12, 24, 12 };
 
 static u16 D_80854398[] = { NA_SE_IT_BOW_DRAW, NA_SE_IT_SLING_DRAW, NA_SE_IT_HOOKSHOT_READY };
 
-static u8 sMagicArrowCosts[] = { 4, 4, 8 };
+static u8 sMagicArrowCosts[] = { 4, 4, 8, 4};
 
 static LinkAnimationHeader* D_808543A4[] = {
     &gPlayerAnim_link_anchor_waitR2defense,
@@ -2338,7 +2338,7 @@ s32 func_8083442C(Player* this, PlayState* play) {
                 magicArrowType = arrowType - ARROW_FIRE;
 
                 if (this->unk_860 >= 0) {
-                    if ((magicArrowType >= 0) && (magicArrowType <= 2) &&
+                    if ((magicArrowType >= 0) && (magicArrowType <= 3) &&
                         !func_80087708(play, sMagicArrowCosts[magicArrowType], 0)) {
                         arrowType = ARROW_NORMAL;
                     }

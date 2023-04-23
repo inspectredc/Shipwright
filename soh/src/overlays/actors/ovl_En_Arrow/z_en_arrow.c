@@ -78,9 +78,22 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
         0, 1, 0, { 255, 255, 170, 255 }, { 255, 255, 0, 0 }, 0,
     };
+    static EffectBlureInit2 blureBomb = {
+        0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
+        0, 1, 0, { 255, 20, 20, 255 }, { 20, 20, 20, 0 }, 0,
+    };
     static u32 dmgFlags[] = {
-        0x00000800, 0x00000020, 0x00000020, 0x00000800, 0x00001000,
-        0x00002000, 0x00010000, 0x00004000, 0x00008000, 0x00000004,
+        0x00000800,     // ARROW_NORMAL_LIT 
+        0x00000020,     // ARROW_NORMAL_HORSE
+        0x00000020,     // ARROW_NORMAL
+        0x00000800,     // ARROW_FIRE
+        0x00001000,     // ARROW_ICE
+        0x00002000,     // ARROW_LIGHT
+        0x00000020,     // ARROW_BOMB
+        0x00010000,     // ARROW_0C
+        0x00004000,     // ARROW_0D
+        0x00008000,     // ARROW_0E
+        0x00000004,     // ARROW_SEED
     };
     EnArrow* this = (EnArrow*)thisx;
 
@@ -161,6 +174,8 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         } else if (this->actor.params == ARROW_LIGHT) {
 
             Effect_Add(play, &this->effectIndex, EFFECT_BLURE2, 0, 0, &blureLight);
+        } else if (this->actor.params == ARROW_BOMB) {
+            Effect_Add(play, &this->effectIndex, EFFECT_BLURE2, 0, 0, &blureBomb);
         }
 
         Collider_InitQuad(play, &this->collider);
@@ -185,7 +200,7 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
 void EnArrow_Destroy(Actor* thisx, PlayState* play) {
     EnArrow* this = (EnArrow*)thisx;
 
-    if (this->actor.params <= ARROW_LIGHT) {
+    if (this->actor.params <= ARROW_BOMB) {
         Effect_Delete(play, this->effectIndex);
     }
 
@@ -220,6 +235,7 @@ void EnArrow_Shoot(EnArrow* this, PlayState* play) {
             case ARROW_FIRE:
             case ARROW_ICE:
             case ARROW_LIGHT:
+            case ARROW_BOMB:
                 func_8002F7DC(&player->actor, NA_SE_IT_MAGIC_ARROW_SHOT);
                 break;
         }
@@ -440,7 +456,7 @@ void EnArrow_Update(Actor* thisx, PlayState* play) {
     }
 
     if ((this->actor.params >= ARROW_FIRE) && (this->actor.params <= ARROW_0E)) {
-        s16 elementalActorIds[] = { ACTOR_ARROW_FIRE, ACTOR_ARROW_ICE,  ACTOR_ARROW_LIGHT,
+        s16 elementalActorIds[] = { ACTOR_ARROW_FIRE, ACTOR_ARROW_ICE,  ACTOR_ARROW_LIGHT, ACTOR_ARROW_BOMB,
                                     ACTOR_ARROW_FIRE, ACTOR_ARROW_FIRE, ACTOR_ARROW_FIRE };
 
         if (this->actor.child == NULL) {
