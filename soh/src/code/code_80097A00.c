@@ -196,7 +196,7 @@ void* gItemIcons[] = {
     gSoldOutIconTex,             //NEW_ITEM_1
     gSoldOutIconTex,             //NEW_ITEM_2
     gSoldOutIconTex,             //NEW_ITEM_3
-    gBombBag20IconTex,           //ITEM_ARROW_BOMB
+    gSoldOutIconTex,             //NEW_ITEM_4
     gSoldOutIconTex,             //NEW_ITEM_5
     gSoldOutIconTex,             //NEW_ITEM_6
     gSoldOutIconTex,             //NEW_ITEM_7
@@ -223,7 +223,7 @@ void* gNewItemIcons[] = { //todo shift usage to use these textures for page 2 sl
     gSoldOutIconTex,             //NEW_ITEM_1
     gSoldOutIconTex,             //NEW_ITEM_2
     gSoldOutIconTex,             //NEW_ITEM_3
-    gBombBag20IconTex,           //ITEM_ARROW_BOMB
+    gSoldOutIconTex,             //NEW_ITEM_4
     gSoldOutIconTex,             //NEW_ITEM_5
     gSoldOutIconTex,             //NEW_ITEM_6
     gSoldOutIconTex,             //NEW_ITEM_7

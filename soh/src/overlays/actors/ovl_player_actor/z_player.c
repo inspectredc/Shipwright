@@ -1057,7 +1057,7 @@ static s16 sNewItemActionParams[] = {
     PLAYER_IA_NONE,                               // NEW_ITEM_1
     PLAYER_IA_NONE,                               // NEW_ITEM_2
     PLAYER_IA_NONE,                               // NEW_ITEM_3
-    PLAYER_IA_BOW_BOMB,                           // ITEM_ARROW_BOMB
+    PLAYER_IA_NONE,                               // NEW_ITEM_4
     PLAYER_IA_NONE,                               // NEW_ITEM_5
     PLAYER_IA_NONE,                               // NEW_ITEM_6
     PLAYER_IA_NONE,                               // NEW_ITEM_7
@@ -2315,9 +2315,6 @@ s32 func_8083442C(Player* this, PlayState* play) {
             func_8002F7DC(&this->actor, D_80854398[ABS(this->unk_860) - 1]);
 
             if (!Player_HoldsHookshot(this) && (func_80834380(play, this, &item, &arrowType) > 0)) {
-                if ((arrowType == ARROW_BOMB) && AMMO(ITEM_BOMB) == 0) {
-                    arrowType = ARROW_NORMAL;
-                }
                 magicArrowType = arrowType - ARROW_FIRE;
 
                 if (this->unk_860 >= 0) {
