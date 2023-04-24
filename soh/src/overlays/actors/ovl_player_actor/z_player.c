@@ -1053,7 +1053,7 @@ static s16 sItemActionParams[] = {
     PLAYER_IA_BOOTS_HOVER,                        // ITEM_BOOTS_HOVER
 };
 
-static s16 sNewItemActionParams[] = {
+/*static s16 sNewItemActionParams[] = {
     PLAYER_IA_NONE,                               // NEW_ITEM_1
     PLAYER_IA_NONE,                               // NEW_ITEM_2
     PLAYER_IA_NONE,                               // NEW_ITEM_3
@@ -1078,7 +1078,7 @@ static s16 sNewItemActionParams[] = {
     PLAYER_IA_NONE,                               // NEW_ITEM_22
     PLAYER_IA_NONE,                               // NEW_ITEM_23
     PLAYER_IA_NONE,                               // NEW_ITEM_24
-};
+};*/
 
 static u8 sMaskMemory;
 u8 gWalkSpeedToggle1;
@@ -1925,7 +1925,7 @@ s16 Player_ItemToActionParam(s32 item) {
     } else if (item == ITEM_FISHING_POLE) {
         return PLAYER_IA_FISHING_POLE;
     } else if (item > ITEM_NUT_UPGRADE_40) { //todo: finalise how I am locating new items
-        return sNewItemActionParams[item - ITEM_NUT_UPGRADE_40 - 1];
+        return NewItem_ItemToActionParam(item - ITEM_NUT_UPGRADE_40 - 1);
     } else {
         return sItemActionParams[item];
     }
