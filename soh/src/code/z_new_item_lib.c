@@ -7,49 +7,76 @@
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 
 //Fill in as more new bottled items
-static bool CanSellNewBottle[] = {
+static bool sCanSellNewBottle[] = {
     false,          //PLAYER_IA_BOTTLE_START
     false           //PLAYER_IA_BOTTLE_END
 };
 
-static bool CanDrinkNewBottle[] = {
+static bool sCanDrinkNewBottle[] = {
     false,          //PLAYER_IA_BOTTLE_START
     false           //PLAYER_IA_BOTTLE_END
 };
 
-static s32 NewBottleExchangeItem[] = { //Fill with exchange item ids, -1 if not an exchange item
+static s32 sNewBottleExchangeItem[] = { //Fill with exchange item ids, -1 if not an exchange item
     -1,             //PLAYER_IA_BOTTLE_START
     -1,             //PLAYER_IA_BOTTLE_END
 };
 
-static s32 NewTradeExchangeItem[] = { //Fill with exchange item ids, -1 if not an exchange item
+static s32 sNewTradeExchangeItem[] = { //Fill with exchange item ids, -1 if not an exchange item
     -1,             //PLAYER_IA_TI_START
     -1,             //PLAYER_IA_TI_END
 };
 
-static u8 MagicArrowCosts[] = {
+static u8 sMagicArrowCosts[] = {
     4,
     4,
     8,
 };
 
-static u8 NewMagicArrowCosts[] = {
+static u8 sNewMagicArrowCosts[] = {
     4,              //PLAYER_IA_BOW_START
     4,              //PLAYER_IA_BOW_END
 };
 
-static u32 NewArrowDmgFlags[] = {
+static u32 sNewArrowDmgFlags[] = {
     0x00000020,     //PLAYER_IA_BOW_START
     0x00000020,     //PLAYER_IA_BOW_END
 };
 
-static u8 BottleDrinkEffects[] = {
+static u8 sBottleDrinkEffects[] = {
     0x01, 0x03, 0x02, 0x04, 0x04,
 };
 
-static u8 NewBottleDrinkEffects[] = { //drink effects are 1 -> strong heal, 2 -> fill magic, 4 -> weak heal. effects can be combined through addition
+static u8 sNewBottleDrinkEffects[] = { //drink effects are 1 -> strong heal, 2 -> fill magic, 4 -> weak heal. effects can be combined through addition
     0x00,           //PLAYER_IA_BOTTLE_START
     0x00,           //PLAYER_IA_BOTTLE_END
+};
+
+static s16 sNewItemActionParams[] = {
+    PLAYER_IA_NONE,                               // NEW_ITEM_1
+    PLAYER_IA_NONE,                               // NEW_ITEM_2
+    PLAYER_IA_NONE,                               // NEW_ITEM_3
+    PLAYER_IA_BOW_BOMB,                           // ITEM_ARROW_BOMB
+    PLAYER_IA_NONE,                               // NEW_ITEM_5
+    PLAYER_IA_NONE,                               // NEW_ITEM_6
+    PLAYER_IA_NONE,                               // NEW_ITEM_7
+    PLAYER_IA_NONE,                               // NEW_ITEM_8
+    PLAYER_IA_NONE,                               // NEW_ITEM_9
+    PLAYER_IA_NONE,                               // NEW_ITEM_10
+    PLAYER_IA_NONE,                               // NEW_ITEM_11
+    PLAYER_IA_NONE,                               // NEW_ITEM_12
+    PLAYER_IA_NONE,                               // NEW_ITEM_13
+    PLAYER_IA_NONE,                               // NEW_ITEM_14
+    PLAYER_IA_NONE,                               // NEW_ITEM_15
+    PLAYER_IA_NONE,                               // NEW_ITEM_16
+    PLAYER_IA_NONE,                               // NEW_ITEM_17
+    PLAYER_IA_NONE,                               // NEW_ITEM_18
+    PLAYER_IA_NONE,                               // NEW_ITEM_19
+    PLAYER_IA_NONE,                               // NEW_ITEM_20
+    PLAYER_IA_NONE,                               // NEW_ITEM_21
+    PLAYER_IA_NONE,                               // NEW_ITEM_22
+    PLAYER_IA_NONE,                               // NEW_ITEM_23
+    PLAYER_IA_NONE,                               // NEW_ITEM_24
 };
 
 bool NewItem_IsActionParamBow(s16 actionParam) {
@@ -85,16 +112,16 @@ bool NewItem_IsActionParamBottledItem(s16 actionParam) {
 }
 
 bool NewItem_IsActionParamBottledSellable(s16 actionParam) {
-    return ((actionParam >= PLAYER_IA_BOTTLE_FISH && actionParam <= PLAYER_IA_BOTTLE_LETTER) || CanSellNewBottle[actionParam - PLAYER_IA_BOTTLE_START]);
+    return ((actionParam >= PLAYER_IA_BOTTLE_FISH && actionParam <= PLAYER_IA_BOTTLE_LETTER) || sCanSellNewBottle[actionParam - PLAYER_IA_BOTTLE_START]);
 }
 
 bool NewItem_IsActionParamBottledConsumable(s16 actionParam) {
-    return ((actionParam >= PLAYER_IA_BOTTLE_POTION_RED && actionParam <= PLAYER_IA_BOTTLE_FAIRY) || CanDrinkNewBottle[actionParam - PLAYER_IA_BOTTLE_START]);
+    return ((actionParam >= PLAYER_IA_BOTTLE_POTION_RED && actionParam <= PLAYER_IA_BOTTLE_FAIRY) || sCanDrinkNewBottle[actionParam - PLAYER_IA_BOTTLE_START]);
 }
 
 bool NewItem_IsActionParamBottledExchange(s16 actionParam) {
     if (actionParam >= PLAYER_IA_BOTTLE_START && actionParam <= PLAYER_IA_BOTTLE_END) {
-        return NewBottleExchangeItem[actionParam - PLAYER_IA_BOTTLE_START] >= 0;
+        return sNewBottleExchangeItem[actionParam - PLAYER_IA_BOTTLE_START] >= 0;
     } else {
         return actionParam == PLAYER_IA_BOTTLE_BIG_POE || actionParam == PLAYER_IA_BOTTLE_LETTER;
     }
@@ -136,9 +163,9 @@ u8 NewItem_ActionParamToMask(s16 actionParam) { // 8 vanilla masks
 
 u8 NewItem_GetMagicArrowCost(s16 arrowType) {
     if (arrowType >= ARROW_FIRE && arrowType <= ARROW_LIGHT) {
-        return MagicArrowCosts[arrowType - ARROW_FIRE];
+        return sMagicArrowCosts[arrowType - ARROW_FIRE];
     } else if (arrowType >= ARROW_START && arrowType <= ARROW_END) {
-        return NewMagicArrowCosts[arrowType - ARROW_START];
+        return sNewMagicArrowCosts[arrowType - ARROW_START];
     } else { //shouldnt be reached
         return 0;
     }
@@ -165,7 +192,7 @@ s16 NewItem_GetArrowActorId(s16 arrowType) {
 }
 
 u32 NewItem_GetArrowDamageFlag(s16 arrowType) {
-    return NewArrowDmgFlags[arrowType - ARROW_START];
+    return sNewArrowDmgFlags[arrowType - ARROW_START];
 }
 
 s32 NewItem_GetCutsceneItem(s16 actionParam) { // 15 vanilla cutscene items todo:figure out bean
@@ -186,10 +213,10 @@ s32 NewItem_GetExchangeItem(s32 tradeItem, s32 bottle) {
     } else if (bottle >= 0 && bottle < 13) {
         exchangeItem = bottle + EXCH_ITEM_FISH;
     } else { //new exchange item behaviour
-        if (NewTradeExchangeItem[tradeItem - PLAYER_IA_TI_START] >= 0) {
-            exchangeItem = NewTradeExchangeItem[tradeItem - PLAYER_IA_TI_START];
-        } else if (NewBottleExchangeItem[tradeItem - PLAYER_IA_TI_START] >= 0) {
-            exchangeItem = NewBottleExchangeItem[bottle - PLAYER_IA_TI_START];
+        if (sNewTradeExchangeItem[tradeItem - PLAYER_IA_TI_START] >= 0) {
+            exchangeItem = sNewTradeExchangeItem[tradeItem - PLAYER_IA_TI_START];
+        } else if (sNewBottleExchangeItem[tradeItem - PLAYER_IA_TI_START] >= 0) {
+            exchangeItem = sNewBottleExchangeItem[bottle - PLAYER_IA_TI_START];
         } else { //shouldnt happen
             exchangeItem = bottle + EXCH_ITEM_FISH;
         }
@@ -199,10 +226,14 @@ s32 NewItem_GetExchangeItem(s32 tradeItem, s32 bottle) {
 
 s32 NewItem_GetBottleDrinkEffect(s16 actionParam) {
     if (actionParam >= PLAYER_IA_BOTTLE_POTION_RED && actionParam <= PLAYER_IA_BOTTLE_MILK_HALF) {
-        return BottleDrinkEffects[actionParam - PLAYER_IA_BOTTLE_POTION_RED];
+        return sBottleDrinkEffects[actionParam - PLAYER_IA_BOTTLE_POTION_RED];
     } else {
-        return NewBottleDrinkEffects[actionParam - PLAYER_IA_BOTTLE_START];
+        return sNewBottleDrinkEffects[actionParam - PLAYER_IA_BOTTLE_START];
     }
+}
+
+s16 NewItem_ItemToActionParam(s32 newItem) {
+    return sNewItemActionParams[newItem];
 }
 
 //functions todo:
