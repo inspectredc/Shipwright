@@ -121,7 +121,7 @@ void func_8083377C(PlayState* play, Player* this);
 void func_808337D4(PlayState* play, Player* this);
 void func_80833910(PlayState* play, Player* this);
 void func_80833984(PlayState* play, Player* this);
-void func_8083399C(PlayState* play, Player* this, s8 actionParam);
+void func_8083399C(PlayState* play, Player* this, s16 actionParam);
 s32 func_8083485C(Player* this, PlayState* play);
 s32 func_808349DC(Player* this, PlayState* play);
 s32 func_80834A2C(Player* this, PlayState* play);
@@ -979,7 +979,7 @@ static u8 D_80853E7C[] = {
 };
 
 // Used to map item IDs to action params
-static s8 sItemActionParams[] = {
+static s16 sItemActionParams[] = {
     PLAYER_IA_STICK,                              // ITEM_STICK
     PLAYER_IA_NUT,                                // ITEM_NUT
     PLAYER_IA_BOMB,                               // ITEM_BOMB
@@ -1051,91 +1051,9 @@ static s8 sItemActionParams[] = {
     PLAYER_IA_BOOTS_KOKIRI,                       // ITEM_BOOTS_KOKIRI
     PLAYER_IA_BOOTS_IRON,                         // ITEM_BOOTS_IRON
     PLAYER_IA_BOOTS_HOVER,                        // ITEM_BOOTS_HOVER
-    PLAYER_IA_NONE,                               // ITEM_BULLET_BAG_30
-    PLAYER_IA_NONE,                               // ITEM_BULLET_BAG_40
-    PLAYER_IA_NONE,                               // ITEM_BULLET_BAG_50
-    PLAYER_IA_NONE,                               // ITEM_QUIVER_30
-    PLAYER_IA_NONE,                               // ITEM_QUIVER_40
-    PLAYER_IA_NONE,                               // ITEM_QUIVER_50
-    PLAYER_IA_NONE,                               // ITEM_BOMB_BAG_20
-    PLAYER_IA_NONE,                               // ITEM_BOMB_BAG_30
-    PLAYER_IA_NONE,                               // ITEM_BOMB_BAG_40
-    PLAYER_IA_NONE,                               // ITEM_BRACELET
-    PLAYER_IA_NONE,                               // ITEM_GAUNTLETS_SILVER
-    PLAYER_IA_NONE,                               // ITEM_GAUNTLETS_GOLD
-    PLAYER_IA_NONE,                               // ITEM_SCALE_SILVER
-    PLAYER_IA_NONE,                               // ITEM_SCALE_GOLDEN
-    PLAYER_IA_NONE,                               // ITEM_SWORD_KNIFE
-    PLAYER_IA_NONE,                               // ITEM_WALLET_ADULT
-    PLAYER_IA_NONE,                               // ITEM_WALLET_GIANT
-    PLAYER_IA_NONE,                               // ITEM_SEEDS
-    PLAYER_IA_NONE,                               // ITEM_FISHING_POLE
-    PLAYER_IA_NONE,                               // ITEM_SONG_MINUET
-    PLAYER_IA_NONE,                               // ITEM_SONG_BOLERO
-    PLAYER_IA_NONE,                               // ITEM_SONG_SERENADE
-    PLAYER_IA_NONE,                               // ITEM_SONG_REQUIEM
-    PLAYER_IA_NONE,                               // ITEM_SONG_NOCTURNE
-    PLAYER_IA_NONE,                               // ITEM_SONG_PRELUDE
-    PLAYER_IA_NONE,                               // ITEM_SONG_LULLABY
-    PLAYER_IA_NONE,                               // ITEM_SONG_EPONA
-    PLAYER_IA_NONE,                               // ITEM_SONG_SARIA
-    PLAYER_IA_NONE,                               // ITEM_SONG_SUN
-    PLAYER_IA_NONE,                               // ITEM_SONG_TIME
-    PLAYER_IA_NONE,                               // ITEM_SONG_STORMS
-    PLAYER_IA_NONE,                               // ITEM_MEDALLION_FOREST
-    PLAYER_IA_NONE,                               // ITEM_MEDALLION_FIRE
-    PLAYER_IA_NONE,                               // ITEM_MEDALLION_WATER
-    PLAYER_IA_NONE,                               // ITEM_MEDALLION_SPIRIT
-    PLAYER_IA_NONE,                               // ITEM_MEDALLION_SHADOW
-    PLAYER_IA_NONE,                               // ITEM_MEDALLION_LIGHT
-    PLAYER_IA_NONE,                               // ITEM_KOKIRI_EMERALD
-    PLAYER_IA_NONE,                               // ITEM_GORON_RUBY
-    PLAYER_IA_NONE,                               // ITEM_ZORA_SAPPHIRE
-    PLAYER_IA_NONE,                               // ITEM_STONE_OF_AGONY
-    PLAYER_IA_NONE,                               // ITEM_GERUDO_CARD
-    PLAYER_IA_NONE,                               // ITEM_SKULL_TOKEN
-    PLAYER_IA_NONE,                               // ITEM_HEART_CONTAINER
-    PLAYER_IA_NONE,                               // ITEM_HEART_PIECE
-    PLAYER_IA_NONE,                               // ITEM_KEY_BOSS
-    PLAYER_IA_NONE,                               // ITEM_COMPASS
-    PLAYER_IA_NONE,                               // ITEM_DUNGEON_MAP
-    PLAYER_IA_NONE,                               // ITEM_KEY_SMALL
-    PLAYER_IA_NONE,                               // ITEM_MAGIC_SMALL
-    PLAYER_IA_NONE,                               // ITEM_MAGIC_LARGE
-    PLAYER_IA_NONE,                               // ITEM_HEART_PIECE_2
-    PLAYER_IA_NONE,                               // ITEM_SINGLE_MAGIC
-    PLAYER_IA_NONE,                               // ITEM_DOUBLE_MAGIC
-    PLAYER_IA_NONE,                               // ITEM_DOUBLE_DEFENSE
-    PLAYER_IA_NONE,                               // ITEM_INVALID_4
-    PLAYER_IA_NONE,                               // ITEM_INVALID_5
-    PLAYER_IA_NONE,                               // ITEM_INVALID_6
-    PLAYER_IA_NONE,                               // ITEM_INVALID_7
-    PLAYER_IA_NONE,                               // ITEM_MILK
-    PLAYER_IA_NONE,                               // ITEM_HEART
-    PLAYER_IA_NONE,                               // ITEM_RUPEE_GREEN
-    PLAYER_IA_NONE,                               // ITEM_RUPEE_BLUE
-    PLAYER_IA_NONE,                               // ITEM_RUPEE_RED
-    PLAYER_IA_NONE,                               // ITEM_RUPEE_PURPLE
-    PLAYER_IA_NONE,                               // ITEM_RUPEE_GOLD
-    PLAYER_IA_NONE,                               // ITEM_INVALID_8
-    PLAYER_IA_NONE,                               // ITEM_STICKS_5
-    PLAYER_IA_NONE,                               // ITEM_STICKS_10
-    PLAYER_IA_NONE,                               // ITEM_NUTS_5
-    PLAYER_IA_NONE,                               // ITEM_NUTS_10
-    PLAYER_IA_NONE,                               // ITEM_BOMBS_5
-    PLAYER_IA_NONE,                               // ITEM_BOMBS_10
-    PLAYER_IA_NONE,                               // ITEM_BOMBS_20
-    PLAYER_IA_NONE,                               // ITEM_BOMBS_30
-    PLAYER_IA_NONE,                               // ITEM_ARROWS_SMALL
-    PLAYER_IA_NONE,                               // ITEM_ARROWS_MEDIUM
-    PLAYER_IA_NONE,                               // ITEM_ARROWS_LARGE
-    PLAYER_IA_NONE,                               // ITEM_SEEDS_30
-    PLAYER_IA_NONE,                               // ITEM_BOMBCHUS_5
-    PLAYER_IA_NONE,                               // ITEM_BOMBCHUS_20
-    PLAYER_IA_NONE,                               // ITEM_STICK_UPGRADE_20
-    PLAYER_IA_NONE,                               // ITEM_STICK_UPGRADE_30
-    PLAYER_IA_NONE,                               // ITEM_NUT_UPGRADE_30
-    PLAYER_IA_NONE,                               // ITEM_NUT_UPGRADE_40
+};
+
+static s16 sNewItemActionParams[] = {
     PLAYER_IA_NONE,                               // NEW_ITEM_1
     PLAYER_IA_NONE,                               // NEW_ITEM_2
     PLAYER_IA_NONE,                               // NEW_ITEM_3
@@ -1170,7 +1088,7 @@ u8 gWalkSpeedToggle2;
 static s32 (*D_80853EDC[])(Player* this, PlayState* play) = {
     func_8083485C, func_8083485C, func_8083485C, func_808349DC, func_808349DC, func_808349DC, func_8083485C,
     func_8083485C, func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_8083501C,
-    func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_808356E8, func_808356E8, func_80835800,
+    func_8083501C, func_8083501C, func_8083501C, func_8083501C, func_808356E8, func_808356E8, func_80835800,
     func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C,
     func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C,
     func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C, func_8083485C,
@@ -1183,7 +1101,7 @@ static s32 (*D_80853EDC[])(Player* this, PlayState* play) = {
 
 static void (*D_80853FE8[])(PlayState* play, Player* this) = {
     func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_8083377C,
-    func_80833790, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C,
+    func_80833790, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C, func_8083379C,
     func_8083379C, func_8083379C, func_80833910, func_80833910, func_808337D4, func_808337D4, func_80833984,
     func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770,
     func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770, func_80833770,
@@ -1347,7 +1265,7 @@ static u8 sMagicSpellCosts[] = { 12, 24, 24, 12, 24, 12 };
 
 static u16 D_80854398[] = { NA_SE_IT_BOW_DRAW, NA_SE_IT_SLING_DRAW, NA_SE_IT_HOOKSHOT_READY };
 
-static u8 sMagicArrowCosts[] = { 4, 4, 8, 4};
+static u8 sMagicArrowCosts[] = { 4, 4, 8};
 
 static LinkAnimationHeader* D_808543A4[] = {
     &gPlayerAnim_link_anchor_waitR2defense,
@@ -1383,6 +1301,65 @@ static LinkAnimationHeader* D_808543D4[] = {
     &gPlayerAnim_link_bow_bow_wait,
     &gPlayerAnim_link_hook_wait,
 };
+
+void *getUpperBodyFunction(s16 actionParam) {
+    if (actionParam >= PLAYER_IA_MELEE_START && actionParam <= PLAYER_IA_MELEE_END) {
+        // note that swords use func_808349DC
+        return func_8083485C;
+    } else if (NewItem_IsActionParamBow(actionParam)) {
+        //hold fps item
+        return func_8083501C;
+    } else if (actionParam >= PLAYER_IA_BOTTLE_START && actionParam <= PLAYER_IA_BOTTLE_END) {
+        return func_8083485C;
+    } else if (actionParam >= PLAYER_IA_TI_START && actionParam <= PLAYER_IA_TI_END) {
+        return func_8083485C;
+    } else if (actionParam >= PLAYER_IA_MELEE_START) {
+        switch (actionParam) {
+            // first case here just to show format, delete when unique items are added
+            case PLAYER_IA_UNIQUE_START:
+                return D_80853EDC[PLAYER_IA_NONE];
+            default:
+                return D_80853EDC[PLAYER_IA_NONE];
+        }
+    } else {
+        return D_80853EDC[actionParam];
+    }
+}
+
+void callItemChangeSetupFunction(PlayState* play, Player* this, s16 actionParam) {
+    if (actionParam >= PLAYER_IA_MELEE_START && actionParam <= PLAYER_IA_MELEE_END) {
+        // melee weapons tend to have their own setup function
+        switch (actionParam) {
+            default:
+                //do nothing type 2
+                D_80853FE8[PLAYER_IA_HAMMER](play, this);
+                return;
+        }
+    } else if (actionParam >= PLAYER_IA_BOW_START && actionParam <= PLAYER_IA_BOW_END) {
+        //setup bow/slingshot
+        func_8083379C(play, this);
+        return;
+    } else if (actionParam >= PLAYER_IA_BOTTLE_START && actionParam <= PLAYER_IA_BOTTLE_END) {
+        func_80833770(play, this);
+        return;
+    } else if (actionParam >= PLAYER_IA_TI_START && actionParam <= PLAYER_IA_TI_END) {
+        func_80833770(play, this);
+        return;
+    } else if (actionParam >= PLAYER_IA_MELEE_START) {
+        switch (actionParam) {
+            // first case here just to show format, delete when unique items are added
+            case PLAYER_IA_UNIQUE_START:
+                D_80853FE8[PLAYER_IA_NONE](play, this);
+                return;
+            default:
+                D_80853FE8[PLAYER_IA_NONE](play, this);
+                return;
+        }
+    } else {
+        D_80853FE8[actionParam](play, this);
+        return;
+    }
+}
 
 // return type can't be void due to regalloc in func_8084FCAC
 s32 func_80832210(Player* this) {
@@ -1487,6 +1464,7 @@ void func_80832440(PlayState* play, Player* this) {
     this->unk_845 = this->unk_844 = 0;
 }
 
+//unequip item
 s32 func_80832528(PlayState* play, Player* this) {
     if (this->heldItemAction >= PLAYER_IA_FISHING_POLE) {
         func_80835F44(play, this, ITEM_NONE);
@@ -1916,7 +1894,7 @@ void func_80833638(Player* this, PlayerFunc82C arg1) {
     func_808326F0(this);
 }
 
-void func_80833664(PlayState* play, Player* this, s8 actionParam) {
+void func_80833664(PlayState* play, Player* this, s16 actionParam) {
     LinkAnimationHeader* current = this->skelAnime.animation;
     LinkAnimationHeader** iter = &D_80853914[0][this->modelAnimType];
     u32 i;
@@ -1939,13 +1917,15 @@ void func_80833664(PlayState* play, Player* this, s8 actionParam) {
     }
 }
 
-s8 Player_ItemToActionParam(s32 item) {
+s16 Player_ItemToActionParam(s32 item) {
     if (item >= ITEM_NONE_FE) {
         return PLAYER_IA_NONE;
     } else if (item == ITEM_LAST_USED) {
         return PLAYER_IA_LAST_USED;
     } else if (item == ITEM_FISHING_POLE) {
         return PLAYER_IA_FISHING_POLE;
+    } else if (item > ITEM_NUT_UPGRADE_40) { //todo: finalise how I am locating new items
+        return sNewItemActionParams[item - ITEM_NUT_UPGRADE_40 - 1];
     } else {
         return sItemActionParams[item];
     }
@@ -2021,7 +2001,7 @@ void func_80833984(PlayState* play, Player* this) {
     this->stateFlags1 |= PLAYER_STATE1_24;
 }
 
-void func_8083399C(PlayState* play, Player* this, s8 actionParam) {
+void func_8083399C(PlayState* play, Player* this, s16 actionParam) {
     this->unk_860 = 0;
     this->unk_85C = 0.0f;
     this->unk_858 = 0.0f;
@@ -2031,7 +2011,7 @@ void func_8083399C(PlayState* play, Player* this, s8 actionParam) {
 
     this->stateFlags1 &= ~(PLAYER_STATE1_3 | PLAYER_STATE1_24);
 
-    D_80853FE8[actionParam](play, this);
+    callItemChangeSetupFunction(play, this, actionParam);
 
     Player_SetModelGroup(this, this->modelGroup);
 }
@@ -2233,7 +2213,7 @@ void func_808340DC(Player* this, PlayState* play) {
     f32 endFrame;
     f32 playSpeed;
     s32 sp38;
-    s8 sp37;
+    s16 sp37;
     s32 nextAnimType;
 
     sp37 = Player_ItemToActionParam(this->heldItemId);
@@ -2297,10 +2277,10 @@ s32 func_80834380(PlayState* play, Player* this, s32* itemPtr, s32* typePtr) {
     }
     if (useBow) {
         *itemPtr = ITEM_BOW;
-        if (this->stateFlags1 & PLAYER_STATE1_23) {
+        if (this->stateFlags1 & PLAYER_STATE1_23) { //todo 
             *typePtr = ARROW_NORMAL_HORSE;
         } else {
-            *typePtr = this->heldItemAction - 6;
+            *typePtr = NewItem_ActionParamToArrowType(this->heldItemAction);
         }
     } else {
         *itemPtr = ITEM_SLINGSHOT;
@@ -2322,7 +2302,7 @@ s32 func_8083442C(Player* this, PlayState* play) {
     s32 arrowType;
     s32 magicArrowType;
 
-    if ((this->heldItemAction >= PLAYER_IA_BOW_FIRE) && (this->heldItemAction <= PLAYER_IA_BOW_0E) &&
+    if ((NewItem_IsActionParamBow(this->heldItemAction)) &&
         (gSaveContext.magicState != 0)) {
         func_80078884(NA_SE_SY_ERROR);
     } else {
@@ -2335,11 +2315,14 @@ s32 func_8083442C(Player* this, PlayState* play) {
             func_8002F7DC(&this->actor, D_80854398[ABS(this->unk_860) - 1]);
 
             if (!Player_HoldsHookshot(this) && (func_80834380(play, this, &item, &arrowType) > 0)) {
+                if ((arrowType == ARROW_BOMB) && AMMO(ITEM_BOMB) == 0) {
+                    arrowType = ARROW_NORMAL;
+                }
                 magicArrowType = arrowType - ARROW_FIRE;
 
                 if (this->unk_860 >= 0) {
-                    if ((magicArrowType >= 0) && (magicArrowType <= 3) &&
-                        !func_80087708(play, sMagicArrowCosts[magicArrowType], 0)) {
+                    if ((((magicArrowType >= 0) && (magicArrowType <= 2)) || ((arrowType >= ARROW_START) && (arrowType <= ARROW_END))) &&
+                        !func_80087708(play, NewItem_GetMagicArrowCost(arrowType), 0)) {
                         arrowType = ARROW_NORMAL;
                     }
 
@@ -2379,7 +2362,7 @@ void func_80834644(PlayState* play, Player* this) {
         func_80834594(play, this);
     }
 
-    func_80833638(this, D_80853EDC[this->heldItemAction]);
+    func_80833638(this, getUpperBodyFunction(this->heldItemAction));
     this->unk_834 = 0;
     this->unk_6AC = 0;
     func_808323B4(play, this);
@@ -2475,7 +2458,7 @@ s32 func_80834A2C(Player* this, PlayState* play) {
         ((Player_ItemToActionParam(this->heldItemId) == this->heldItemAction) &&
          (D_80853614 = (D_80853614 ||
                         ((this->modelAnimType != PLAYER_ANIMTYPE_3) && (play->shootingGalleryStatus == 0)))))) {
-        func_80833638(this, D_80853EDC[this->heldItemAction]);
+        func_80833638(this, getUpperBodyFunction(this->heldItemAction));
         this->unk_834 = 0;
         this->unk_6AC = 0;
         D_80853618 = D_80853614;
@@ -2526,7 +2509,7 @@ s32 func_80834C74(Player* this, PlayState* play) {
     D_80853614 = D_80853618;
 
     if (D_80853614 || LinkAnimation_Update(play, &this->skelAnime2)) {
-        func_80833638(this, D_80853EDC[this->heldItemAction]);
+        func_80833638(this, getUpperBodyFunction(this->heldItemAction));
         LinkAnimation_PlayLoop(play, &this->skelAnime2, D_80853914[PLAYER_ANIMGROUP_0][this->modelAnimType]);
         this->unk_6AC = 0;
         this->func_82C(this, play);
@@ -3023,7 +3006,7 @@ void func_80835EFC(Player* this) {
 }
 
 void func_80835F44(PlayState* play, Player* this, s32 item) {
-    s8 actionParam;
+    s16 actionParam;
     s32 temp;
     s32 nextAnimType;
 
@@ -3038,7 +3021,7 @@ void func_80835F44(PlayState* play, Player* this, s32 item) {
         if ((actionParam == PLAYER_IA_NONE) || !(this->stateFlags1 & PLAYER_STATE1_27) ||
             ((this->actor.bgCheckFlags & 1) &&
              ((actionParam == PLAYER_IA_HOOKSHOT) || (actionParam == PLAYER_IA_LONGSHOT))) ||
-            ((actionParam >= PLAYER_IA_SHIELD_DEKU) && (actionParam <= PLAYER_IA_BOOTS_HOVER))) {
+            (NewItem_IsActionParamEquipment(actionParam))) {
 
             if ((play->bombchuBowlingStatus == 0) &&
                 (((actionParam == PLAYER_IA_STICK) && (AMMO(ITEM_STICK) == 0)) ||
@@ -3050,8 +3033,8 @@ void func_80835F44(PlayState* play, Player* this, s32 item) {
                 return;
             }
 
-            if (actionParam >= PLAYER_IA_BOOTS_KOKIRI) {
-                u16 bootsValue = actionParam - PLAYER_IA_BOOTS_KOKIRI + 1;
+            if (NewItem_IsActionParamBoots(actionParam)) {
+                u16 bootsValue = NewItem_ActionParamToBoots(actionParam);
                 if (CUR_EQUIP_VALUE(EQUIP_BOOTS) == bootsValue) {
                     Inventory_ChangeEquipment(EQUIP_BOOTS, PLAYER_BOOTS_KOKIRI + 1);
                 } else {
@@ -3063,8 +3046,8 @@ void func_80835F44(PlayState* play, Player* this, s32 item) {
                 return;
             }
 
-            if (actionParam >= PLAYER_IA_TUNIC_KOKIRI) {
-                u16 tunicValue = actionParam - PLAYER_IA_TUNIC_KOKIRI + 1;
+            if (NewItem_IsActionParamTunic(actionParam)) {
+                u16 tunicValue = NewItem_ActionParamToTunic(actionParam);
                 if (CUR_EQUIP_VALUE(EQUIP_TUNIC) == tunicValue) {
                     Inventory_ChangeEquipment(EQUIP_TUNIC, PLAYER_TUNIC_KOKIRI + 1);
                 } else {
@@ -3075,7 +3058,7 @@ void func_80835F44(PlayState* play, Player* this, s32 item) {
                 return;
             }
 
-            if (actionParam >= PLAYER_IA_SHIELD_DEKU) {
+            if (NewItem_IsActionParamShield(actionParam)) {
                 // Changing shields through action commands is unimplemented
                 return;
             }
@@ -3116,21 +3099,22 @@ void func_80835F44(PlayState* play, Player* this, s32 item) {
                 return;
             }
 
-            if (actionParam >= PLAYER_IA_MASK_KEATON) {
+            if (NewItem_IsActionParamMask(actionParam)) {
                 if (this->currentMask != PLAYER_MASK_NONE) {
                     this->currentMask = PLAYER_MASK_NONE;
                 } else {
-                    this->currentMask = actionParam - PLAYER_IA_MASK_KEATON + 1;
+                    this->currentMask = NewItem_ActionParamToMask(actionParam);
                 }
                 sMaskMemory = this->currentMask;
                 func_808328EC(this, NA_SE_PL_CHANGE_ARMS);
                 return;
             }
 
-            if (((actionParam >= PLAYER_IA_OCARINA_FAIRY) && (actionParam <= PLAYER_IA_OCARINA_TIME)) ||
-                (actionParam >= PLAYER_IA_BOTTLE_FISH)) {
+            if (NewItem_IsActionParamOcarina(actionParam) ||
+                NewItem_IsActionParamBottledItem(actionParam) ||
+                NewItem_IsActionParamTradeItem(actionParam)) {
                 if (!func_8008E9C4(this) ||
-                    ((actionParam >= PLAYER_IA_BOTTLE_POTION_RED) && (actionParam <= PLAYER_IA_BOTTLE_FAIRY))) {
+                    NewItem_IsActionParamBottledConsumable(actionParam)) {
                     func_8002D53C(play, &play->actorCtx.titleCtx);
                     this->unk_6AD = 4;
                     this->itemAction = actionParam;
@@ -3147,8 +3131,8 @@ void func_80835F44(PlayState* play, Player* this, s32 item) {
                     (D_80854164[gPlayerModelTypes[this->modelGroup][PLAYER_MODELGROUPENTRY_ANIM]][nextAnimType] !=
                      PLAYER_D_808540F4_0) &&
                     (!CVarGetInteger("gSeparateArrows", 0) ||
-                     actionParam < PLAYER_IA_BOW || actionParam > PLAYER_IA_BOW_0E ||
-                     this->heldItemAction < PLAYER_IA_BOW || this->heldItemAction > PLAYER_IA_BOW_0E)) {
+                     !NewItem_IsActionParamBow(actionParam) ||
+                     !NewItem_IsActionParamBow(this->heldItemAction))) {
                     this->heldItemId = item;
                     this->stateFlags1 |= PLAYER_STATE1_8;
                 } else {
@@ -5146,12 +5130,11 @@ s32 func_8083B040(Player* this, PlayState* play) {
                     func_80832224(this);
                     return 1;
                 }
-
-                sp2C = this->itemAction - PLAYER_IA_LETTER_ZELDA;
+                sp2C = NewItem_GetCutsceneItem(this->itemAction);
                 if ((sp2C >= 0) ||
                     (sp28 = Player_ActionToBottle(this, this->itemAction) - 1,
-                     ((sp28 >= 0) && (sp28 < 6) &&
-                      ((this->itemAction > PLAYER_IA_BOTTLE_POE) ||
+                     (NewItem_IsActionParamBottledSellable(this->itemAction) && 
+                      (NewItem_IsActionParamBottledExchange(this->itemAction) || //todo verify same behaviour; was (this->itemAction > PLAYER_IA_BOTTLE_POE)
                        ((this->targetActor != NULL) &&
                         (((this->itemAction == PLAYER_IA_BOTTLE_POE) && (this->exchangeItemId == EXCH_ITEM_POE)) ||
                          (this->exchangeItemId == EXCH_ITEM_BLUE_FIRE))))))) {
@@ -5170,11 +5153,7 @@ s32 func_8083B040(Player* this, PlayState* play) {
 
                         this->stateFlags1 |= PLAYER_STATE1_6 | PLAYER_STATE1_28 | PLAYER_STATE1_29;
 
-                        if (sp2C >= 0) {
-                            sp2C = sp2C + 1;
-                        } else {
-                            sp2C = sp28 + 0x18;
-                        }
+                        sp2C = NewItem_GetExchangeItem(sp2C, sp28);
 
                         targetActor = this->targetActor;
 
@@ -5184,7 +5163,7 @@ s32 func_8083B040(Player* this, PlayState* play) {
                               (this->itemAction == PLAYER_IA_BOTTLE_BIG_POE)) ||
                              ((this->exchangeItemId == EXCH_ITEM_BEAN) &&
                               (this->itemAction == PLAYER_IA_BOTTLE_BUG))) &&
-                            ((this->exchangeItemId != EXCH_ITEM_BEAN) || (this->itemAction == PLAYER_IA_BEAN))) {
+                            ((this->exchangeItemId != EXCH_ITEM_BEAN) || (this->itemAction == PLAYER_IA_BEAN))) { // todo figure out this bean/bug stuff 
                             if (this->exchangeItemId == EXCH_ITEM_BEAN) {
                                 Inventory_ChangeAmmo(ITEM_BEAN, -1);
                                 func_80835DE4(play, this, func_8084279C, 0);
@@ -13113,7 +13092,7 @@ void func_8084EAC0(Player* this, PlayState* play) {
                     gSaveContext.healthAccumulator = rand * 0x10;
                 }
             } else {
-                s32 sp28 = D_808549FC[this->itemAction - PLAYER_IA_BOTTLE_POTION_RED];
+                s32 sp28 = NewItem_GetBottleDrinkEffect(this->itemAction);
 
                 if (CVarGetInteger("gRedPotionEffect", 0) && this->itemAction == PLAYER_IA_BOTTLE_POTION_RED) {
                     if (CVarGetInteger("gRedPercentRestore", 0)) {
@@ -13342,7 +13321,7 @@ void func_8084EFC0(Player* this, PlayState* play) {
         return;
     }
 
-    if (LinkAnimation_OnFrame(&this->skelAnime, 76.0f)) {
+    if (LinkAnimation_OnFrame(&this->skelAnime, 76.0f)) { //todo NewItem_GetBottleDropInfo
         BottleDropInfo* dropInfo = &D_80854A28[this->itemAction - PLAYER_IA_BOTTLE_FISH];
 
         Actor_Spawn(&play->actorCtx, play, dropInfo->actorId,
@@ -13379,7 +13358,7 @@ void func_8084F104(Player* this, PlayState* play) {
         } else {
             GetItemEntry giEntry = ItemTable_Retrieve(D_80854528[this->exchangeItemId - 1]);
 
-            if (this->itemAction >= PLAYER_IA_LETTER_ZELDA) {
+            if (this->itemAction >= PLAYER_IA_LETTER_ZELDA) { //todo should be fine as is 
                 if (giEntry.gi >= 0) {
                     this->unk_862 = giEntry.gi;
                 } else {

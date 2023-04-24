@@ -77,7 +77,6 @@ typedef enum {
     /* 0x09 */ PLAYER_IA_BOW_FIRE,
     /* 0x0A */ PLAYER_IA_BOW_ICE,
     /* 0x0B */ PLAYER_IA_BOW_LIGHT,
-    /* NEW  */ PLAYER_IA_BOW_BOMB,
     /* 0x0C */ PLAYER_IA_BOW_0C,
     /* 0x0D */ PLAYER_IA_BOW_0D,
     /* 0x0E */ PLAYER_IA_BOW_0E,
@@ -143,6 +142,31 @@ typedef enum {
     /* 0x49 */ PLAYER_IA_BOOTS_KOKIRI,
     /* 0x4A */ PLAYER_IA_BOOTS_IRON,
     /* 0x4B */ PLAYER_IA_BOOTS_HOVER,
+    // NEW ITEM ACTION GROUPS
+    // NEW MELEE WEAPONS todo
+               PLAYER_IA_MELEE_START,
+               PLAYER_IA_MELEE_END,
+    // NEW BOW WEAPONS
+               PLAYER_IA_BOW_START,
+    /* NEW  */ PLAYER_IA_BOW_BOMB,
+               PLAYER_IA_BOW_END,
+    // NEW MAGIC SPELLS
+               PLAYER_IA_MAGIC_SPELL_START,
+               PLAYER_IA_MAGIC_SPELL_END,
+    // NEW OCARINAS
+               PLAYER_IA_OCARINA_START,
+               PLAYER_IA_OCARINA_END,
+    // NEW BOTTLED ITEMS
+               PLAYER_IA_BOTTLE_START,
+               PLAYER_IA_BOTTLE_END,
+    // NEW TRADE ITEMS
+               PLAYER_IA_TI_START,
+               PLAYER_IA_TI_END,
+    // NEW MASK ITEMS
+               PLAYER_IA_MASK_START,
+               PLAYER_IA_MASK_END,
+    // NEW UNIQUE ITEMS
+               PLAYER_IA_UNIQUE_START,
     /* 0x4C */ PLAYER_IA_MAX
 } PlayerItemAction;
 
@@ -502,10 +526,10 @@ typedef struct Player {
     /* 0x014E */ s8         currentShield; // current shield from `PlayerShield`
     /* 0x014F */ s8         currentBoots; // current boots from `PlayerBoots`
     /* 0x0150 */ s8         heldItemButton; // Button index for the item currently used
-    /* 0x0151 */ s8         heldItemAction; // Item action for the item currently used
+    /* 0x0151 */ s16        heldItemAction; // Item action for the item currently used. todo: check no weird behaviour due to change from s8 to s16
     /* 0x0152 */ u8         heldItemId; // Item id for the item currently used
     /* 0x0153 */ s8         prevBoots; // previous boots from `PlayerBoots`
-    /* 0x0154 */ s8         itemAction; // the difference between this and heldItemAction is unclear
+    /* 0x0154 */ s16        itemAction; // the difference between this and heldItemAction is unclear. todo: check no weird behaviour due to change from s8 to s16
     /* 0x0155 */ char       unk_155[0x003];
     /* 0x0158 */ u8         modelGroup;
     /* 0x0159 */ u8         nextModelGroup;

@@ -535,11 +535,14 @@ s32 Player_HasMirrorShieldSetToDraw(PlayState* play) {
     return (this->rightHandType == 10) && (this->currentShield == PLAYER_SHIELD_MIRROR);
 }
 
-s32 Player_ActionToMagicSpell(Player* this, s32 actionParam) {
+s32 Player_ActionToMagicSpell(Player* this, s32 actionParam) { //todo allow for new magic spells
     s32 magicSpell = actionParam - PLAYER_IA_MAGIC_SPELL_15;
+    s32 newMagicSpell = actionParam - PLAYER_IA_MAGIC_SPELL_START;
 
     if ((magicSpell >= 0) && (magicSpell < 6)) {
         return magicSpell;
+    } else if (NewItem_IsActionParamMagicSpell(actionParam)) {
+        return newMagicSpell + 6;
     } else {
         return -1;
     }
@@ -550,15 +553,7 @@ s32 Player_HoldsHookshot(Player* this) {
 }
 
 s32 Player_HoldsBow(Player* this) {
-    switch(this->heldItemAction){
-        case PLAYER_IA_BOW:
-        case PLAYER_IA_BOW_FIRE:
-        case PLAYER_IA_BOW_ICE:
-        case PLAYER_IA_BOW_LIGHT:
-            return true;
-        default:
-            return false;
-    }
+    return NewItem_IsActionParamBow(this->heldItemAction) ? true : false;
 }
 
 s32 Player_HoldsSlingshot(Player* this) {
@@ -569,7 +564,7 @@ s32 func_8008F128(Player* this) {
     return Player_HoldsHookshot(this) && (this->heldActor == NULL);
 }
 
-s32 Player_ActionToSword(s32 actionParam) {
+s32 Player_ActionToSword(s32 actionParam) { //todo allow for new swords
     s32 sword = actionParam - PLAYER_IA_FISHING_POLE;
 
     if ((sword > 0) && (sword < 6)) {
@@ -597,9 +592,12 @@ s32 Player_HoldsBrokenKnife(Player* this) {
 
 s32 Player_ActionToBottle(Player* this, s32 actionParam) {
     s32 bottle = actionParam - PLAYER_IA_BOTTLE;
+    s32 newBottle = actionParam - PLAYER_IA_BOTTLE_START;
 
     if ((bottle >= 0) && (bottle < 13)) {
         return bottle;
+    } else if (NewItem_IsActionParamBottledItem(actionParam)) {
+        return newBottle + 13;
     } else {
         return -1;
     }
@@ -609,7 +607,7 @@ s32 Player_GetBottleHeld(Player* this) {
     return Player_ActionToBottle(this, this->heldItemAction);
 }
 
-s32 Player_ActionToExplosive(Player* this, s32 actionParam) {
+s32 Player_ActionToExplosive(Player* this, s32 actionParam) { //todo allow for new explosives
     s32 explosive = actionParam - PLAYER_IA_BOMB;
 
     if ((explosive >= 0) && (explosive < 2)) {

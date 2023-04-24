@@ -236,6 +236,7 @@ void ArrowBomb_Draw(Actor* thisx, PlayState* play2) {
     Color_RGB8 secondaryColor = {20, 20, 20};
 
     stateFrames = play->state.frames;
+    arrow = (EnArrow*)this->actor.parent;
     
     if (this->actor.parent != NULL && (this->timer < 255)) {
         OPEN_DISPS(play->state.gfxCtx);

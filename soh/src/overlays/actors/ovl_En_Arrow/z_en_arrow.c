@@ -78,10 +78,6 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
         0, 1, 0, { 255, 255, 170, 255 }, { 255, 255, 0, 0 }, 0,
     };
-    static EffectBlureInit2 blureBomb = {
-        0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
-        0, 1, 0, { 255, 20, 20, 255 }, { 20, 20, 20, 0 }, 0,
-    };
     static u32 dmgFlags[] = {
         0x00000800,     // ARROW_NORMAL_LIT 
         0x00000020,     // ARROW_NORMAL_HORSE
@@ -89,7 +85,6 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         0x00000800,     // ARROW_FIRE
         0x00001000,     // ARROW_ICE
         0x00002000,     // ARROW_LIGHT
-        0x00000020,     // ARROW_BOMB
         0x00010000,     // ARROW_0C
         0x00004000,     // ARROW_0D
         0x00008000,     // ARROW_0E
@@ -174,8 +169,6 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         } else if (this->actor.params == ARROW_LIGHT) {
 
             Effect_Add(play, &this->effectIndex, EFFECT_BLURE2, 0, 0, &blureLight);
-        } else if (this->actor.params == ARROW_BOMB) {
-            Effect_Add(play, &this->effectIndex, EFFECT_BLURE2, 0, 0, &blureBomb);
         }
 
         Collider_InitQuad(play, &this->collider);
@@ -194,13 +187,22 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         }
     }
 
+    if (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END) {
+        SkelAnime_Init(play, &this->skelAnime, &gArrowSkel, &gArrow2Anim, NULL, NULL, 0);
+        Effect_Add(play, &this->effectIndex, EFFECT_BLURE2, 0, 0, NewItem_GetBlureArrow(this->actor.params));
+        Collider_InitQuad(play, &this->collider);
+        Collider_SetQuad(play, &this->collider, &this->actor, &sColliderInit);
+        this->collider.info.toucher.dmgFlags = NewItem_GetArrowDamageFlag(this->actor.params);
+        LOG_HEX("this->at_info.cl_elem.at_btl_info.at_type", this->collider.info.toucher.dmgFlags);
+    }
+
     EnArrow_SetupAction(this, EnArrow_Shoot);
 }
 
 void EnArrow_Destroy(Actor* thisx, PlayState* play) {
     EnArrow* this = (EnArrow*)thisx;
 
-    if (this->actor.params <= ARROW_BOMB) {
+    if (this->actor.params <= ARROW_LIGHT || (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END)) {
         Effect_Delete(play, this->effectIndex);
     }
 
@@ -235,15 +237,17 @@ void EnArrow_Shoot(EnArrow* this, PlayState* play) {
             case ARROW_FIRE:
             case ARROW_ICE:
             case ARROW_LIGHT:
-            case ARROW_BOMB:
                 func_8002F7DC(&player->actor, NA_SE_IT_MAGIC_ARROW_SHOT);
                 break;
+        }
+        if (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END) {
+            func_8002F7DC(&player->actor, NA_SE_IT_MAGIC_ARROW_SHOT);
         }
 
         EnArrow_SetupAction(this, EnArrow_Fly);
         Math_Vec3f_Copy(&this->unk_210, &this->actor.world.pos);
 
-        if (this->actor.params >= ARROW_SEED) {
+        if (this->actor.params >= ARROW_SEED && this->actor.params <= ARROW_NUT) {
             func_8002D9A4(&this->actor, 80.0f);
             this->timer = 15;
             this->actor.shape.rot.x = this->actor.shape.rot.y = this->actor.shape.rot.z = 0;
@@ -319,11 +323,11 @@ void EnArrow_Fly(EnArrow* this, PlayState* play) {
         this->actor.gravity = -0.4f;
     }
 
-    atTouched = (this->actor.params != ARROW_NORMAL_LIT) && (this->actor.params <= ARROW_SEED) &&
+    atTouched = (this->actor.params != ARROW_NORMAL_LIT) && ((this->actor.params <= ARROW_SEED) || (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END)) &&
                 (this->collider.base.atFlags & AT_HIT);
 
     if (atTouched || this->touchedPoly) {
-        if (this->actor.params >= ARROW_SEED) {
+        if (this->actor.params >= ARROW_SEED && this->actor.params <= ARROW_NUT) {
             if (atTouched) {
                 this->actor.world.pos.x = (this->actor.world.pos.x + this->actor.prevPos.x) * 0.5f;
                 this->actor.world.pos.y = (this->actor.world.pos.y + this->actor.prevPos.y) * 0.5f;
@@ -396,7 +400,7 @@ void EnArrow_Fly(EnArrow* this, PlayState* play) {
             Math_Vec3f_Copy(&this->actor.world.pos, &hitPoint);
         }
 
-        if (this->actor.params <= ARROW_0E) {
+        if (this->actor.params <= ARROW_0E || (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END)) {
             this->actor.shape.rot.x = Math_Atan2S(this->actor.speedXZ, -this->actor.velocity.y);
         }
     }
@@ -455,12 +459,17 @@ void EnArrow_Update(Actor* thisx, PlayState* play) {
         this->actionFunc(this, play);
     }
 
-    if ((this->actor.params >= ARROW_FIRE) && (this->actor.params <= ARROW_0E)) {
-        s16 elementalActorIds[] = { ACTOR_ARROW_FIRE, ACTOR_ARROW_ICE,  ACTOR_ARROW_LIGHT, ACTOR_ARROW_BOMB,
+    if ((this->actor.params >= ARROW_FIRE) && (this->actor.params <= ARROW_0E)) { 
+        s16 elementalActorIds[] = { ACTOR_ARROW_FIRE, ACTOR_ARROW_ICE,  ACTOR_ARROW_LIGHT,
                                     ACTOR_ARROW_FIRE, ACTOR_ARROW_FIRE, ACTOR_ARROW_FIRE };
 
         if (this->actor.child == NULL) {
             Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, elementalActorIds[this->actor.params - 3],
+                               this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
+        }
+    } else if ((this->actor.params >= ARROW_START) && (this->actor.params <= ARROW_END)) {
+        if (this->actor.child == NULL) {
+            Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, NewItem_GetArrowActorId(this->actor.params),
                                this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
         }
     } else if (this->actor.params == ARROW_NORMAL_LIT) {
@@ -487,8 +496,8 @@ void func_809B4800(EnArrow* this, PlayState* play) {
         Matrix_MultVec3f(&D_809B4E88, &sp44);
         Matrix_MultVec3f(&D_809B4E94, &sp38);
 
-        if (this->actor.params <= ARROW_SEED) {
-            addBlureVertex = this->actor.params <= ARROW_LIGHT;
+        if (this->actor.params <= ARROW_SEED || (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END)) {
+            addBlureVertex = (this->actor.params <= ARROW_LIGHT || (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END));
 
             if (this->hitActor == NULL) {
                 addBlureVertex &= func_80090480(play, &this->collider, &this->weaponInfo, &sp44, &sp38);
@@ -515,7 +524,7 @@ void EnArrow_Draw(Actor* thisx, PlayState* play) {
     u8 alpha;
     f32 scale;
 
-    if (this->actor.params <= ARROW_0E) {
+    if (this->actor.params <= ARROW_0E || (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END)) {
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
         SkelAnime_DrawLod(play, this->skelAnime.skeleton, this->skelAnime.jointTable, NULL, NULL, this,
                           (this->actor.projectedPos.z < MREG(95)) ? 0 : 1);

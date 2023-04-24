@@ -2438,6 +2438,32 @@ void Message_OpenText(PlayState* play, u16 textId);
 void Message_Decode(PlayState* play);
 void Message_DrawText(PlayState* play, Gfx** gfxP);
 
+//new item lib functions, todo: put in same order as file
+bool NewItem_IsActionParamBow(s8 actionParam);
+bool NewItem_IsActionParamBoots(s16 actionParam);
+bool NewItem_IsActionParamTunic(s16 actionParam);
+bool NewItem_IsActionParamShield(s16 actionParam);
+bool NewItem_IsActionParamEquipment(s16 actionParam);
+bool NewItem_IsActionParamMask(s16 actionParam);
+bool NewItem_IsActionParamOcarina(s16 actionParam);
+bool NewItem_IsActionParamBottledItem(s16 actionParam);
+bool NewItem_IsActionParamBottledSellable(s16 actionParam);
+bool NewItem_IsActionParamBottledConsumable(s16 actionParam);
+bool NewItem_IsActionParamMagicSpell(s16 actionParam);
+s32 NewItem_ActionParamToArrowType(s16 actionParam);
+u16 NewItem_ActionParamToBoots(s16 actionParam);
+u16 NewItem_ActionParamToTunic(s16 actionParam);
+u8 NewItem_ActionParamToMask(s16 actionParam);
+s32 NewItem_GetCutsceneItem(s16 actionParam);
+s32 NewItem_GetExchangeItem(s32 tradeItem, s32 bottle);
+s32 NewItem_GetBottleDrinkEffect(s16 actionParam);
+s16 NewItem_GetArrowActorId(s16 arrowType);
+bool NewItem_IsActionParamBottledExchange(s16 actionParam);
+bool NewItem_IsActionParamTradeItem(s16 actionParam);
+u8 NewItem_GetMagicArrowCost(s16 arrowType);
+void *NewItem_GetBlureArrow(s16 arrowType);
+u32 NewItem_GetArrowDamageFlag(s16 arrowType);
+
 #ifdef __cplusplus
 #undef this
 };
