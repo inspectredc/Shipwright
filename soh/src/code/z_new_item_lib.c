@@ -56,7 +56,7 @@ static s16 sNewItemActionParams[] = {
     PLAYER_IA_NONE,                               // NEW_ITEM_1
     PLAYER_IA_NONE,                               // NEW_ITEM_2
     PLAYER_IA_NONE,                               // NEW_ITEM_3
-    PLAYER_IA_BOW_BOMB,                           // ITEM_ARROW_BOMB
+    PLAYER_IA_NONE,                               // NEW_ITEM_4
     PLAYER_IA_NONE,                               // NEW_ITEM_5
     PLAYER_IA_NONE,                               // NEW_ITEM_6
     PLAYER_IA_NONE,                               // NEW_ITEM_7
