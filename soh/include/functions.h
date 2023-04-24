@@ -2463,6 +2463,7 @@ bool NewItem_IsActionParamTradeItem(s16 actionParam);
 u8 NewItem_GetMagicArrowCost(s16 arrowType);
 void *NewItem_GetBlureArrow(s16 arrowType);
 u32 NewItem_GetArrowDamageFlag(s16 arrowType);
+s16 NewItem_ItemToActionParam(s32 newItem);
 
 #ifdef __cplusplus
 #undef this
