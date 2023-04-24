@@ -2439,7 +2439,7 @@ void Message_Decode(PlayState* play);
 void Message_DrawText(PlayState* play, Gfx** gfxP);
 
 //new item lib functions, todo: put in same order as file
-bool NewItem_IsActionParamBow(s8 actionParam);
+bool NewItem_IsActionParamBow(s16 actionParam);
 bool NewItem_IsActionParamBoots(s16 actionParam);
 bool NewItem_IsActionParamTunic(s16 actionParam);
 bool NewItem_IsActionParamShield(s16 actionParam);
