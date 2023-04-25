@@ -1583,35 +1583,35 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             Matrix_Translate(getSaveTranslationX(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), (f32)WREG(2) / 100.0f, getSaveTranslationZ(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), MTXMODE_NEW);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateAxis(pauseCtx->unk_204 / 100.0f, &unitItemRollAxis, MTXMODE_APPLY);
-            Matrix_RotateY((2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount), MTXMODE_APPLY);
+            Matrix_RotateY(-(2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
         } else if (pauseCtx->pageIndex == PAUSE_ITEM_2) { 
             pauseCtx->itemPage2Roll = pauseCtx->unk_204 + 314.0f;
 
             Matrix_Translate(getSaveTranslationX(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), (f32)WREG(2) / 100.0f, getSaveTranslationZ(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), MTXMODE_NEW);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateAxis(pauseCtx->unk_204 / 100.0f, &unitItem2RollAxis, MTXMODE_APPLY);
-            Matrix_RotateY((2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
+            Matrix_RotateY(-(2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
         } else if (pauseCtx->pageIndex == PAUSE_MAP) {
             pauseCtx->unk_1FC = pauseCtx->unk_204 + 314.0f;
 
             Matrix_Translate(getSaveTranslationX(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), (f32)WREG(2) / 100.0f, getSaveTranslationZ(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), MTXMODE_NEW);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateAxis(pauseCtx->unk_204 / 100.0f, &unitMapRollAxis, MTXMODE_APPLY);
-            Matrix_RotateY((2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
+            Matrix_RotateY(-(2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
         } else if (pauseCtx->pageIndex == PAUSE_QUEST) {
             pauseCtx->unk_200 = pauseCtx->unk_204 + 314.0f;
 
             Matrix_Translate(getSaveTranslationX(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), (f32)WREG(2) / 100.0f, getSaveTranslationZ(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), MTXMODE_NEW);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateAxis(pauseCtx->unk_204 / 100.0f, &unitQuestRollAxis, MTXMODE_APPLY);
-            Matrix_RotateY((2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount), MTXMODE_APPLY);
+            Matrix_RotateY(-(2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
         } else {
             pauseCtx->unk_1F8 = pauseCtx->unk_204 + 314.0f;
 
             Matrix_Translate(getSaveTranslationX(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), (f32)WREG(2) / 100.0f, getSaveTranslationZ(pauseCtx->pageIndex, pauseCtx->pageCount, pauseCtx->unk_1F0), MTXMODE_NEW);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateAxis(pauseCtx->unk_204 / 100.0f, &unitEquipRollAxis, MTXMODE_APPLY);
-            Matrix_RotateY((2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
+            Matrix_RotateY(-(2 * M_PI * pauseCtx->pageIndex / (f32)pauseCtx->pageCount) + M_PI, MTXMODE_APPLY);
         }
 
         gSPMatrix(POLY_KAL_DISP++, MATRIX_NEWMTX(gfxCtx),
@@ -1739,18 +1739,18 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
         gPauseToPlayMelodyFRATex,
     };
     static const void* D_8082AD78[][3] = { //scroll left labels
-        { gPauseToEquipmentENGTex, gPauseToEquipmentGERTex, gPauseToEquipmentFRATex },
-        { gPauseToSelectItemENGTex, gPauseToSelectItemGERTex, gPauseToSelectItemFRATex },
         { gPauseToSelectItemENGTex, gPauseToSelectItemGERTex, gPauseToSelectItemFRATex },
         { gPauseToMapENGTex, gPauseToMapGERTex, gPauseToMapFRATex },
         { gPauseToQuestStatusENGTex, gPauseToQuestStatusGERTex, gPauseToQuestStatusFRATex },
+        { gPauseToEquipmentENGTex, gPauseToEquipmentGERTex, gPauseToEquipmentFRATex },
+        { gPauseToSelectItemENGTex, gPauseToSelectItemGERTex, gPauseToSelectItemFRATex },
     };
     static void* D_8082ADA8[][3] = { //scroll right labels
-        { gPauseToSelectItemENGTex, gPauseToSelectItemGERTex, gPauseToSelectItemFRATex },
-        { gPauseToMapENGTex, gPauseToMapGERTex, gPauseToMapFRATex },
         { gPauseToQuestStatusENGTex, gPauseToQuestStatusGERTex, gPauseToQuestStatusFRATex },
         { gPauseToEquipmentENGTex, gPauseToEquipmentGERTex, gPauseToEquipmentFRATex },
         { gPauseToSelectItemENGTex, gPauseToSelectItemGERTex, gPauseToSelectItemFRATex },
+        { gPauseToSelectItemENGTex, gPauseToSelectItemGERTex, gPauseToSelectItemFRATex },
+        { gPauseToMapENGTex, gPauseToMapGERTex, gPauseToMapFRATex },
     };
     static u16 D_8082ADD8[3] = { 56, 88, 80 };
     static u16 D_8082ADE0[3] = { 64, 88, 72 };
