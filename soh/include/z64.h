@@ -834,11 +834,11 @@ typedef enum {
 #define PAUSE_CURSOR_PAGE_RIGHT 11
 
 typedef enum {
-    /* 0x00 */ PAUSE_ITEM,
-    /* 0x01 */ PAUSE_ITEM_2,
-    /* 0x02 */ PAUSE_MAP,
-    /* 0x03 */ PAUSE_QUEST,
-    /* 0x04 */ PAUSE_EQUIP,
+    /* 0x00 */ PAUSE_MAP,
+    /* 0x01 */ PAUSE_QUEST,
+    /* 0x02 */ PAUSE_EQUIP,
+    /* 0x03 */ PAUSE_ITEM,
+    /* 0x04 */ PAUSE_ITEM_2,
     /* 0x05 */ PAUSE_WORLD_MAP
 } PauseMenuPage;
 
@@ -882,7 +882,7 @@ typedef struct {
     /* 0x01D8 */ Vec3f  eye;
     /* 0x01E4 */ u16    unk_1E4;
     /* 0x01E6 */ u16    mode;
-    /* 0x01E8 */ u16    pageIndex; // "kscp_pos"
+    /* 0x01E8 */ s16    pageIndex; // "kscp_pos" //todo test if this needs to be signed
     /* 0x01EA */ u16    unk_1EA;
     /* 0x01EC */ u16    unk_1EC;
     /* 0x01F0 */ f32    unk_1F0;
@@ -921,6 +921,7 @@ typedef struct {
     /* 0x0266 */ u8     worldMapPoints[20]; // 0 = hidden; 1 = displayed; 2 = highlighted
     /* 0x027A */ u8     tradeQuestLocation;
     /* 0x027C */ SkelAnime playerSkelAnime;
+                 u8     pageCount;
 } PauseContext; // size = 0x2C0
 
 typedef enum {

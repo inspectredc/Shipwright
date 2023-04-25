@@ -61,7 +61,7 @@ void KaleidoSetup_Update(PlayState* play) {
             pauseCtx->unk_1EA = 0;
             pauseCtx->unk_1E4 = 1;
 
-            if (ZREG(48) == 0) {
+            /*if (ZREG(48) == 0) {
                 pauseCtx->eye.x = sKaleidoSetupEyeX0[pauseCtx->pageIndex];
                 pauseCtx->eye.z = sKaleidoSetupEyeZ0[pauseCtx->pageIndex];
                 pauseCtx->pageIndex = sKaleidoSetupKscpPos0[pauseCtx->pageIndex];
@@ -69,9 +69,13 @@ void KaleidoSetup_Update(PlayState* play) {
                 pauseCtx->eye.x = sKaleidoSetupEyeX1[pauseCtx->pageIndex];
                 pauseCtx->eye.z = sKaleidoSetupEyeZ1[pauseCtx->pageIndex];
                 pauseCtx->pageIndex = sKaleidoSetupKscpPos1[pauseCtx->pageIndex];
-            }
+            }*/
+            pauseCtx->pageCount = 4 + CVarGetInteger("gNewPage",0);
+            pauseCtx->pageIndex = (pauseCtx->pageIndex + 1) % pauseCtx->pageCount;
+            pauseCtx->eye.x = -PAUSE_EYE_DIST * sinf(-pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount);
+            pauseCtx->eye.z = -PAUSE_EYE_DIST * cosf(pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount);
 
-            pauseCtx->mode = (u16)(pauseCtx->pageIndex * 2) + 1;
+            pauseCtx->mode = (pauseCtx->pageIndex - 1 + pauseCtx->pageCount) % pauseCtx->pageCount;
             pauseCtx->state = 1;
 
             osSyncPrintf("Ｍｏｄｅ=%d  eye.x=%f,  eye.z=%f  kscp_pos=%d\n", pauseCtx->mode, pauseCtx->eye.x,
@@ -100,7 +104,8 @@ void KaleidoSetup_Init(PlayState* play) {
     pauseCtx->alpha = 0;
     pauseCtx->unk_1EA = 0;
     pauseCtx->unk_1E4 = 0;
-    pauseCtx->mode = 0;
+    pauseCtx->pageCount = CVarGetInteger("gNewPage",0) + 4;
+    pauseCtx->mode = (PAUSE_ITEM + 1) % pauseCtx->pageCount;
     pauseCtx->pageIndex = PAUSE_ITEM;
 
     pauseCtx->itemPage2Roll = 160.0f;
@@ -108,7 +113,7 @@ void KaleidoSetup_Init(PlayState* play) {
     pauseCtx->unk_1F8 = 160.0f;
     pauseCtx->unk_1FC = 160.0f;
     pauseCtx->unk_200 = 160.0f;
-    pauseCtx->eye.z = 64.0f;
+    pauseCtx->eye.z = -64.0f;
     pauseCtx->unk_1F0 = 936.0f;
     pauseCtx->eye.x = pauseCtx->eye.y = 0.0f;
     pauseCtx->unk_204 = -314.0f;

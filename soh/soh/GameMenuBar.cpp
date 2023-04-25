@@ -1343,5 +1343,13 @@ namespace GameMenuBar {
 
             ImGui::EndMenu();
         }
+        ImGui::SetCursorPosY(0.0f);
+        if (ImGui::BeginMenu("Menu Mod")) {
+            UIWidgets::EnhancementCheckbox("New Item Page", "gNewPage");
+            UIWidgets::Tooltip(
+                "This mods add an additional item page."
+            );
+            ImGui::EndMenu();
+        }
     }
 }
