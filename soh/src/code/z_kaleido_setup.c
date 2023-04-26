@@ -72,8 +72,8 @@ void KaleidoSetup_Update(PlayState* play) {
             }*/
             pauseCtx->pageCount = 4 + CVarGetInteger("gNewPage",0);
             pauseCtx->pageIndex = (pauseCtx->pageIndex + 1) % pauseCtx->pageCount;
-            pauseCtx->eye.x = -PAUSE_EYE_DIST * sinf(-pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount);
-            pauseCtx->eye.z = -PAUSE_EYE_DIST * cosf(pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount);
+            pauseCtx->eye.x = -PAUSE_EYE_DIST * sinf(-pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount));
+            pauseCtx->eye.z = -PAUSE_EYE_DIST * cosf(pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount));
 
             pauseCtx->mode = (pauseCtx->pageIndex - 1 + pauseCtx->pageCount) % pauseCtx->pageCount;
             pauseCtx->state = 1;

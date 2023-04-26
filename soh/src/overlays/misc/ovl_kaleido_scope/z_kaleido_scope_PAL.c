@@ -2357,8 +2357,8 @@ void func_808237B4(PlayState* play, Input* input) {
         mode = pauseCtx->mode;
         index = pauseCtx->pageIndex;
         //todo
-        pauseCtx->eye.x += -PAUSE_EYE_DIST * (sinf(-pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - sinf(-pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f;
-        pauseCtx->eye.z += -PAUSE_EYE_DIST * (cosf(pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - cosf(pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f;
+        pauseCtx->eye.x += -PAUSE_EYE_DIST * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(-pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - sinf(-pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f;
+        pauseCtx->eye.z += -PAUSE_EYE_DIST * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (cosf(pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - cosf(pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f;
 
         if (pauseCtx->unk_1EA < 32) {
             WREG(16) -= WREG(25) / WREG(6);
@@ -3454,8 +3454,8 @@ void KaleidoScope_GrayOutTextureRGBA32(u32* texture, u16 pixelCount) {
 void func_808265BC(PlayState* play) {
     PauseContext* pauseCtx = &play->pauseCtx;
 
-    pauseCtx->eye.x += -PAUSE_EYE_DIST * ((sinf(-pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - sinf(-pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f) * ZREG(46);
-    pauseCtx->eye.z += -PAUSE_EYE_DIST * ((cosf(pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - cosf(pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f) * ZREG(46);
+    pauseCtx->eye.x += -PAUSE_EYE_DIST * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * ((sinf(-pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - sinf(-pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f) * ZREG(46);
+    pauseCtx->eye.z += -PAUSE_EYE_DIST * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * (sinf(M_PI /pauseCtx->pageCount) / cosf(M_PI / pauseCtx->pageCount)) * ((cosf(pauseCtx->mode * 2 * M_PI / pauseCtx->pageCount) - cosf(pauseCtx->pageIndex * 2 * M_PI / pauseCtx->pageCount)) / 16.0f) * ZREG(46);
     pauseCtx->unk_1EA += 4 * ZREG(46);
 
     if (pauseCtx->unk_1EA == (64 * ZREG(47))) {
