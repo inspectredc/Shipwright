@@ -35,11 +35,13 @@ static u8 sMagicArrowCosts[] = {
 
 static u8 sNewMagicArrowCosts[] = {
     4,              //PLAYER_IA_BOW_START
+    4,              //PLAYER_IA_BOW_BOMB
     4,              //PLAYER_IA_BOW_END
 };
 
 static u32 sNewArrowDmgFlags[] = {
     0x00000020,     //PLAYER_IA_BOW_START
+    0x00000020,     //PLAYER_IA_BOW_BOMB
     0x00000020,     //PLAYER_IA_BOW_END
 };
 
@@ -56,7 +58,7 @@ static s16 sNewItemActionParams[] = {
     PLAYER_IA_NONE,                               // NEW_ITEM_1
     PLAYER_IA_NONE,                               // NEW_ITEM_2
     PLAYER_IA_NONE,                               // NEW_ITEM_3
-    PLAYER_IA_NONE,                               // NEW_ITEM_4
+    PLAYER_IA_BOW_BOMB,                           // NEW_ITEM_4
     PLAYER_IA_NONE,                               // NEW_ITEM_5
     PLAYER_IA_NONE,                               // NEW_ITEM_6
     PLAYER_IA_NONE,                               // NEW_ITEM_7
@@ -176,8 +178,14 @@ void *NewItem_GetBlureArrow(s16 arrowType) { //todo add to cosmetics
         0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
         0, 1, 0, { 255, 255, 170, 255 }, { 0, 150, 0, 0 }, 0,
     };
+    static EffectBlureInit2 blureBomb = {
+        0, 4, 0, { 0, 255, 200, 255 }, { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
+        0, 1, 0, { 255, 20, 20, 255 }, { 20, 20, 20, 0 }, 0,
+    };
 
     switch(arrowType) {
+        case ARROW_BOMB:
+            return &blureBomb;
         default:
             return &blureNormal;
     }
@@ -186,6 +194,8 @@ void *NewItem_GetBlureArrow(s16 arrowType) { //todo add to cosmetics
 
 s16 NewItem_GetArrowActorId(s16 arrowType) {
     switch (arrowType) {
+        case ARROW_BOMB:
+            return ACTOR_ARROW_BOMB;
         default:
             return ACTOR_ARROW_FIRE;
     }

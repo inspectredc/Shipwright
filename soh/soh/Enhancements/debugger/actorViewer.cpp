@@ -289,6 +289,7 @@ std::map<u16, const char*> actorDescriptions = {
     { ACTOR_ARROW_FIRE, "Fire Arrow" },
     { ACTOR_ARROW_ICE, "Ice Arrow" },
     { ACTOR_ARROW_LIGHT, "Light Arrow" },
+    { ACTOR_ARROW_BOMB, "Bomb Arrow" },
     { ACTOR_ITEM_ETCETERA, "Collectible Items" },
     { ACTOR_OBJ_KIBAKO, "Small Liftable Crate" },
     { ACTOR_OBJ_TSUBO, "Breakable Pot" },

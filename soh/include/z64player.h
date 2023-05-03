@@ -148,6 +148,7 @@ typedef enum {
                PLAYER_IA_MELEE_END,
     // NEW BOW WEAPONS
                PLAYER_IA_BOW_START,
+    /* NEW  */ PLAYER_IA_BOW_BOMB,
                PLAYER_IA_BOW_END,
     // NEW MAGIC SPELLS
                PLAYER_IA_MAGIC_SPELL_START,
