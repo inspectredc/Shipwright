@@ -1069,6 +1069,8 @@ namespace GameMenuBar {
             UIWidgets::Tooltip("This syncs the ingame time with the real world time");
             UIWidgets::PaddedEnhancementCheckbox("No ReDead/Gibdo Freeze", "gNoRedeadFreeze", true, false);
             UIWidgets::Tooltip("Prevents ReDeads and Gibdos from being able to freeze you with their scream");
+            UIWidgets::PaddedEnhancementCheckbox("Safe Wrong Warps", "gSafeWrongWarps", true, false);
+            UIWidgets::Tooltip("Wrong Warps using blue warps will never softlock");
 
             {
                 static int32_t betaQuestEnabled = CVarGetInteger("gEnableBetaQuest", 0);
