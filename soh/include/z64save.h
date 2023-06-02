@@ -42,7 +42,8 @@ typedef struct {
 } ItemEquips; // size = 0x0A
 
 typedef struct {
-    /* 0x00 */ u8 items[48]; //increased for second page of items
+               u8 newItems[24]; //placed before orignal items to maintain normal rba behaviour
+    /* 0x00 */ u8 items[24]; 
     /* 0x18 */ s8 ammo[16];
     /* 0x28 */ u16 equipment; // a mask where each nibble corresponds to a type of equipment `EquipmentType`, and each bit to an owned piece `EquipInv*`
     /* 0x2C */ u32 upgrades;
