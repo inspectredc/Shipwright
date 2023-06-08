@@ -1901,6 +1901,10 @@ s32 BgCheck_CheckWallImpl(CollisionContext* colCtx, u16 xpFlags, Vec3f* posResul
     if (CVarGetInteger("gNoClip", 0) != 0) {
         return false;
     }
+    /*if (CVarGetInteger("gChangeRoomClip", 0)) {
+        CVarSetInteger("gChangeRoomClip", 0);
+        return false;
+    }*/
 
     result = false;
     *outBgId = BGCHECK_SCENE;

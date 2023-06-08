@@ -1621,6 +1621,11 @@ void Actor_UpdateBgCheckInfo(PlayState* play, Actor* actor, f32 wallCheckHeight,
     f32 waterBoxYSurface;
     Vec3f ripplePos;
 
+    if ((actor->id == ACTOR_PLAYER) && CVarGetInteger("gChangeRoomClip",0)) {
+        CVarSetInteger("gChangeRoomClip", 0);
+        return;
+    }
+
     sp74 = actor->world.pos.y - actor->prevPos.y;
 
     if ((actor->floorBgId != BGCHECK_SCENE) && (actor->bgCheckFlags & 1)) {

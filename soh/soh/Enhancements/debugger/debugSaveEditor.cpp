@@ -10,6 +10,7 @@
 #include <string>
 #include <libultraship/bridge.h>
 #include <libultraship/libultraship.h>
+#include "../game-interactor/GameInteractor.h"
 
 extern "C" {
 #include <z64.h>
@@ -1733,6 +1734,30 @@ void DrawPlayerTab() {
     }
 }
 
+void DrawSceneViewerTab() {
+    if (gPlayState != nullptr) {
+        RoomContext *roomCtx = &gPlayState->roomCtx;
+        int16_t sceneNum = gPlayState->sceneNum;
+        ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+        if (ImGui::TreeNode("Current Scene")) {
+            ImGui::Text(SohUtils::GetSceneName(sceneNum).c_str());
+            ImGui::Text(("Current Room: " + std::to_string(roomCtx->curRoom.num)).c_str());
+            ImGui::Text("Rooms: ");
+            for (uint8_t i = 0; i < gPlayState->numRooms; ++i) {
+                if (i % 6 != 0) {
+                    ImGui::SameLine();
+                }
+                if (ImGui::Button(("Room " + std::to_string(i)).c_str())) {
+                    GameInteractor::RawAction::ChangeRoom(sceneNum, i);
+                }
+            }
+            ImGui::TreePop();
+        }
+    } else {
+        ImGui::Text("Global Context needed for player info!");
+    }
+}
+
 void SaveEditorWindow::DrawElement() {
     ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Save Editor", &mIsVisible, ImGuiWindowFlags_NoFocusOnAppearing)) {
@@ -1768,6 +1793,11 @@ void SaveEditorWindow::DrawElement() {
 
         if (ImGui::BeginTabItem("Player")) {
             DrawPlayerTab();
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Scene Viewer")) {
+            DrawSceneViewerTab();
             ImGui::EndTabItem();
         }
 

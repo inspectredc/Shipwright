@@ -212,6 +212,7 @@ public:
         static void EmulateRandomButtonPress(uint32_t chancePercentage = 100);
         static void SetRandomWind(bool active);
         static void SetPlayerInvincibility(bool active);
+        static void ChangeRoom(int16_t sceneNum, uint8_t roomNum);
 
         static GameInteractionEffectQueryResult SpawnEnemyWithOffset(uint32_t enemyId, int32_t enemyParams);
         static GameInteractionEffectQueryResult SpawnActor(uint32_t actorId, int32_t actorParams);
