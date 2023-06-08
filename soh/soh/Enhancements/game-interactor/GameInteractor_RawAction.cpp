@@ -421,48 +421,79 @@ void GameInteractor::RawAction::SetPlayerInvincibility(bool active) {
 void GameInteractor::RawAction::ChangeRoom(int16_t sceneNum, uint8_t roomNum) {
     Player* player = GET_PLAYER(gPlayState);
     //access room map
-    std::vector<std::pair<Vec3f, Vec3s>> fireTempleRoomCoords = {
-        std::make_pair(Vec3f(5.0f, 0.0f, 980.0f), Vec3s(0, -32768, 0)),
-        std::make_pair(Vec3f(500.0f, 200.0f, 0.0f), Vec3s(0, 16384, 0)),
-        std::make_pair(Vec3f(-500.0f, 200.0f, 0.0f), Vec3s(0, -16384, 0)),
-        std::make_pair(Vec3f(-88.0f, 0.0f, -1240.0f), Vec3s(0, -16384, 0)),
-        std::make_pair(Vec3f(2990.0f, 2060.0f, 0.0f), Vec3s(0, -16384, 0)),
-        std::make_pair(Vec3f(2660.0f, 2800.0f, 0.0f), Vec3s(0, 16384, 0)),
-        std::make_pair(Vec3f(1550.0f, 2800.0f, -250.0f), Vec3s(0, 0, 0)),
-        std::make_pair(Vec3f(1580.0f, 4000.0f, -510.0f), Vec3s(0, 0, 0)),
-        std::make_pair(Vec3f(1580.0f, 4400.0f, -510.0f), Vec3s(0, 0, 0)),
-        std::make_pair(Vec3f(260.0f, 2940.0f, 190.0f), Vec3s(0, -16384, 0)),
-        std::make_pair(Vec3f(-640.0f, 2940.0f, 190.0f), Vec3s(0, -16384, 0)),
-        std::make_pair(Vec3f(-1780.0f, 2800.0f, 250.0f), Vec3s(0, -32768, 0)),
-        std::make_pair(Vec3f(-2620.0f, 4000.0f, 160.0f), Vec3s(0, 16384, 0)),
-        std::make_pair(Vec3f(-2290.0f, 4400.0f, 20.0f), Vec3s(0, 16384, 0)),
-        std::make_pair(Vec3f(-2265.0f, 4180.0f, -820.0f), Vec3s(0, 24576, 0)),
-        std::make_pair(Vec3f(280.0f, 0.0f, 60.0f), Vec3s(0, -32768, 0)),
-        std::make_pair(Vec3f(1580.0f, 2800.0f, 410.0f), Vec3s(0, 0, 0)),
-        std::make_pair(Vec3f(-280.0f, 0.0f, -812.0f), Vec3s(0, 0, 0)),
-        std::make_pair(Vec3f(236.0f, 0.0f, -964.0f), Vec3s(0, -32768, 0)),
-        std::make_pair(Vec3f(1560.0f, 240.0f, -1600.0f), Vec3s(0, -32768, 0)),
-        std::make_pair(Vec3f(1560.0f, 100.0f, -1640.0f), Vec3s(0, -32768, 0)),
-        std::make_pair(Vec3f(2780.0f, 200.0f, 0.0f), Vec3s(0, 16384, 0)),
-        std::make_pair(Vec3f(1560.0f, 200.0f, 1660.0f), Vec3s(0, 0, 0)),
-        std::make_pair(Vec3f(1780.0f, 2800.0f, -1580.0f), Vec3s(0, -32768, 0)),
-        std::make_pair(Vec3f(-2740.0f, 2840.0f, -80.0f), Vec3s(0, -8192, 0)),
-        std::make_pair(Vec3f(-1000.0f, 2800.0f, -965.0f), Vec3s(0, 24576, 0)),
-        std::make_pair(Vec3f(2490.0f, 200.0f, 0.0f), Vec3s(0, -16384, 0)),
+    static std::vector<std::pair<Vec3f, Vec3s>> fireTempleRoomCoords = {
+        /*  00  */    std::make_pair(Vec3f(5.0f, 0.0f, 980.0f), Vec3s(0, -32768, 0)),
+        /*  01  */    std::make_pair(Vec3f(500.0f, 200.0f, 0.0f), Vec3s(0, 16385, 0)),
+        /*  02  */    std::make_pair(Vec3f(-500.0f, 200.0f, 0.0f), Vec3s(0, -16384, 0)),
+        /*  03  */    std::make_pair(Vec3f(-88.0f, 0.0f, -1240.0f), Vec3s(0, -16384, 0)),
+        /*  04  */    std::make_pair(Vec3f(2990.0f, 2060.0f, 0.0f), Vec3s(0, -16384, 0)),
+        /*  05  */    std::make_pair(Vec3f(2660.0f, 2800.0f, 0.0f), Vec3s(0, 16385, 0)),
+        /*  06  */    std::make_pair(Vec3f(1550.0f, 2800.0f, -250.0f), Vec3s(0, 0, 0)),
+        /*  07  */    std::make_pair(Vec3f(1580.0f, 4000.0f, -510.0f), Vec3s(0, 0, 0)),
+        /*  08  */    std::make_pair(Vec3f(1580.0f, 4400.0f, -510.0f), Vec3s(0, 0, 0)),
+        /*  09  */    std::make_pair(Vec3f(260.0f, 2940.0f, 190.0f), Vec3s(0, -16384, 0)),
+        /*  10  */    std::make_pair(Vec3f(-640.0f, 2940.0f, 190.0f), Vec3s(0, -16384, 0)),
+        /*  11  */    std::make_pair(Vec3f(-1780.0f, 2800.0f, 250.0f), Vec3s(0, -32768, 0)),
+        /*  12  */    std::make_pair(Vec3f(-2620.0f, 4000.0f, 160.0f), Vec3s(0, 16385, 0)),
+        /*  13  */    std::make_pair(Vec3f(-2290.0f, 4400.0f, 20.0f), Vec3s(0, 16385, 0)),
+        /*  14  */    std::make_pair(Vec3f(-2265.0f, 4180.0f, -820.0f), Vec3s(0, 24576, 0)),
+        /*  15  */    std::make_pair(Vec3f(280.0f, 0.0f, 60.0f), Vec3s(0, -32768, 0)),
+        /*  16  */    std::make_pair(Vec3f(1580.0f, 2800.0f, 410.0f), Vec3s(0, 0, 0)),
+        /*  17  */    std::make_pair(Vec3f(-280.0f, 0.0f, -812.0f), Vec3s(0, 0, 0)),
+        /*  18  */    std::make_pair(Vec3f(236.0f, 0.0f, -964.0f), Vec3s(0, -32768, 0)),
+        /*  19  */    std::make_pair(Vec3f(1560.0f, 240.0f, -1600.0f), Vec3s(0, -32768, 0)),
+        /*  20  */    std::make_pair(Vec3f(1560.0f, 100.0f, -1640.0f), Vec3s(0, -32768, 0)),
+        /*  21  */    std::make_pair(Vec3f(2780.0f, 200.0f, 0.0f), Vec3s(0, 16385, 0)),
+        /*  22  */    std::make_pair(Vec3f(1560.0f, 200.0f, 1660.0f), Vec3s(0, 0, 0)),
+        /*  23  */    std::make_pair(Vec3f(1780.0f, 2800.0f, -1580.0f), Vec3s(0, -32768, 0)),
+        /*  24  */    std::make_pair(Vec3f(-2740.0f, 2840.0f, -80.0f), Vec3s(0, -8192, 0)),
+        /*  25  */    std::make_pair(Vec3f(-1000.0f, 2800.0f, -965.0f), Vec3s(0, 24576, 0)),
+        /*  26  */    std::make_pair(Vec3f(2490.0f, 200.0f, 0.0f), Vec3s(0, -16385, 0)),
+    };
+    static std::vector<std::pair<Vec3f, Vec3s>> forestTempleRoomCoords = {
+        /*  00  */    std::make_pair(Vec3f(110, 309, 780), Vec3s(0, -32768, 0)),
+        /*  01  */    std::make_pair(Vec3f(120, 359, -20), Vec3s(0, -32768, 0)),
+        /*  02  */    std::make_pair(Vec3f(120, 383, -660), Vec3s(0, -32768, 0)),
+        /*  03  */    std::make_pair(Vec3f(1530, 463, -1440), Vec3s(0, -16384, 0)),
+        /*  04  */    std::make_pair(Vec3f(120, 467, -2600), Vec3s(0, -32768, 0)),
+        /*  05  */    std::make_pair(Vec3f(-840, 383, -1440), Vec3s(0, -16384, 0)),
+        /*  06  */    std::make_pair(Vec3f(120, 467, -3100), Vec3s(0, -32768, 0)),
+        /*  07  */    std::make_pair(Vec3f(445, 800, -2810), Vec3s(0, 16385, 0)),
+        /*  08  */    std::make_pair(Vec3f(-725, 243, -2290), Vec3s(0, -24576, 0)),
+        /*  09  */    std::make_pair(Vec3f(1230, -236, -1760), Vec3s(0, -16384, 0)),
+        /*  10  */    std::make_pair(Vec3f(-30, 800, -2810), Vec3s(0, 16385, 0)),
+        /*  11  */    std::make_pair(Vec3f(-1450, 383, -1440), Vec3s(0, -16384, 0)),
+        /*  12  */    std::make_pair(Vec3f(-1330, 1228, -3320), Vec3s(0, 16385, 0)),
+        /*  13  */    std::make_pair(Vec3f(575, 827, -3320), Vec3s(0, 16385, 0)),
+        /*  14  */    std::make_pair(Vec3f(2000, 1228, -1740), Vec3s(0, 0 ,0)),
+        /*  15  */    std::make_pair(Vec3f(1660, 523, -2960), Vec3s(0, -32768, 0)),
+        /*  16  */    std::make_pair(Vec3f(1990, 403, -1730), Vec3s(0, 0 ,0)),
+        /*  17  */    std::make_pair(Vec3f(120, -779, -1730), Vec3s(0, -32768, 0)),
+        /*  18  */    std::make_pair(Vec3f(-1820, 523, -2050), Vec3s(0, -16384, 0)),
+        /*  19  */    std::make_pair(Vec3f(-1760, 1228, -1910), Vec3s(0, -32768, 0)),
+        /*  20  */    std::make_pair(Vec3f(1730, 1228, -3320), Vec3s(0, 16385, 0)),
+        /*  21  */    std::make_pair(Vec3f(-1640, 523, -2870), Vec3s(0, -32768, 0)), 
+        /*  22  */    std::make_pair(Vec3f(110, 309, 780), Vec3s(0, -32768, 0)),
     };
     if (gPlayState->roomCtx.curRoom.num != roomNum) {
         func_8009728C(gPlayState, &gPlayState->roomCtx, roomNum); // load original room
         func_80097534(gPlayState, &gPlayState->roomCtx);          // load map for new room (unloading the previous room)
     }
-    if (sceneNum == 4) {
+    std::vector<std::pair<Vec3f, Vec3s>> *sceneCoords;
+    if (sceneNum == 3) {
+        sceneCoords = &forestTempleRoomCoords;
+    } else if (sceneNum == 4) {
+        sceneCoords = &fireTempleRoomCoords;
+    }
+    if (sceneNum == 3 || sceneNum == 4) {
         player->actor.speedXZ = 0.0f;
         player->linearVelocity = 0.0f;
-        player->actor.prevPos = fireTempleRoomCoords.at(roomNum).first;
-        player->actor.floorHeight = fireTempleRoomCoords.at(roomNum).first.y;
-        player->actor.world.pos = fireTempleRoomCoords.at(roomNum).first;
-        player->actor.projectedPos = fireTempleRoomCoords.at(roomNum).first;   
-        player->actor.world.rot = fireTempleRoomCoords.at(roomNum).second;
-        player->actor.shape.rot = fireTempleRoomCoords.at(roomNum).second;
+        player->actor.prevPos = sceneCoords->at(roomNum).first;
+        player->actor.floorHeight = sceneCoords->at(roomNum).first.y;
+        player->actor.world.pos = sceneCoords->at(roomNum).first;
+        player->actor.projectedPos = sceneCoords->at(roomNum).first;   
+        player->actor.world.rot = sceneCoords->at(roomNum).second;
+        player->actor.shape.rot = sceneCoords->at(roomNum).second;
         CVarSetInteger("gChangeRoomClip", 1);
     }
     
