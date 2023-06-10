@@ -200,7 +200,7 @@ void EnJj_WaitForFish(EnJj* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     if ((Math_Vec3f_DistXZ(&feedingSpot, &player->actor.world.pos) < 300.0f) &&
-        play->isPlayerDroppingFish(play)) {
+        play->isPlayerDroppingFish(play) && LINK_IS_CHILD) {
         this->cutsceneCountdownTimer = 100;
         EnJj_SetupAction(this, EnJj_BeginCutscene);
     }
