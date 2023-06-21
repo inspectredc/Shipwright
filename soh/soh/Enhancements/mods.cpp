@@ -226,6 +226,47 @@ void RegisterOcarinaTimeTravel() {
     });
 }
 
+void CreateSceneTransitionCylinder(s16 entranceIndex, Vec3f* entry, f32 radius, f32 yDiff) {
+    Player* player = GET_PLAYER(gPlayState);
+    if ((Math_Vec3f_DistXZ(entry, &player->actor.world.pos) < radius) &&
+        (ABS(player->actor.world.pos.y - entry->y) < yDiff)) {
+        gPlayState->nextEntranceIndex = entranceIndex;
+        func_800994A0(gPlayState);
+        gPlayState->sceneLoadFlag = 0x14;
+        player->actor.speedXZ = 0.0f;
+        player->linearVelocity = 0.0f;
+        if (!func_800C0CB8(gPlayState)) {
+            Interface_ChangeAlpha(2);
+        } else {
+            Camera_ChangeSetting(Play_GetCamera(gPlayState, 0), CAM_SET_SCENE_TRANSITION);
+        }
+    }
+}
+
+void RegisterJabuAsAdult() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnTransitionEnd>([](int32_t sceneNum) {
+        if (CVarGetInteger("gJabuAsAdult", 0)) {
+            if (!gPlayState) return;
+            if (sceneNum == 89 && LINK_IS_ADULT) {
+                Actor_Spawn(&gPlayState->actorCtx, gPlayState, ACTOR_EN_JJ, -700, -40, 1700, 0, 0x6F1D, 0, -1, false);
+            }
+        }
+    });
+}
+
+void RegisterJabuTransitionAsAdult() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnActorUpdate>([](void* refActor) {
+        if (CVarGetInteger("gJabuAsAdult", 0)) {
+            if (!gPlayState) return;
+            Actor* actor = static_cast<Actor*>(refActor);
+            if (actor->id == ACTOR_EN_JJ && LINK_IS_ADULT && gSaveContext.eventChkInf[3] & 0x400) {
+                static Vec3f adultEntry = {-750.0f, 0.0f, 1800.0f};
+                CreateSceneTransitionCylinder(0x28, &adultEntry, 100.0f, 100.0f);
+            }
+        }
+    });
+}
+
 void AutoSave(GetItemEntry itemEntry) {
     u8 item = itemEntry.itemId;
     // Don't autosave immediately after buying items from shops to prevent getting them for free!
@@ -612,6 +653,8 @@ void InitMods() {
     RegisterFreezeTime();
     RegisterSwitchAge();
     RegisterOcarinaTimeTravel();
+    RegisterJabuAsAdult();
+    RegisterJabuTransitionAsAdult();
     RegisterAutoSave();
     RegisterDaytimeGoldSkultullas();
     RegisterRupeeDash();
