@@ -3,6 +3,9 @@
 #include "game-interactor/GameInteractor.h"
 #include "tts/tts.h"
 #include "soh/Enhancements/boss-rush/BossRushTypes.h"
+#include "soh/Enhancements/enhancementTypes.h"
+#include "soh/Enhancements/randomizer/3drando/random.hpp"
+#include "soh/Enhancements/cosmetics/authenticGfxPatches.h"
 
 extern "C" {
 #include <z64.h>
@@ -12,6 +15,8 @@ extern "C" {
 #include "functions.h"
 extern SaveContext gSaveContext;
 extern PlayState* gPlayState;
+
+uint32_t ResourceMgr_IsSceneMasterQuest(s16 sceneNum);
 }
 bool performDelayedSave = false;
 bool performSave = false;
@@ -205,7 +210,7 @@ void RegisterOcarinaTimeTravel() {
         uint8_t hasOcarinaOfTime = (INV_CONTENT(ITEM_OCARINA_TIME) == ITEM_OCARINA_TIME);
         // If TimeTravel + Player have the Ocarina of Time + Have Master Sword + is in proper range
         // TODO: Once Swordless Adult is fixed: Remove the Master Sword check
-        if (CVarGetInteger("gTimeTravel", 0) && hasOcarinaOfTime && hasMasterSword &&
+        if (((CVarGetInteger("gTimeTravel", 0) == 1 && hasOcarinaOfTime) || CVarGetInteger("gTimeTravel", 0) == 2) && hasMasterSword &&
             gPlayState->msgCtx.lastPlayedSong == OCARINA_SONG_TIME && !nearbyTimeBlockEmpty && !nearbyTimeBlock &&
             !nearbyOcarinaSpot && !nearbyFrogs) {
 
@@ -268,13 +273,13 @@ void AutoSave(GetItemEntry itemEntry) {
     // Don't autosave in the Chamber of Sages since resuming from that map breaks the game
     // Don't autosave during the Ganon fight when picking up the Master Sword
     // Don't autosave in grottos since resuming from grottos breaks the game.
-    if ((CVarGetInteger("gAutosave", 0) > 0) && (gPlayState != NULL) && (gSaveContext.pendingSale == ITEM_NONE) &&
+    if ((CVarGetInteger("gAutosave", AUTOSAVE_OFF) != AUTOSAVE_OFF) && (gPlayState != NULL) && (gSaveContext.pendingSale == ITEM_NONE) &&
         (gPlayState->gameplayFrames > 60 && gSaveContext.cutsceneIndex < 0xFFF0) && (gPlayState->sceneNum != SCENE_GANON_DEMO)) {
-        if (((CVarGetInteger("gAutosave", 0) == 2) || (CVarGetInteger("gAutosave", 0) == 5)) && (item != ITEM_NONE)) {
+        if (((CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION_AND_ALL_ITEMS) || (CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_ALL_ITEMS)) && (item != ITEM_NONE)) {
             // Autosave for all items
             performSave = true;
 
-        } else if (((CVarGetInteger("gAutosave", 0) == 1) || (CVarGetInteger("gAutosave", 0) == 4)) && (item != ITEM_NONE)) {
+        } else if (((CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION_AND_MAJOR_ITEMS) || (CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_MAJOR_ITEMS)) && (item != ITEM_NONE)) {
             // Autosave for major items
             if (itemEntry.modIndex == 0) {
                 switch (item) {
@@ -325,12 +330,16 @@ void AutoSave(GetItemEntry itemEntry) {
             } else if (itemEntry.modIndex == 1 && item != RG_ICE_TRAP) {
                 performSave = true;
             }
-        } else if ((CVarGetInteger("gAutosave", 0) > 0 && (CVarGetInteger("gAutosave", 0) < 4))) {
+        } else if (CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION_AND_MAJOR_ITEMS ||
+                   CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION_AND_ALL_ITEMS ||
+                   CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION) {
             performSave = true;
         }
         if ((gPlayState->sceneNum == SCENE_YOUSEI_IZUMI_TATE) || (gPlayState->sceneNum == SCENE_KAKUSIANA) ||
                 (gPlayState->sceneNum == SCENE_KENJYANOMA)) {
-            if ((CVarGetInteger("gAutosave", 0) > 0 && (CVarGetInteger("gAutosave", 0) < 4))) {
+            if (CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION_AND_MAJOR_ITEMS ||
+                CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION_AND_ALL_ITEMS ||
+                CVarGetInteger("gAutosave", AUTOSAVE_OFF) == AUTOSAVE_LOCATION) {
                 performSave = false;
                 return;
             }
@@ -527,47 +536,44 @@ void RegisterHyperEnemies() {
 
 void RegisterBonkDamage() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerBonk>([]() {
-        uint8_t bonkOption = CVarGetInteger("gBonkDamageMul", 0);
+        uint8_t bonkOption = CVarGetInteger("gBonkDamageMul", BONK_DAMAGE_NONE);
+        if (bonkOption == BONK_DAMAGE_NONE) {
+            return;
+        }
+
+        if (bonkOption == BONK_DAMAGE_OHKO) {
+            gSaveContext.health = 0;
+            return;
+        }
+
         uint16_t bonkDamage = 0;
         switch (bonkOption) {
-            // Quarter heart
-            case 1:
+            case BONK_DAMAGE_QUARTER_HEART:
                 bonkDamage = 4;
                 break;
-            // Half a heart
-            case 2:
+            case BONK_DAMAGE_HALF_HEART:
                 bonkDamage = 8;
                 break;
-            // Full heart
-            case 3:
+            case BONK_DAMAGE_1_HEART:
                 bonkDamage = 16;
                 break;
-            // 2 hearts
-            case 4:
+            case BONK_DAMAGE_2_HEARTS:
                 bonkDamage = 32;
                 break;
-            // 4 hearts
-            case 5:
+            case BONK_DAMAGE_4_HEARTS:
                 bonkDamage = 64;
                 break;
-            // 8 hearts
-            case 6:
+            case BONK_DAMAGE_8_HEARTS:
                 bonkDamage = 128;
                 break;
-            case 0:
-            case 7:
             default:
                 break;
         }
-        // OHKO
-        if (bonkOption == 7) {
-            gSaveContext.health = 0;
-        } else if (bonkDamage) {
-            Health_ChangeBy(gPlayState, -bonkDamage);
-            // Set invincibility to make Link flash red as a visual damage indicator.
-            Player* player = GET_PLAYER(gPlayState);
-            player->invincibilityTimer = 28;
-        }
+        
+        Health_ChangeBy(gPlayState, -bonkDamage);
+        // Set invincibility to make Link flash red as a visual damage indicator.
+        Player* player = GET_PLAYER(gPlayState);
+        player->invincibilityTimer = 28;
     });
 }
 
@@ -576,16 +582,61 @@ void UpdateDirtPathFixState(int32_t sceneNum) {
         case SCENE_SPOT00:
         case SCENE_SPOT04:
         case SCENE_SPOT15:
-            CVarSetInteger("gDirtPathFix", CVarGetInteger("gSceneSpecificDirtPathFix", 0));
+            CVarSetInteger("gZFightingMode", CVarGetInteger("gSceneSpecificDirtPathFix", ZFIGHT_FIX_DISABLED));
             return;
         default:
-            CVarClear("gDirtPathFix");
+            CVarClear("gZFightingMode");
     }
 }
 
 void RegisterMenuPathFix() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnTransitionEnd>([](int32_t sceneNum) {
         UpdateDirtPathFixState(sceneNum);
+    });
+}
+
+void UpdateMirrorModeState(int32_t sceneNum) {
+    static bool prevMirroredWorld = false;
+    bool nextMirroredWorld = false;
+
+    int16_t mirroredMode = CVarGetInteger("gMirroredWorldMode", MIRRORED_WORLD_OFF);
+    int16_t inDungeon = (sceneNum >= SCENE_YDAN && sceneNum <= SCENE_GANONTIKA_SONOGO && sceneNum != SCENE_GERUDOWAY) ||
+                        (sceneNum >= SCENE_YDAN_BOSS && sceneNum <= SCENE_GANON_FINAL) ||
+                        (sceneNum == SCENE_GANON_DEMO);
+
+    if (mirroredMode == MIRRORED_WORLD_RANDOM_SEEDED || mirroredMode == MIRRORED_WORLD_DUNGEONS_RANDOM_SEEDED) {
+        uint32_t seed = sceneNum + (gSaveContext.n64ddFlag ? (gSaveContext.seedIcons[0] + gSaveContext.seedIcons[1] +
+                        gSaveContext.seedIcons[2] + gSaveContext.seedIcons[3] + gSaveContext.seedIcons[4]) : gSaveContext.sohStats.fileCreatedAt);
+        Random_Init(seed);
+    }
+
+    bool randomMirror = Random(0, 2) == 1;
+
+    if (
+        mirroredMode == MIRRORED_WORLD_ALWAYS ||
+        ((mirroredMode == MIRRORED_WORLD_RANDOM || mirroredMode == MIRRORED_WORLD_RANDOM_SEEDED) && randomMirror) ||
+        // Dungeon modes
+        (inDungeon && (mirroredMode == MIRRORED_WORLD_DUNGEONS_All ||
+         (mirroredMode == MIRRORED_WORLD_DUNGEONS_VANILLA && !ResourceMgr_IsSceneMasterQuest(sceneNum)) ||
+         (mirroredMode == MIRRORED_WORLD_DUNGEONS_MQ && ResourceMgr_IsSceneMasterQuest(sceneNum)) ||
+         ((mirroredMode == MIRRORED_WORLD_DUNGEONS_RANDOM || mirroredMode == MIRRORED_WORLD_DUNGEONS_RANDOM_SEEDED) && randomMirror)))
+    ) {
+        nextMirroredWorld = true;
+        CVarSetInteger("gMirroredWorld", 1);
+    } else {
+        nextMirroredWorld = false;
+        CVarClear("gMirroredWorld");
+    }
+
+    if (prevMirroredWorld != nextMirroredWorld) {
+        prevMirroredWorld = nextMirroredWorld;
+        ApplyMirrorWorldGfxPatches();
+    }
+}
+
+void RegisterMirrorModeHandler() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>([](int32_t sceneNum) {
+        UpdateMirrorModeState(sceneNum);
     });
 }
 
@@ -612,4 +663,5 @@ void InitMods() {
     RegisterHyperEnemies();
     RegisterBonkDamage();
     RegisterMenuPathFix();
+    RegisterMirrorModeHandler();
 }

@@ -60,8 +60,13 @@ std::string GetWindowButtonText(const char* text, bool menuOpen) {
             "Linear", "None"
     };
 
-    static const char* chestSizeAndTextureMatchesContentsOptions[4] = { "Disabled", "Both", "Texture Only", "Size Only" };
+    static const char* chestStyleMatchesContentsOptions[4] = { "Disabled", "Both", "Texture Only", "Size Only" };
     static const char* bunnyHoodOptions[3] = { "Disabled", "Faster Run & Longer Jump", "Faster Run" };
+    static const char* mirroredWorldModes[9] = {
+        "Disabled",           "Always",        "Random",          "Random (Seeded)",          "Dungeons",
+        "Dungeons (Vanilla)", "Dungeons (MQ)", "Dungeons Random", "Dungeons Random (Seeded)",
+    };
+    static const char* enemyRandomizerModes[3] = { "Disabled", "Random", "Random (Seeded)" };
     static const char* allPowers[9] = {
                         "Vanilla (1x)",
                         "Double (2x)",
@@ -87,6 +92,7 @@ std::string GetWindowButtonText(const char* text, bool menuOpen) {
         "8 Hearts",
         "OHKO"
     };
+    static const char* timeTravelOptions[3] = { "Disabled", "Ocarina of Time", "Any Ocarina" };
 
 extern "C" SaveContext gSaveContext;
 
@@ -119,20 +125,35 @@ void DrawMenuBarIcon() {
 
 void DrawShipMenu() {
     if (ImGui::BeginMenu("Ship")) {
+        if (ImGui::MenuItem("Hide Menu Bar",
+#if !defined(__SWITCH__) && !defined(__WIIU__)
+         "F1"
+#else
+         "[-]"
+#endif
+        )) {
+            LUS::Context::GetInstance()->GetWindow()->GetGui()->GetMenuBar()->ToggleVisibility();
+        }
+        UIWidgets::Spacer(0);
+#if !defined(__SWITCH__) && !defined(__WIIU__)
+        if (ImGui::MenuItem("Toggle Fullscreen", "F11")) {
+            LUS::Context::GetInstance()->GetWindow()->ToggleFullscreen();
+        }
+        UIWidgets::Spacer(0);
+#endif
         if (ImGui::MenuItem("Reset",
 #ifdef __APPLE__
                             "Command-R"
-#else
+#elif !defined(__SWITCH__) && !defined(__WIIU__)
                             "Ctrl+R"
+#else
+                            ""
 #endif
                             )) {
             std::reinterpret_pointer_cast<LUS::ConsoleWindow>(LUS::Context::GetInstance()->GetWindow()->GetGui()->GetGuiWindow("Console"))->Dispatch("reset");
         }
 #if !defined(__SWITCH__) && !defined(__WIIU__)
-        auto backend = LUS::Context::GetInstance()->GetWindow()->GetWindowBackend();
-        if (ImGui::MenuItem("Toggle Fullscreen", "F9")) {
-            LUS::Context::GetInstance()->GetWindow()->ToggleFullscreen();
-        }
+        UIWidgets::Spacer(0);
         if (ImGui::MenuItem("Quit")) {
             LUS::Context::GetInstance()->GetWindow()->Close();
         }
@@ -405,7 +426,7 @@ void DrawSettingsMenu() {
             // If more filters are added to LUS, make sure to add them to the filters list here
             ImGui::Text("Texture Filter (Needs reload)");
 
-            UIWidgets::EnhancementCombobox("gTextureFilter", filters, 0);
+            UIWidgets::EnhancementCombobox("gTextureFilter", filters, FILTER_THREE_POINT);
 
             UIWidgets::Spacer(0);
 
@@ -480,8 +501,8 @@ void DrawEnhancementsMenu() {
                 UIWidgets::PaddedEnhancementCheckbox("Fast Chests", "gFastChests", true, false);
                 UIWidgets::Tooltip("Kick open every chest");
                 UIWidgets::PaddedText("Chest size & texture matches contents", true, false);
-                if (UIWidgets::EnhancementCombobox("gChestSizeAndTextureMatchesContents", chestSizeAndTextureMatchesContentsOptions, 0)) {
-                    if (CVarGetInteger("gChestSizeAndTextureMatchesContents", 0) == 0) {
+                if (UIWidgets::EnhancementCombobox("gChestSizeAndTextureMatchesContents", chestStyleMatchesContentsOptions, CSMC_DISABLED)) {
+                    if (CVarGetInteger("gChestSizeAndTextureMatchesContents", CSMC_DISABLED) == CSMC_DISABLED) {
                         CVarSetInteger("gChestSizeDependsStoneOfAgony", 0);
                     }
                 }
@@ -494,7 +515,7 @@ void DrawEnhancementsMenu() {
                     " - Boss keys: Vanilla size and texture\n"
                     " - Skulltula Tokens: Small skulltula chest\n"
                 );
-                if (CVarGetInteger("gChestSizeAndTextureMatchesContents", 0) > 0) {
+                if (CVarGetInteger("gChestSizeAndTextureMatchesContents", CSMC_DISABLED) != CSMC_DISABLED) {
                     UIWidgets::PaddedEnhancementCheckbox("Chests of Agony", "gChestSizeDependsStoneOfAgony", true, false);
                     UIWidgets::Tooltip("Only change the size/texture of chests if you have the Stone of Agony.");
                 }
@@ -528,11 +549,12 @@ void DrawEnhancementsMenu() {
                 UIWidgets::Tooltip("Nighttime Skulltulas will spawn during both day and night.");
                 UIWidgets::PaddedEnhancementCheckbox("Dampe Appears All Night", "gDampeAllNight", true, false);
                 UIWidgets::Tooltip("Makes Dampe appear anytime during the night, not just his usual working hours.");
-                UIWidgets::PaddedEnhancementCheckbox("Time Travel with the Song of Time", "gTimeTravel", true, false);
+                UIWidgets::PaddedText("Time Travel with the Song of Time", true, false);
+                UIWidgets::EnhancementCombobox("gTimeTravel", timeTravelOptions, 0);
                 UIWidgets::Tooltip("Allows Link to freely change age by playing the Song of Time.\n"
                     "Time Blocks can still be used properly.\n\n"
                     "Requirements:\n"
-                    "- Obtained the Ocarina of Time\n"
+                    "- Obtained the Ocarina of Time (depends on selection)\n"
                     "- Obtained the Song of Time\n"
                     "- Obtained the Master Sword\n"
                     "- Not within range of Time Block\n"
@@ -551,7 +573,7 @@ void DrawEnhancementsMenu() {
                 UIWidgets::PaddedEnhancementCheckbox("Prevent Dropped Ocarina Inputs", "gDpadNoDropOcarinaInput", true, false);
                 UIWidgets::Tooltip("Prevent dropping inputs when playing the ocarina quickly");
                 UIWidgets::PaddedText("Bunny Hood Effect", true, false);
-                UIWidgets::EnhancementCombobox("gMMBunnyHood", bunnyHoodOptions, 0);
+                UIWidgets::EnhancementCombobox("gMMBunnyHood", bunnyHoodOptions, BUNNY_HOOD_VANILLA);
                 UIWidgets::Tooltip(
                     "Wearing the Bunny Hood grants a speed increase like in Majora's Mask. The longer jump option is not accounted for in randomizer logic.\n\n"
                     "Also disables NPC's reactions to wearing the Bunny Hood."
@@ -616,7 +638,7 @@ void DrawEnhancementsMenu() {
                     "64x: Cannot survive void damage"
                 );
                 UIWidgets::PaddedText("Bonk Damage Multiplier", true, false);
-                UIWidgets::EnhancementCombobox("gBonkDamageMul", bonkDamageValues, 0);
+                UIWidgets::EnhancementCombobox("gBonkDamageMul", bonkDamageValues, BONK_DAMAGE_NONE);
                 UIWidgets::Tooltip("Modifies damage taken after bonking.");
                 UIWidgets::PaddedEnhancementCheckbox("Spawn with full health", "gFullHealthSpawn", true, false);
                 UIWidgets::Tooltip("Respawn with full health instead of 3 Hearts");
@@ -925,7 +947,7 @@ void DrawEnhancementsMenu() {
                 ImGui::EndMenu();
             }
             UIWidgets::PaddedText("Fix Vanishing Paths", true, false);
-            if (UIWidgets::EnhancementCombobox("gSceneSpecificDirtPathFix", zFightingOptions, 0) && gPlayState != NULL) {
+            if (UIWidgets::EnhancementCombobox("gSceneSpecificDirtPathFix", zFightingOptions, ZFIGHT_FIX_DISABLED) && gPlayState != NULL) {
                 UpdateDirtPathFixState(gPlayState->sceneNum);
             }
             UIWidgets::Tooltip("Disabled: Paths vanish more the higher the resolution (Z-fighting is based on resolution)\n"
@@ -1015,16 +1037,50 @@ void DrawEnhancementsMenu() {
         UIWidgets::Spacer(0);
 
         if (ImGui::BeginMenu("Extra Modes")) {
+        #ifdef ENABLE_CROWD_CONTROL
+            if (UIWidgets::PaddedEnhancementCheckbox("Crowd Control", "gCrowdControl", false, false)) {
+                if (CVarGetInteger("gCrowdControl", 0)) {
+                    CrowdControl::Instance->Enable();
+                } else {
+                    CrowdControl::Instance->Disable();
+                }
+            }
+            UIWidgets::Tooltip("Will attempt to connect to the Crowd Control server. Check out crowdcontrol.live for more information.");
+        #endif
+
+            UIWidgets::PaddedText("Mirrored World", true, false);
+            if (UIWidgets::EnhancementCombobox("gMirroredWorldMode", mirroredWorldModes, MIRRORED_WORLD_OFF) && gPlayState != NULL) {
+                UpdateMirrorModeState(gPlayState->sceneNum);
+            }
+            UIWidgets::Tooltip(
+                "Mirrors the world horizontally\n\n"
+                "- Always: Always mirror the world\n"
+                "- Random: Randomly decide to mirror the world on each scene change\n"
+                "- Random (Seeded): Scenes are mirrored based on the current randomizer seed/file\n"
+                "- Dungeons: Mirror the world in Dungeons\n"
+                "- Dungeons (Vanilla): Mirror the world in vanilla Dungeons\n"
+                "- Dungeons (MQ): Mirror the world in MQ Dungeons\n"
+                "- Dungeons Random: Randomly decide to mirror the world in Dungeons\n"
+                "- Dungeons Random (Seeded): Dungeons are mirrored based on the current randomizer seed/file\n"
+            );
+
+            UIWidgets::PaddedText("Enemy Randomizer", true, false);
+            UIWidgets::EnhancementCombobox("gRandomizedEnemies", enemyRandomizerModes, ENEMY_RANDOMIZER_OFF);
+            UIWidgets::Tooltip(
+                "Replaces fixed enemies throughout the game with a random enemy. Bosses, mini-bosses and a few specific regular enemies are excluded.\n"
+                "Enemies that need more than Deku Nuts + either Deku Sticks or a sword to kill are excluded from spawning in \"clear enemy\" rooms.\n\n"
+                "- Random: Enemies are randomized every time you load a room\n"
+                "- Random (Seeded): Enemies are randomized based on the current randomizer seed/file\n"
+            );
+
             UIWidgets::PaddedEnhancementCheckbox("Ivan the Fairy (Coop Mode)", "gIvanCoopModeEnabled", true, false);
             UIWidgets::Tooltip("Enables Ivan the Fairy upon the next map change. Player 2 can control Ivan and "
                                 "press the C-Buttons to use items and mess with Player 1!");
 
-            UIWidgets::Spacer(0);
-
             UIWidgets::PaddedEnhancementCheckbox("Rupee Dash Mode", "gRupeeDash", true, false);
+            UIWidgets::Tooltip("Rupees reduced over time, Link suffers damage when the count hits 0.");
 
             if (CVarGetInteger("gRupeeDash", 0)) {
-                UIWidgets::Tooltip("Rupees reduced over time, Link suffers damage when the count hits 0.");
                 UIWidgets::PaddedEnhancementSliderInt(
                     "Rupee Dash Interval: %d", "##DashInterval", "gDashInterval", 3, 5, "", 5, true, true, false,
                     !CVarGetInteger("gRupeeDash", 0),
@@ -1032,13 +1088,8 @@ void DrawEnhancementsMenu() {
                 UIWidgets::Tooltip("Interval between Rupee reduction in Rupee Dash Mode");
             }
 
-            UIWidgets::Spacer(0);
-
             UIWidgets::PaddedEnhancementCheckbox("Shadow Tag Mode", "gShadowTag", true, false);
-
-            if (CVarGetInteger("gShadowTag", 0)) {
-                UIWidgets::Tooltip("A wallmaster follows Link everywhere, don't get caught!");
-            }
+            UIWidgets::Tooltip("A wallmaster follows Link everywhere, don't get caught!");
 
             ImGui::EndMenu();
         }
@@ -1047,7 +1098,7 @@ void DrawEnhancementsMenu() {
 
         // Autosave enum value of 1 is the default in presets and the old checkbox "on" state for backwards compatibility
         UIWidgets::PaddedText("Autosave", false, true);
-        UIWidgets::EnhancementCombobox("gAutosave", autosaveLabels, 0);
+        UIWidgets::EnhancementCombobox("gAutosave", autosaveLabels, AUTOSAVE_OFF);
         UIWidgets::Tooltip("Automatically save the game when changing locations and/or obtaining items\n"
             "Major items exclude rupees and health/magic/ammo refills (but include bombchus unless bombchu drops are enabled)");
 
@@ -1392,38 +1443,6 @@ void DrawRandomizerMenu() {
                 "(medallions/stones/songs). Note that these fanfares are longer than usual."
             );
             ImGui::EndMenu();
-        }
-
-        UIWidgets::PaddedSeparator();
-
-    #ifdef ENABLE_CROWD_CONTROL
-        UIWidgets::EnhancementCheckbox("Crowd Control", "gCrowdControl");
-        UIWidgets::Tooltip("Will attempt to connect to the Crowd Control server. Check out crowdcontrol.live for more information.");
-
-        if (CVarGetInteger("gCrowdControl", 0)) {
-            CrowdControl::Instance->Enable();
-        } else {
-            CrowdControl::Instance->Disable();
-        }
-
-        UIWidgets::Spacer(0);
-    #endif
-
-        UIWidgets::EnhancementCheckbox("Enemy Randomizer", "gRandomizedEnemies");
-        UIWidgets::Tooltip(
-            "Randomizes regular enemies every time you load a room. Bosses, mini-bosses and a few specific regular enemies are excluded.\n\n"
-            "Enemies that need more than Deku Nuts + either Deku Sticks or a sword to kill are excluded from spawning in \"clear enemy\" rooms."
-        );
-
-        if (CVarGetInteger("gRandomizedEnemies", 0)) {
-
-            bool disableSeededEnemies = !gSaveContext.n64ddFlag && gSaveContext.fileNum >= 0 && gSaveContext.fileNum <= 2;
-            static const char* disableSeededEnemiesText = "This setting is disabled because it relies on a randomizer savefile.";
-
-            UIWidgets::PaddedEnhancementCheckbox("Seeded Enemy Spawns", "gSeededRandomizedEnemies", true, false, disableSeededEnemies, disableSeededEnemiesText);
-            UIWidgets::Tooltip(
-                "Enemy spawns will stay consistent throughout room reloads. Enemy spawns are based on randomizer seeds, so this only works with randomizer savefiles."
-            );
         }
 
         ImGui::EndMenu();
