@@ -1738,13 +1738,20 @@ u8 Return_Item_Entry(GetItemEntry itemEntry, ItemID returnItem ) {
 u8 Return_Item(u8 itemID, ModIndex modId, ItemID returnItem) {
     // ITEM_SOLD_OUT doesn't have an ItemTable entry, so pass custom entry instead
     if (itemID == ITEM_SOLD_OUT) {
-        GetItemEntry gie = { ITEM_SOLD_OUT, 0, 0, 0, 0, 0, 0, 0, false, ITEM_FROM_NPC, ITEM_CATEGORY_LESSER, NULL };
+        GetItemEntry gie = { ITEM_SOLD_OUT, 0, 0, 0, 0, 0, 0, 0, 0, false, ITEM_FROM_NPC, ITEM_CATEGORY_LESSER, NULL };
         return Return_Item_Entry(gie, returnItem);
     }
+    // Master sword doesn't have an ItemTable entry, so pass custom entry instead (This will go away with master sword shuffle)
+    if (itemID == ITEM_SWORD_MASTER) {
+        GetItemEntry gie = { ITEM_SWORD_MASTER, 0, 0, 0, 0, 0, 0, 0, 0, false, ITEM_FROM_NPC, ITEM_CATEGORY_MAJOR, NULL };
+        return Return_Item_Entry(gie, returnItem);
+    }
+
     int32_t get = GetGIID(itemID);
     if (get == -1) {
+        int32_t rget = GetRGIID(itemID);
         modId = MOD_RANDOMIZER;
-        get = itemID;
+        get = (rget == -1 ? itemID : rget);
     }
     return Return_Item_Entry(ItemTable_RetrieveEntry(modId, get), returnItem);
 }
@@ -2221,6 +2228,14 @@ u8 Item_Give(PlayState* play, u8 item) {
     } else if ((item == ITEM_HEART_PIECE_2) || (item == ITEM_HEART_PIECE)) {
         gSaveContext.inventory.questItems += 1 << (QUEST_HEART_PIECE + 4);
         gSaveContext.sohStats.heartPieces++;
+        if (CVarGetInteger("gFromAnchor", 0)) {
+            gSaveContext.healthAccumulator = 0x140;
+            if ((s32)(gSaveContext.inventory.questItems & 0xF0000000) == 0x40000000) {
+                gSaveContext.inventory.questItems ^= 0x40000000;
+                gSaveContext.healthCapacity += 0x10;
+                gSaveContext.health += 0x10;
+            }
+        }
         return Return_Item(item, MOD_NONE, ITEM_NONE);
     } else if (item == ITEM_HEART_CONTAINER) {
         gSaveContext.healthCapacity += 0x10;

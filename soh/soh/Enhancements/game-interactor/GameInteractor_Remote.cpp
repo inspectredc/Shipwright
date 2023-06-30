@@ -7,6 +7,11 @@
 #include <unordered_map>
 #include <tuple>
 #include <type_traits>
+#include <libultraship/libultraship.h>
+
+#include "soh/Enhancements/mods.h"
+
+using json = nlohmann::json;
 
 // MARK: - Declarations
 
@@ -174,14 +179,27 @@ void GameInteractor::DisableRemoteInteractor() {
     isRemoteInteractorEnabled = false;
     remoteThreadReceive.join();
     remoteForwarder = nullptr;
+
+    if (CVarGetInteger("gRemoteGIScheme", 0) == 2) {
+        GameInteractor::State::CoopPlayerIds.clear();
+        if (IsSaveLoaded()) {
+            GameInteractor_SpawnCoopFairies();
+        }
+    }
 }
 
 void GameInteractor::TransmitMessageToRemote(nlohmann::json payload) {
     std::string jsonPayload = payload.dump();
-    SDLNet_TCP_Send(remoteSocket, jsonPayload.c_str(), jsonPayload.size());
+    if (payload["type"] != "PlayerPosition") {
+        SPDLOG_INFO("Sending payload: \n{}\n", jsonPayload);
+    }
+    jsonPayload += "\n";
+    SDLNet_TCP_Send(remoteSocket, (jsonPayload).c_str(), jsonPayload.size());
 }
 
 // MARK: - Private
+
+std::string receivedData;
 
 void GameInteractor::ReceiveFromServer() {
     while (isRemoteInteractorEnabled) {
@@ -191,21 +209,12 @@ void GameInteractor::ReceiveFromServer() {
 
             if (remoteSocket) {
                 isRemoteInteractorConnected = true;
-                SPDLOG_TRACE("[GameInteractor] Connection to server established!");
+                SPDLOG_INFO("[GameInteractor] Connection to server established!");
 
-                // transmit supported events to remote
                 nlohmann::json payload;
-                payload["action"] = "identify";
-                payload["supported_events"] = nlohmann::json::array();
-                for (auto& [key, value] : nameToEnum) {
-                    nlohmann::json entry;
-                    entry["event"] = key;
-                    entry["is_removable"] = std::get<1>(value);
-                    entry["takes_param"] = std::get<2>(value);
-                    payload["supported_events"].push_back(entry);
-                }
+                payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+                payload["type"] = "Ping";
                 TransmitMessageToRemote(payload);
-
                 break;
             }
         }
@@ -215,9 +224,7 @@ void GameInteractor::ReceiveFromServer() {
             SDLNet_TCP_AddSocket(socketSet, remoteSocket);
         }
 
-        // Listen to socket messages
         while (isRemoteInteractorConnected && remoteSocket && isRemoteInteractorEnabled) {
-            // we check first if socket has data, to not block in the TCP_Recv
             int socketsReady = SDLNet_CheckSockets(socketSet, 0);
 
             if (socketsReady == -1) {
@@ -231,19 +238,32 @@ void GameInteractor::ReceiveFromServer() {
 
             char remoteDataReceived[512];
             memset(remoteDataReceived, 0, sizeof(remoteDataReceived));
-            int len = SDLNet_TCP_Recv(remoteSocket, &remoteDataReceived, sizeof(remoteDataReceived));
-            if (!len || !remoteSocket || len == -1) {
+            int len = SDLNet_TCP_Recv(remoteSocket, remoteDataReceived, sizeof(remoteDataReceived));
+            if (len <= 0) {
+                // Either an error occurred or the connection was closed
                 SPDLOG_ERROR("[GameInteractor] SDLNet_TCP_Recv: {}", SDLNet_GetError());
                 break;
             }
 
-            HandleRemoteMessage(remoteDataReceived);
+            receivedData.append(remoteDataReceived, len);
+
+            // Proess all complete packets
+            size_t delimiterPos = receivedData.find("\n");
+            while (delimiterPos != std::string::npos) {
+                // Extract the complete packet until the delimiter
+                std::string packet = receivedData.substr(0, delimiterPos);
+                // Remove the packet (including the delimiter) from the received data
+                receivedData.erase(0, delimiterPos + 1);
+                HandleRemoteMessage(packet);
+                // Find the next delimiter
+                delimiterPos = receivedData.find("\n");
+            }
         }
 
         if (isRemoteInteractorConnected) {
             SDLNet_TCP_Close(remoteSocket);
             isRemoteInteractorConnected = false;
-            SPDLOG_TRACE("[GameInteractor] Ending receiving thread...");
+            SPDLOG_INFO("[GameInteractor] Ending receiving thread...");
         }
     }
 }
@@ -251,8 +271,34 @@ void GameInteractor::ReceiveFromServer() {
 // making it available as it's defined below
 GameInteractionEffectBase* EffectFromJson(std::string name, nlohmann::json payload);
 
-void GameInteractor::HandleRemoteMessage(char message[512]) {
-    nlohmann::json payload = nlohmann::json::parse(message);
+void from_json(const json& j, Vec3f& vec) {
+    j.at("x").get_to(vec.x);
+    j.at("y").get_to(vec.y);
+    j.at("z").get_to(vec.z);
+}
+
+void from_json(const json& j, Vec3s& vec) {
+    j.at("x").get_to(vec.x);
+    j.at("y").get_to(vec.y);
+    j.at("z").get_to(vec.z);
+}
+
+void from_json(const json& j, PosRot& posRot) {
+    j.at("pos").get_to(posRot.pos);
+    j.at("rot").get_to(posRot.rot);
+}
+
+void GameInteractor::HandleRemoteMessage(std::string message) {
+    nlohmann::json payload;
+    try {
+        payload = nlohmann::json::parse(message);
+        if (payload["type"] != "PlayerPosition") {
+            SPDLOG_INFO("Received payload: \n{}\n", message);
+        }
+    } catch (const std::exception& e) {
+        SPDLOG_ERROR("[GameInteractor] Failed to parse message: \n{}\n{}\n", message, e.what());
+        return;
+    }
 
     if (remoteForwarder) {
         remoteForwarder(payload);
@@ -271,6 +317,41 @@ void GameInteractor::HandleRemoteMessage(char message[512]) {
             } else if (IsType<RemovableGameInteractionEffect>(giEffect)) {
                 dynamic_cast<RemovableGameInteractionEffect*>(giEffect)->Remove();
             }
+        }
+    }
+
+    if (payload["type"] == "GiveItem") {
+        auto effect = new GameInteractionEffect::GiveItem();
+        effect->parameters[0] = payload["modId"].get<uint16_t>();
+        effect->parameters[1] = payload["getItemId"].get<uint16_t>();
+        effect->Apply();
+    }
+    if (payload["type"] == "SetSceneFlag") {
+        auto effect = new GameInteractionEffect::SetSceneFlag();
+        effect->parameters[0] = payload["sceneNum"].get<int16_t>();
+        effect->parameters[1] = payload["flagType"].get<int16_t>();
+        effect->parameters[2] = payload["flag"].get<int16_t>();
+        effect->Apply();
+    }
+    if (payload["type"] == "SetFlag") {
+        auto effect = new GameInteractionEffect::SetFlag();
+        effect->parameters[0] = payload["flagType"].get<int16_t>();
+        effect->parameters[1] = payload["flag"].get<int16_t>();
+        effect->Apply();
+    }
+    if (payload["type"] == "PlayerPosition") {
+        GameInteractor::State::CoopPlayerPositions[payload["clientId"].get<uint32_t>()] = { payload["sceneNum"].get<int16_t>(), payload["posRot"].get<PosRot>() };
+    }
+    if (payload["type"] == "PushSaveState" && IsSaveLoaded()) {
+        ParseSaveStateFromRemote(payload);
+    }
+    if (payload["type"] == "RequestSaveState" && IsSaveLoaded()) {
+        PushSaveStateToRemote();
+    }
+    if (payload["type"] == "RoomClientIds") {
+        GameInteractor::State::CoopPlayerIds = payload["clientIds"].get<std::vector<uint32_t>>();
+        if (IsSaveLoaded()) {
+            GameInteractor_SpawnCoopFairies();
         }
     }
 }

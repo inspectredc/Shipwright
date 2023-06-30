@@ -744,6 +744,11 @@ void Play_Init(GameState* thisx) {
                     GET_PLAYER(play)->actor.world.pos.y + Player_GetHeight(GET_PLAYER(play)) + 5.0f,
                     GET_PLAYER(play)->actor.world.pos.z, 0, 0, 0, 1, true);
     }
+    // #region SOH [Co-op]
+    if (CVarGetInteger("gRemoteGIScheme", 0) == 2) {
+        GameInteractor_SpawnCoopFairies();
+    }
+    // #endregion
 }
 
 void Play_Update(PlayState* play) {

@@ -702,6 +702,37 @@ extern "C" int32_t GetGIID(uint32_t itemID) {
     return -1;
 }
 
+std::unordered_map<uint32_t, uint32_t> ItemIDtoRandomizerGet {
+    { ITEM_SONG_MINUET, RG_MINUET_OF_FOREST },
+    { ITEM_SONG_BOLERO, RG_BOLERO_OF_FIRE },
+    { ITEM_SONG_SERENADE, RG_SERENADE_OF_WATER },
+    { ITEM_SONG_REQUIEM, RG_REQUIEM_OF_SPIRIT },
+    { ITEM_SONG_NOCTURNE, RG_NOCTURNE_OF_SHADOW },
+    { ITEM_SONG_PRELUDE, RG_PRELUDE_OF_LIGHT },
+    { ITEM_SONG_LULLABY, RG_ZELDAS_LULLABY },
+    { ITEM_SONG_EPONA, RG_EPONAS_SONG },
+    { ITEM_SONG_SARIA, RG_SARIAS_SONG },
+    { ITEM_SONG_SUN, RG_SUNS_SONG },
+    { ITEM_SONG_TIME, RG_SONG_OF_TIME },
+    { ITEM_SONG_STORMS, RG_SONG_OF_STORMS },
+    { ITEM_MEDALLION_FOREST, RG_FOREST_MEDALLION },
+    { ITEM_MEDALLION_FIRE, RG_FIRE_MEDALLION },
+    { ITEM_MEDALLION_WATER, RG_WATER_MEDALLION },
+    { ITEM_MEDALLION_SPIRIT, RG_SPIRIT_MEDALLION },
+    { ITEM_MEDALLION_SHADOW, RG_SHADOW_MEDALLION },
+    { ITEM_MEDALLION_LIGHT, RG_LIGHT_MEDALLION },
+    { ITEM_KOKIRI_EMERALD, RG_KOKIRI_EMERALD },
+    { ITEM_GORON_RUBY, RG_GORON_RUBY },
+    { ITEM_ZORA_SAPPHIRE, RG_ZORA_SAPPHIRE },
+};
+
+extern "C" int32_t GetRGIID(uint32_t itemID) {
+    if (ItemIDtoRandomizerGet.contains(itemID)) {
+        return ItemIDtoRandomizerGet.at(itemID);
+    }
+    return -1;
+}
+
 extern "C" void OTRExtScanner() {
     auto lst = *LUS::Context::GetInstance()->GetResourceManager()->GetArchive()->ListFiles("*").get();
 
@@ -771,6 +802,8 @@ extern "C" void InitOTR() {
     auto remoteIPSize = strlen(remoteIP);
     auto remotePort = CVarGetString("gRemoteGIPort", "");
     auto remotePortSize = strlen(remotePort);
+    auto anchorRoomId = CVarGetString("gAnchorRoomId", "");
+    auto anchorRoomIdSize = strlen(anchorRoomId);
 
     if (remoteIPSize > 0) {
         strncpy(GameInteractor::Instance->remoteIPStr, remoteIP, remoteIPSize);
@@ -778,6 +811,10 @@ extern "C" void InitOTR() {
 
     if (remotePortSize > 0) {
         strncpy(GameInteractor::Instance->remotePortStr, remotePort, remotePortSize);
+    }
+
+    if (anchorRoomIdSize > 0) {
+        strncpy(GameInteractor::Instance->anchorRoomId, anchorRoomId, anchorRoomIdSize);
     }
 #endif
 

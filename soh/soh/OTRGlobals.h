@@ -147,6 +147,7 @@ void Gfx_RegisterBlendedTexture(const char* name, u8* mask, u8* replacement);
 void SaveManager_ThreadPoolWait();
 
 int32_t GetGIID(uint32_t itemID);
+int32_t GetRGIID(uint32_t itemID);
 #endif
 
 #ifdef __cplusplus

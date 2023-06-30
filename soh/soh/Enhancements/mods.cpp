@@ -7,6 +7,8 @@
 #include "soh/Enhancements/randomizer/3drando/random.hpp"
 #include "soh/Enhancements/cosmetics/authenticGfxPatches.h"
 
+using json = nlohmann::json;
+
 extern "C" {
 #include <z64.h>
 #include "macros.h"
@@ -15,7 +17,7 @@ extern "C" {
 #include "functions.h"
 extern SaveContext gSaveContext;
 extern PlayState* gPlayState;
-
+extern void Overlay_DisplayText(float duration, const char* text);
 uint32_t ResourceMgr_IsSceneMasterQuest(s16 sceneNum);
 }
 bool performDelayedSave = false;
@@ -322,6 +324,249 @@ void RegisterAutoSave() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnTransitionEnd>([](int32_t sceneNum) { AutoSave(GET_ITEM_NONE); });
 }
 
+#ifdef ENABLE_REMOTE_CONTROL
+void to_json(json& j, const SavedSceneFlags& flags) {
+    j = json{
+        {"chest", flags.chest},
+        {"swch", flags.swch},
+        {"clear", flags.clear},
+        {"collect", flags.collect},
+    };
+}
+
+void from_json(const json& j, SavedSceneFlags& flags) {
+    j.at("chest").get_to(flags.chest);
+    j.at("swch").get_to(flags.swch);
+    j.at("clear").get_to(flags.clear);
+    j.at("collect").get_to(flags.collect);
+}
+
+void to_json(json& j, const Inventory& inventory) {
+    j = json{
+        {"items", inventory.items},
+        {"ammo", inventory.ammo},
+        {"equipment", inventory.equipment},
+        {"upgrades", inventory.upgrades},
+        {"questItems", inventory.questItems},
+        {"dungeonItems", inventory.dungeonItems},
+        {"dungeonKeys", inventory.dungeonKeys},
+        {"defenseHearts", inventory.defenseHearts},
+        {"gsTokens", inventory.gsTokens}
+    };
+}
+
+void from_json(const json& j, Inventory& inventory) {
+    j.at("items").get_to(inventory.items);
+    j.at("ammo").get_to(inventory.ammo);
+    j.at("equipment").get_to(inventory.equipment);
+    j.at("upgrades").get_to(inventory.upgrades);
+    j.at("questItems").get_to(inventory.questItems);
+    j.at("dungeonItems").get_to(inventory.dungeonItems);
+    j.at("dungeonKeys").get_to(inventory.dungeonKeys);
+    j.at("defenseHearts").get_to(inventory.defenseHearts);
+    j.at("gsTokens").get_to(inventory.gsTokens);
+}
+
+void to_json(json& j, const SaveContext& saveContext) {
+    j = json{
+        {"healthCapacity", saveContext.healthCapacity},
+        {"magicLevel", saveContext.magicLevel},
+        {"magicCapacity", saveContext.magicCapacity},
+        {"isMagicAcquired", saveContext.isMagicAcquired},
+        {"isDoubleMagicAcquired", saveContext.isDoubleMagicAcquired},
+        {"isDoubleDefenseAcquired", saveContext.isDoubleDefenseAcquired},
+        {"bgsFlag", saveContext.bgsFlag},
+        {"swordHealth", saveContext.swordHealth},
+        {"sceneFlags", saveContext.sceneFlags},
+        {"eventChkInf", saveContext.eventChkInf},
+        {"itemGetInf", saveContext.itemGetInf},
+        {"infTable", saveContext.infTable},
+        {"gsFlags", saveContext.gsFlags},
+        {"inventory", saveContext.inventory}
+    };
+}
+
+void from_json(const json& j, SaveContext& saveContext) {
+    j.at("healthCapacity").get_to(saveContext.healthCapacity);
+    j.at("magicLevel").get_to(saveContext.magicLevel);
+    j.at("magicCapacity").get_to(saveContext.magicCapacity);
+    j.at("isMagicAcquired").get_to(saveContext.isMagicAcquired);
+    j.at("isDoubleMagicAcquired").get_to(saveContext.isDoubleMagicAcquired);
+    j.at("isDoubleDefenseAcquired").get_to(saveContext.isDoubleDefenseAcquired);
+    j.at("bgsFlag").get_to(saveContext.bgsFlag);
+    j.at("swordHealth").get_to(saveContext.swordHealth);
+    j.at("sceneFlags").get_to(saveContext.sceneFlags);
+    j.at("eventChkInf").get_to(saveContext.eventChkInf);
+    j.at("itemGetInf").get_to(saveContext.itemGetInf);
+    j.at("infTable").get_to(saveContext.infTable);
+    j.at("gsFlags").get_to(saveContext.gsFlags);
+    j.at("inventory").get_to(saveContext.inventory);
+}
+
+void to_json(json& j, const Vec3f& vec) {
+    j = json{
+        {"x", vec.x},
+        {"y", vec.y},
+        {"z", vec.z}
+    };
+}
+
+void to_json(json& j, const Vec3s& vec) {
+    j = json{
+        {"x", vec.x},
+        {"y", vec.y},
+        {"z", vec.z}
+    };
+}
+
+void to_json(json& j, const PosRot& posRot) {
+    j = json{
+        {"pos", posRot.pos},
+        {"rot", posRot.rot}
+    };
+}
+
+void PushSaveStateToRemote() {
+    json payload = gSaveContext;
+    payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+    payload["type"] = "PushSaveState";
+    // manually update current scene flags
+    payload["sceneFlags"][gPlayState->sceneNum]["chest"] = gPlayState->actorCtx.flags.chest;
+    payload["sceneFlags"][gPlayState->sceneNum]["swch"] = gPlayState->actorCtx.flags.swch;
+    payload["sceneFlags"][gPlayState->sceneNum]["clear"] = gPlayState->actorCtx.flags.clear;
+    payload["sceneFlags"][gPlayState->sceneNum]["collect"] = gPlayState->actorCtx.flags.collect;
+
+    GameInteractor::Instance->TransmitMessageToRemote(payload);
+}
+
+void RequestSaveStateFromRemote() {
+    nlohmann::json payload;
+
+    payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+    payload["type"] = "RequestSaveState";
+
+    GameInteractor::Instance->TransmitMessageToRemote(payload);
+}
+
+void ParseSaveStateFromRemote(nlohmann::json payload) {
+    SaveContext loadedData = payload.get<SaveContext>();
+
+    gSaveContext.healthCapacity = loadedData.healthCapacity;
+    gSaveContext.magicLevel = loadedData.magicLevel;
+    gSaveContext.magicCapacity = gSaveContext.magic = loadedData.magicCapacity;
+    gSaveContext.isMagicAcquired = loadedData.isMagicAcquired;
+    gSaveContext.isDoubleMagicAcquired = loadedData.isDoubleMagicAcquired;
+    gSaveContext.isDoubleDefenseAcquired = loadedData.isDoubleDefenseAcquired;
+    gSaveContext.bgsFlag = loadedData.bgsFlag;
+    gSaveContext.swordHealth = loadedData.swordHealth;
+
+    for (int i = 0; i < 124; i++) {
+        gSaveContext.sceneFlags[i] = loadedData.sceneFlags[i];
+        if (gPlayState->sceneNum == i) {
+            gPlayState->actorCtx.flags.chest = loadedData.sceneFlags[i].chest;
+            gPlayState->actorCtx.flags.swch = loadedData.sceneFlags[i].swch;
+            gPlayState->actorCtx.flags.clear = loadedData.sceneFlags[i].clear;
+            gPlayState->actorCtx.flags.collect = loadedData.sceneFlags[i].collect;
+        }
+    }
+
+    for (int i = 0; i < 14; i++) {
+        gSaveContext.eventChkInf[i] = loadedData.eventChkInf[i];
+    }
+
+    for (int i = 0; i < 4; i++) {
+        gSaveContext.itemGetInf[i] = loadedData.itemGetInf[i];
+    }
+
+    for (int i = 0; i < 30; i++) {
+        gSaveContext.infTable[i] = loadedData.infTable[i];
+    }
+
+    for (int i = 0; i < 6; i++) {
+        gSaveContext.gsFlags[i] = loadedData.gsFlags[i];
+    }
+
+    gSaveContext.inventory = loadedData.inventory;
+    Overlay_DisplayText(10, "State loaded from remote!");
+};
+
+void RegisterAnchorSupport() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnLoadGame>([](int32_t fileNum) {
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || gSaveContext.fileNum > 2) return;
+
+        RequestSaveStateFromRemote();
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnItemReceive>([](GetItemEntry itemEntry) {
+        if (itemEntry.modIndex == MOD_NONE && (itemEntry.itemId == ITEM_KEY_SMALL || itemEntry.itemId == ITEM_KEY_BOSS || itemEntry.itemId == ITEM_SWORD_MASTER)) {
+            return;
+        }
+
+        if (CVarGetInteger("gFromAnchor", 0)) {
+            CVarClear("gFromAnchor");
+            return;
+        }
+
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || !GameInteractor::Instance->IsSaveLoaded()) return;
+
+        nlohmann::json payload;
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "GiveItem";
+        payload["modId"] = itemEntry.tableId;
+        payload["getItemId"] = itemEntry.getItemId;
+
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneFlagSet>([](int16_t sceneNum, int16_t flagType, int16_t flag) {
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || !GameInteractor::Instance->IsSaveLoaded()) return;
+        nlohmann::json payload;
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "SetSceneFlag";
+        payload["sceneNum"] = sceneNum;
+        payload["flagType"] = flagType;
+        payload["flag"] = flag;
+
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnFlagSet>([](int16_t flagType, int16_t flag) {
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || !GameInteractor::Instance->IsSaveLoaded()) return;
+        nlohmann::json payload;
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "SetFlag";
+        payload["flagType"] = flagType;
+        payload["flag"] = flag;
+
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        static uint32_t lastPlayerCount = 0;
+        uint32_t currentPlayerCount =  GameInteractor::State::CoopPlayerIds.size();
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || gPlayState == NULL || !GameInteractor::Instance->IsSaveLoaded()) {
+            lastPlayerCount = currentPlayerCount;
+            return;
+        }
+        Player* player = GET_PLAYER(gPlayState);
+        nlohmann::json payload;
+        float currentPosition = player->actor.world.pos.x + player->actor.world.pos.y + player->actor.world.pos.z + player->actor.world.rot.y;
+        static float lastPosition = 0.0f;
+
+        if (currentPosition == lastPosition && currentPlayerCount == lastPlayerCount) return;
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "PlayerPosition";
+        payload["sceneNum"] = gPlayState->sceneNum;
+        payload["posRot"] = player->actor.world;
+
+        lastPosition = currentPosition;
+        lastPlayerCount = currentPlayerCount;
+
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+    });
+}
+#endif
+
 void RegisterRupeeDash() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
         if (!CVarGetInteger("gRupeeDash", 0)) {
@@ -621,4 +866,7 @@ void InitMods() {
     RegisterBonkDamage();
     RegisterMenuPathFix();
     RegisterMirrorModeHandler();
+    #ifdef ENABLE_REMOTE_CONTROL
+    RegisterAnchorSupport();
+    #endif
 }
