@@ -771,6 +771,8 @@ extern "C" void InitOTR() {
     auto remoteIPSize = strlen(remoteIP);
     auto remotePort = CVarGetString("gRemoteGIPort", "");
     auto remotePortSize = strlen(remotePort);
+    auto anchorRoomId = CVarGetString("gAnchorRoomId", "");
+    auto anchorRoomIdSize = strlen(anchorRoomId);
 
     if (remoteIPSize > 0) {
         strncpy(GameInteractor::Instance->remoteIPStr, remoteIP, remoteIPSize);
@@ -778,6 +780,10 @@ extern "C" void InitOTR() {
 
     if (remotePortSize > 0) {
         strncpy(GameInteractor::Instance->remotePortStr, remotePort, remotePortSize);
+    }
+
+    if (anchorRoomIdSize > 0) {
+        strncpy(GameInteractor::Instance->anchorRoomId, anchorRoomId, anchorRoomIdSize);
     }
 #endif
 

@@ -11,6 +11,7 @@
 #include <objects/object_link_child/object_link_child.h>
 #include <overlays/actors/ovl_En_Bom/z_en_bom.h>
 #include <overlays/actors/ovl_Obj_Switch/z_obj_switch.h>
+#include "soh/Enhancements/game-interactor/GameInteractor.h"
 
 #define FLAGS (ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_DRAW_WHILE_CULLED | ACTOR_FLAG_DRAGGED_BY_HOOKSHOT | ACTOR_FLAG_CAN_PRESS_SWITCH)
 
@@ -575,6 +576,33 @@ void UseItem(uint8_t usedItem, u8 started, Actor* thisx, PlayState* play) {
 void EnPartner_Update(Actor* thisx, PlayState* play) {
     s32 pad;
     EnPartner* this = (EnPartner*)thisx;
+
+    if (this->actor.params >= 3) {
+        if (GameInteractor_GetCoopPlayerScene(this->actor.params - 3) == play->sceneNum) {
+            PosRot coopPlayerPos = GameInteractor_GetCoopPlayerPosition(this->actor.params - 3);
+            // if hidden, immediately update position
+            if (this->actor.world.pos.y == -9999.0f) {
+                this->actor.world = coopPlayerPos;
+                this->actor.world.pos.y += Player_GetHeight(GET_PLAYER(play));
+                this->actor.shape.rot = coopPlayerPos.rot;
+            // Otherwise smoothly update position
+            } else {
+                Math_SmoothStepToF(&this->actor.world.pos.x, coopPlayerPos.pos.x, 0.5f, 1000.0f, 0.0f);
+                Math_SmoothStepToF(&this->actor.world.pos.y, coopPlayerPos.pos.y + Player_GetHeight(GET_PLAYER(play)), 0.5f, 1000.0f, 0.0f);
+                Math_SmoothStepToF(&this->actor.world.pos.z, coopPlayerPos.pos.z, 0.5f, 1000.0f, 0.0f);
+                this->actor.world.rot = coopPlayerPos.rot;
+                this->actor.shape.rot = coopPlayerPos.rot;
+            }
+        } else {
+            this->actor.world.pos.x = -9999.0f;
+            this->actor.world.pos.y = -9999.0f;
+            this->actor.world.pos.z = -9999.0f;
+        }
+
+        SkelAnime_Update(&this->skelAnime);
+        EnPartner_UpdateLights(this, play);
+        return;
+    }
 
     Input sControlInput = play->state.input[this->actor.params];
 

@@ -8,6 +8,7 @@
 
 #define MAX_IP_BUFFER_SIZE 256
 #define MAX_PORT_BUFFER_SIZE 6
+#define MAX_ROOM_ID_BUFFER_SIZE 16
 
 typedef enum {
     /* 0x00 */ GI_LINK_SIZE_NORMAL,
@@ -66,6 +67,7 @@ typedef enum {
 
 #ifdef __cplusplus
 extern "C" {
+#include "z64actor.h"
 #endif
 uint8_t GameInteractor_NoUIActive();
 GILinkSize GameInteractor_GetLinkSize();
@@ -86,6 +88,9 @@ uint8_t GameInteractor_GetRandomWindActive();
 uint8_t GameInteractor_GetRandomBonksActive();
 uint8_t GameInteractor_GetSlipperyFloorActive();
 uint8_t GameInteractor_SecondCollisionUpdate();
+uint8_t GameInteractor_GetCoopPlayerScene(uint32_t playerId);
+PosRot GameInteractor_GetCoopPlayerPosition(uint32_t playerId);
+void GameInteractor_SpawnCoopFairies();
 #ifdef __cplusplus
 }
 #endif
@@ -131,14 +136,18 @@ public:
         static uint8_t RandomBonksActive;
         static uint8_t SlipperyFloorActive;
         static uint8_t SecondCollisionUpdate;
+        static std::vector<uint32_t> CoopPlayerIds;
+        static std::map<uint32_t, std::pair<uint8_t, PosRot>> CoopPlayerPositions;
 
         static void SetPacifistMode(bool active);
     };
 
     #ifdef ENABLE_REMOTE_CONTROL
+    char anchorRoomId[MAX_ROOM_ID_BUFFER_SIZE];
     char remoteIPStr[MAX_IP_BUFFER_SIZE];
     char remotePortStr[MAX_PORT_BUFFER_SIZE];
     bool isRemoteInteractorEnabled;
+    bool isRemoteInteractorConnected;
 
     void EnableRemoteInteractor();
     void DisableRemoteInteractor();
@@ -207,6 +216,7 @@ public:
     class RawAction {
     public:
         static void AddOrRemoveHealthContainers(int16_t amount);
+        static void GiveItem(uint16_t modId, uint16_t itemId);
         static void AddOrRemoveMagic(int8_t amount);
         static void HealOrDamagePlayer(int16_t hearts);
         static void SetPlayerHealth(int16_t hearts);
@@ -241,11 +251,10 @@ public:
         IPaddress remoteIP;
         TCPsocket remoteSocket;
         std::thread remoteThreadReceive;
-        bool isRemoteInteractorConnected;
         std::function<void(nlohmann::json)> remoteForwarder;
 
         void ReceiveFromServer();
-        void HandleRemoteMessage(char message[512]);
+        void HandleRemoteMessage(std::string message);
     #endif
 };
 

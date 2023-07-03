@@ -1,5 +1,12 @@
 #include "GameInteractor.h"
 
+extern "C" {
+#include "z64actor.h"
+#include "functions.h"
+extern PlayState* gPlayState;
+extern "C" s16 gEnPartnerId;
+}
+
 // MARK: - State Definitions
 
 bool GameInteractor::State::NoUIActive = 0;
@@ -20,6 +27,8 @@ uint8_t GameInteractor::State::RandomWindSecondsSinceLastDirectionChange = 0;
 uint8_t GameInteractor::State::RandomBonksActive = 0;
 uint8_t GameInteractor::State::SlipperyFloorActive = 0;
 uint8_t GameInteractor::State::SecondCollisionUpdate = 0;
+std::vector<uint32_t> GameInteractor::State::CoopPlayerIds = {};
+std::map<uint32_t, std::pair<uint8_t, PosRot>> GameInteractor::State::CoopPlayerPositions = {};
 
 void GameInteractor::State::SetPacifistMode(bool active) {
     PacifistModeActive = active;
@@ -126,4 +135,46 @@ uint8_t GameInteractor_GetSlipperyFloorActive() {
 // MARK: - GameInteractor::State::SecondCollisionUpdate
 uint8_t GameInteractor_SecondCollisionUpdate() {
     return GameInteractor::State::SecondCollisionUpdate;
+}
+
+uint8_t GameInteractor_GetCoopPlayerScene(uint32_t playerId) {
+    if (
+        GameInteractor::State::CoopPlayerPositions.find(playerId) == GameInteractor::State::CoopPlayerPositions.end() || 
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return 0;
+    }
+
+    return GameInteractor::State::CoopPlayerPositions[playerId].first;
+}
+
+PosRot GameInteractor_GetCoopPlayerPosition(uint32_t playerId) {
+    if (
+        GameInteractor::State::CoopPlayerPositions.find(playerId) == GameInteractor::State::CoopPlayerPositions.end() ||
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return {-9999.0, -9999.0, -9999.0, 0, 0, 0};
+    }
+
+    return GameInteractor::State::CoopPlayerPositions[playerId].second;
+}
+
+void GameInteractor_SpawnCoopFairies() {
+    if (gPlayState == NULL) return;
+    Actor* actor = gPlayState->actorCtx.actorLists[ACTORCAT_ITEMACTION].head;
+
+    while (actor != NULL) {
+        if (gEnPartnerId == actor->id) {
+            Actor_Kill(actor);
+        }
+        actor = actor->next;
+    }
+
+    if (GameInteractor::State::CoopPlayerIds.size() == 0) {
+        return;
+    }
+
+    for (uint32_t playerId : GameInteractor::State::CoopPlayerIds) {
+        Actor_Spawn(&gPlayState->actorCtx, gPlayState, gEnPartnerId, -9999.0, -9999.0, -9999.0, 0, 0, 0, 3 + playerId, false);
+    }
 }

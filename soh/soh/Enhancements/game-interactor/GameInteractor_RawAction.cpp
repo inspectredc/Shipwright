@@ -2,6 +2,8 @@
 #include <libultraship/bridge.h>
 #include "soh/Enhancements/cosmetics/CosmeticsEditor.h"
 #include "soh/Enhancements/randomizer/3drando/random.hpp"
+#include <soh/Enhancements/item-tables/ItemTableManager.h>
+#include <soh/util.h>
 #include <math.h>
 #include "soh/Enhancements/debugger/colViewer.h"
 
@@ -10,6 +12,7 @@ extern "C" {
 #include "macros.h"
 #include "functions.h"
 extern PlayState* gPlayState;
+extern void Overlay_DisplayText(float duration, const char* text);
 }
 
 #include "overlays/actors/ovl_En_Niw/z_en_niw.h"
@@ -119,6 +122,30 @@ void GameInteractor::RawAction::ElectrocutePlayer() {
     Player* player = GET_PLAYER(gPlayState);
     func_80837C0C(gPlayState, player, 4, 0, 0, 0, 0);
 }
+
+void GameInteractor::RawAction::GiveItem(uint16_t modId, uint16_t itemId) {
+    CVarSetInteger("gFromAnchor", 1);
+    GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(modId, itemId);
+    Player* player = GET_PLAYER(gPlayState);
+    if (getItemEntry.modIndex == MOD_NONE) {
+        if (getItemEntry.getItemId == GI_SWORD_BGS) {
+            gSaveContext.bgsFlag = true;
+        }
+        Item_Give(gPlayState, getItemEntry.itemId);
+        if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
+            Overlay_DisplayText(CVarGetInteger("gInterpolationFPS", 20) * 0.5f, ("Received " + SohUtils::GetItemName(getItemEntry.itemId)).c_str());
+        }
+    } else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
+        if (getItemEntry.getItemId == RG_ICE_TRAP) {
+            gSaveContext.pendingIceTrapCount++;
+        } else {
+            Randomizer_Item_Give(gPlayState, getItemEntry);
+            if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
+                Overlay_DisplayText(CVarGetInteger("gInterpolationFPS", 20) * 0.5f, ("Received " + SohUtils::GetRandomizerItemName(getItemEntry.getItemId)).c_str());
+            }
+        }
+    }
+};
 
 void GameInteractor::RawAction::KnockbackPlayer(float strength) {
     Player* player = GET_PLAYER(gPlayState);
