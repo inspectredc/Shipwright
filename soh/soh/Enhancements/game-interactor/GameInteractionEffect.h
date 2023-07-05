@@ -77,17 +77,22 @@ namespace GameInteractionEffect {
         slipperyFloor,
     };
 
-    class GiveItem: public GameInteractionEffectBase, public ParameterizedGameInteractionEffect {
-        GameInteractionEffectQueryResult CanBeApplied() override;
-        void _Apply() override;
-    };
-
     class SetSceneFlag: public GameInteractionEffectBase, public ParameterizedGameInteractionEffect {
         GameInteractionEffectQueryResult CanBeApplied() override;
         void _Apply() override;
     };
 
+    class UnsetSceneFlag: public GameInteractionEffectBase, public ParameterizedGameInteractionEffect {
+        GameInteractionEffectQueryResult CanBeApplied() override;
+        void _Apply() override;
+    };
+
     class SetFlag: public GameInteractionEffectBase, public ParameterizedGameInteractionEffect {
+        GameInteractionEffectQueryResult CanBeApplied() override;
+        void _Apply() override;
+    };
+
+    class UnsetFlag: public GameInteractionEffectBase, public ParameterizedGameInteractionEffect {
         GameInteractionEffectQueryResult CanBeApplied() override;
         void _Apply() override;
     };
@@ -299,6 +304,11 @@ namespace GameInteractionEffect {
         GameInteractionEffectQueryResult CanBeApplied() override;
         void _Apply() override;
         void _Remove() override;
+    };
+
+    class GiveItem: public GameInteractionEffectBase, public ParameterizedGameInteractionEffect {
+        GameInteractionEffectQueryResult CanBeApplied() override;
+        void _Apply() override;
     };
 }
 

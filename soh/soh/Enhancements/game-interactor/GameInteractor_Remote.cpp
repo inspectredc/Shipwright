@@ -375,6 +375,19 @@ void GameInteractor::HandleRemoteMessage(std::string message) {
         GameInteractor::State::CoopPlayerEndFrames2[payload["clientId"].get<uint32_t>()] = payload["endFrame2"].get<float>();
         GameInteractor::State::CoopPlayerModes2[payload["clientId"].get<uint32_t>()] = payload["mode2"].get<uint8_t>();
     }
+    if (payload["type"] == "UnsetSceneFlag") {
+        auto effect = new GameInteractionEffect::UnsetSceneFlag();
+        effect->parameters[0] = payload["sceneNum"].get<int16_t>();
+        effect->parameters[1] = payload["flagType"].get<int16_t>();
+        effect->parameters[2] = payload["flag"].get<int16_t>();
+        effect->Apply();
+    }
+    if (payload["type"] == "UnsetFlag") {
+        auto effect = new GameInteractionEffect::UnsetFlag();
+        effect->parameters[0] = payload["flagType"].get<int16_t>();
+        effect->parameters[1] = payload["flag"].get<int16_t>();
+        effect->Apply();
+    }
     if (payload["type"] == "PushSaveState" && IsSaveLoaded()) {
         ParseSaveStateFromRemote(payload);
     }

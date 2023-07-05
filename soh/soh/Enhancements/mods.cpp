@@ -502,7 +502,8 @@ void ParseSaveStateFromRemote(nlohmann::json payload) {
         gSaveContext.itemGetInf[i] = loadedData.itemGetInf[i];
     }
 
-    for (int i = 0; i < 30; i++) {
+    // Skip last row of infTable, don't want to sync swordless flag
+    for (int i = 0; i < 29; i++) {
         gSaveContext.infTable[i] = loadedData.infTable[i];
     }
 
@@ -510,7 +511,14 @@ void ParseSaveStateFromRemote(nlohmann::json payload) {
         gSaveContext.gsFlags[i] = loadedData.gsFlags[i];
     }
 
+    u8 hasMasterSword = CHECK_OWNED_EQUIP(EQUIP_SWORD, 1);
     gSaveContext.inventory = loadedData.inventory;
+    // Restore master sword state
+    if (hasMasterSword) {
+        gSaveContext.inventory.equipment |= 0x2;
+    } else {
+        gSaveContext.inventory.equipment &= ~0x2;
+    }
     Overlay_DisplayText(10, "State loaded from remote!");
 };
 
@@ -554,11 +562,42 @@ void RegisterAnchorSupport() {
         GameInteractor::Instance->TransmitMessageToRemote(payload);
     });
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnFlagSet>([](int16_t flagType, int16_t flag) {
+        if (flagType == FLAG_INF_TABLE && flag == INFTABLE_SWORDLESS) {
+            return;
+        }
+
         if (!GameInteractor::Instance->isRemoteInteractorConnected || !GameInteractor::Instance->IsSaveLoaded()) return;
         nlohmann::json payload;
 
         payload["roomId"] = CVarGetString("gAnchorRoomId", "");
         payload["type"] = "SetFlag";
+        payload["flagType"] = flagType;
+        payload["flag"] = flag;
+
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneFlagUnset>([](int16_t sceneNum, int16_t flagType, int16_t flag) {
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || !GameInteractor::Instance->IsSaveLoaded()) return;
+        nlohmann::json payload;
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "UnsetSceneFlag";
+        payload["sceneNum"] = sceneNum;
+        payload["flagType"] = flagType;
+        payload["flag"] = flag;
+
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnFlagUnset>([](int16_t flagType, int16_t flag) {
+        if (flagType == FLAG_INF_TABLE && flag == INFTABLE_SWORDLESS) {
+            return;
+        }
+
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || !GameInteractor::Instance->IsSaveLoaded()) return;
+        nlohmann::json payload;
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "UnsetFlag";
         payload["flagType"] = flagType;
         payload["flag"] = flag;
 

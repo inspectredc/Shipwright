@@ -123,11 +123,6 @@ void GameInteractor::RawAction::ElectrocutePlayer() {
     func_80837C0C(gPlayState, player, 4, 0, 0, 0, 0);
 }
 
-void GameInteractor::RawAction::KnockbackPlayer(float strength) {
-    Player* player = GET_PLAYER(gPlayState);
-    func_8002F71C(gPlayState, &player->actor, strength * 5, player->actor.world.rot.y + 0x8000, strength * 5);
-}
-
 void GameInteractor::RawAction::GiveItem(uint16_t modId, uint16_t itemId) {
     CVarSetInteger("gFromAnchor", 1);
     GetItemEntry getItemEntry = ItemTableManager::Instance->RetrieveItemEntry(modId, itemId);
@@ -138,7 +133,7 @@ void GameInteractor::RawAction::GiveItem(uint16_t modId, uint16_t itemId) {
         }
         Item_Give(gPlayState, getItemEntry.itemId);
         if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
-            Overlay_DisplayText(10.0f, ("Received " + SohUtils::GetItemName(getItemEntry.itemId)).c_str());
+            Overlay_DisplayText(CVarGetInteger("gInterpolationFPS", 20) * 0.5f, ("Received " + SohUtils::GetItemName(getItemEntry.itemId)).c_str());
         }
     } else if (getItemEntry.modIndex == MOD_RANDOMIZER) {
         if (getItemEntry.getItemId == RG_ICE_TRAP) {
@@ -146,11 +141,16 @@ void GameInteractor::RawAction::GiveItem(uint16_t modId, uint16_t itemId) {
         } else {
             Randomizer_Item_Give(gPlayState, getItemEntry);
             if (getItemEntry.getItemCategory != ITEM_CATEGORY_JUNK) {
-                Overlay_DisplayText(10.0f, ("Received " + SohUtils::GetRandomizerItemName(getItemEntry.getItemId)).c_str());
+                Overlay_DisplayText(CVarGetInteger("gInterpolationFPS", 20) * 0.5f, ("Received " + SohUtils::GetRandomizerItemName(getItemEntry.getItemId)).c_str());
             }
         }
     }
 };
+
+void GameInteractor::RawAction::KnockbackPlayer(float strength) {
+    Player* player = GET_PLAYER(gPlayState);
+    func_8002F71C(gPlayState, &player->actor, strength * 5, player->actor.world.rot.y + 0x8000, strength * 5);
+}
 
 void GameInteractor::RawAction::SetSceneFlag(int16_t sceneNum, int16_t flagType, int16_t flag) {
     switch (flagType) {
@@ -191,6 +191,45 @@ void GameInteractor::RawAction::SetSceneFlag(int16_t sceneNum, int16_t flagType,
     }
 };
 
+void GameInteractor::RawAction::UnsetSceneFlag(int16_t sceneNum, int16_t flagType, int16_t flag) {
+    switch (flagType) {
+        case FlagType::FLAG_SCENE_SWITCH:
+            if (sceneNum == gPlayState->sceneNum) {
+                if (flag < 0x20) {
+                    gPlayState->actorCtx.flags.swch &= ~(1 << flag);
+                } else {
+                    gPlayState->actorCtx.flags.tempSwch &= ~(1 << (flag - 0x20));
+                }
+            }
+            if (flag < 0x20) {
+                gSaveContext.sceneFlags[sceneNum].swch &= ~(1 << flag);
+            }
+            break;
+        case FlagType::FLAG_SCENE_CLEAR:
+            if (sceneNum == gPlayState->sceneNum) gPlayState->actorCtx.flags.clear &= ~(1 << flag);
+            gSaveContext.sceneFlags[sceneNum].clear &= ~(1 << flag);
+            break;
+        case FlagType::FLAG_SCENE_TREASURE:
+            if (sceneNum == gPlayState->sceneNum) gPlayState->actorCtx.flags.chest &= ~(1 << flag);
+            gSaveContext.sceneFlags[sceneNum].chest &= ~(1 << flag);
+            break;
+        case FlagType::FLAG_SCENE_COLLECTIBLE:
+            if (sceneNum == gPlayState->sceneNum) {
+                if (flag != 0) {
+                    if (flag < 0x20) {
+                        gPlayState->actorCtx.flags.collect &= ~(1 << flag);
+                    } else {
+                        gPlayState->actorCtx.flags.tempCollect &= ~(1 << (flag - 0x20));
+                    }
+                }
+            }
+            if (flag != 0 && flag < 0x20) {
+                gSaveContext.sceneFlags[sceneNum].collect &= ~(1 << flag);
+            }
+            break;
+    }
+};
+
 void GameInteractor::RawAction::SetFlag(int16_t flagType, int16_t flag) {
     switch (flagType) {
         case FlagType::FLAG_EVENT_CHECK_INF:
@@ -210,6 +249,26 @@ void GameInteractor::RawAction::SetFlag(int16_t flagType, int16_t flag) {
             break;
         case FlagType::FLAG_GS_TOKEN:
             SET_GS_FLAGS((flag & 0x1F00) >> 8, flag & 0xFF);
+            break;
+    }
+};
+
+void GameInteractor::RawAction::UnsetFlag(int16_t flagType, int16_t flag) {
+    switch (flagType) {
+        case FlagType::FLAG_EVENT_CHECK_INF:
+            gSaveContext.eventChkInf[flag >> 4] &= ~(1 << (flag & 0xF));
+            break;
+        case FlagType::FLAG_ITEM_GET_INF:
+            gSaveContext.itemGetInf[flag >> 4] &= ~(1 << (flag & 0xF));
+            break;
+        case FlagType::FLAG_INF_TABLE:
+            gSaveContext.infTable[flag >> 4] &= ~(1 << (flag & 0xF));
+            break;
+        case FlagType::FLAG_EVENT_INF:
+            gSaveContext.eventInf[flag >> 4] &= ~(1 << (flag & 0xF));
+            break;
+        case FlagType::FLAG_RANDOMIZER_INF:
+            gSaveContext.randomizerInf[flag >> 4] &= ~(1 << (flag & 0xF));
             break;
     }
 };

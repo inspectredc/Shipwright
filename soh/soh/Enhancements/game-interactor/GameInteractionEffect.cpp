@@ -47,21 +47,10 @@ GameInteractionEffectQueryResult RemovableGameInteractionEffect::Remove() {
 
 namespace GameInteractionEffect {
 
-    GameInteractionEffectQueryResult GiveItem::CanBeApplied() {
-        if (!GameInteractor::IsSaveLoaded()) {
-            return GameInteractionEffectQueryResult::NotPossible;
-        }
-
-        return GameInteractionEffectQueryResult::Possible;
-    }
-
-    void GiveItem::_Apply() {
-        GameInteractor::RawAction::GiveItem(parameters[0], parameters[1]);
-    }
-
+    // MARK: - Flags
     GameInteractionEffectQueryResult SetSceneFlag::CanBeApplied() {
         if (!GameInteractor::IsSaveLoaded()) {
-            return GameInteractionEffectQueryResult::NotPossible;
+            return GameInteractionEffectQueryResult::TemporarilyNotPossible;
         }
 
         return GameInteractionEffectQueryResult::Possible;
@@ -71,9 +60,21 @@ namespace GameInteractionEffect {
         GameInteractor::RawAction::SetSceneFlag(parameters[0], parameters[1], parameters[2]);
     }
 
+    GameInteractionEffectQueryResult UnsetSceneFlag::CanBeApplied() {
+        if (!GameInteractor::IsSaveLoaded()) {
+            return GameInteractionEffectQueryResult::TemporarilyNotPossible;
+        }
+
+        return GameInteractionEffectQueryResult::Possible;
+    }
+
+    void UnsetSceneFlag::_Apply() {
+        GameInteractor::RawAction::UnsetSceneFlag(parameters[0], parameters[1], parameters[2]);
+    }
+
     GameInteractionEffectQueryResult SetFlag::CanBeApplied() {
         if (!GameInteractor::IsSaveLoaded()) {
-            return GameInteractionEffectQueryResult::NotPossible;
+            return GameInteractionEffectQueryResult::TemporarilyNotPossible;
         }
 
         return GameInteractionEffectQueryResult::Possible;
@@ -81,6 +82,18 @@ namespace GameInteractionEffect {
 
     void SetFlag::_Apply() {
         GameInteractor::RawAction::SetFlag(parameters[0], parameters[1]);
+    }
+
+    GameInteractionEffectQueryResult UnsetFlag::CanBeApplied() {
+        if (!GameInteractor::IsSaveLoaded()) {
+            return GameInteractionEffectQueryResult::TemporarilyNotPossible;
+        }
+
+        return GameInteractionEffectQueryResult::Possible;
+    }
+
+    void UnsetFlag::_Apply() {
+        GameInteractor::RawAction::UnsetFlag(parameters[0], parameters[1]);
     }
 
     // MARK: - ModifyHeartContainers
@@ -625,5 +638,18 @@ namespace GameInteractionEffect {
     }
     void SlipperyFloor::_Remove() {
         GameInteractor::State::SlipperyFloorActive = 0;
+    }
+
+    // MARK: - GiveItem
+    GameInteractionEffectQueryResult GiveItem::CanBeApplied() {
+        if (!GameInteractor::IsSaveLoaded()) {
+            return GameInteractionEffectQueryResult::NotPossible;
+        }
+
+        return GameInteractionEffectQueryResult::Possible;
+    }
+
+    void GiveItem::_Apply() {
+        GameInteractor::RawAction::GiveItem(parameters[0], parameters[1]);
     }
 }

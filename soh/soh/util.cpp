@@ -439,7 +439,7 @@ std::vector<std::string> randomizerItemNames = {
     "Buy Deku Nut (5)",
     "Buy Arrows (30)",
     "Buy Arrows (50)",
-    "Buy Bombs (525)",
+    "Buy Bombs (5/25)",
     "Buy Deku Nut (10)",
     "Buy Deku Stick (1)",
     "Buy Bombs (10)",
@@ -463,7 +463,7 @@ std::vector<std::string> randomizerItemNames = {
     "Buy Arrows (10)",
     "Buy Bombs (20)",
     "Buy Bombs (30)",
-    "Buy Bombs (535)",
+    "Buy Bombs (5/35)",
     "Buy Red Potion (40)",
     "Buy Red Potion (50)",
     "Triforce",
@@ -496,20 +496,25 @@ std::vector<std::string> questItemNames = {
         "Stone of Agony",
         "Gerudo's Card",
         "Gold Skulltula Token",
+        "Heart Piece",
 };
 
+// To be used with SceneID enum (SCENE_ prefix)
 const std::string& SohUtils::GetSceneName(int32_t scene) {
     return sceneNames[scene];
 }
 
+// To be used with ItemID enum (ITEM_ prefix)
 const std::string& SohUtils::GetItemName(int32_t item) {
     return itemNames[item];
 }
 
+// To be used with RandomizerGet enum (RG_ prefix)
 const std::string& SohUtils::GetRandomizerItemName(int32_t item) {
     return randomizerItemNames[item];
 }
 
+// To be used with QuestItem enum (QUEST_ prefix)
 const std::string& SohUtils::GetQuestItemName(int32_t item) {
     return questItemNames[item];
 }
