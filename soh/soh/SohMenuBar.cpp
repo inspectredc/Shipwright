@@ -1386,6 +1386,12 @@ void DrawRemoteControlMenu() {
             ImGui::Spacing();
         } else {
             static ImVec4 anchorTunicColor;
+            static bool anchorColorFlag = true;
+            if (anchorColorFlag) {
+                anchorColorFlag = false;
+                Color_RGBA8 initTunicColor = CVarGetColor("gAnchorTunicColor", {0, 0, 0, 255});
+                anchorTunicColor = {initTunicColor.r / 255.0f, initTunicColor.g / 255.0f, initTunicColor.b / 255.0f, initTunicColor.a / 255.0f};
+            }
             if (ImGui::ColorEdit3("anchorTunicColor", (float*)&anchorTunicColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
                 Color_RGBA8 color;
                 color.r = anchorTunicColor.x * 255.0;
