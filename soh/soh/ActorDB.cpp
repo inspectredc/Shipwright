@@ -604,8 +604,25 @@ static ActorDBInit EnPartnerInit = {
 };
 extern "C" s16 gEnPartnerId;
 
+#include "src/overlays/actors/ovl_Dummy_Player/z_dummy_player.h"
+static ActorDBInit DummyPlayerInit = {
+    "Dummy_Player",
+    "Dummy",
+    ACTORCAT_ITEMACTION,
+    (ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_DRAW_WHILE_CULLED | ACTOR_FLAG_CAN_PRESS_SWITCH),
+    OBJECT_GAMEPLAY_KEEP,
+    sizeof(DummyPlayer),
+    (ActorFunc)DummyPlayer_Init,
+    (ActorFunc)DummyPlayer_Destroy,
+    (ActorFunc)DummyPlayer_Update,
+    (ActorFunc)DummyPlayer_Draw,
+    nullptr,
+};
+extern "C" s16 gDummyPlayerId;
+
 void ActorDB::AddBuiltInCustomActors() {
     gEnPartnerId = ActorDB::Instance->AddEntry(EnPartnerInit).entry.id;
+    gDummyPlayerId = ActorDB::Instance->AddEntry(DummyPlayerInit).entry.id;
 }
 
 extern "C" ActorDBEntry* ActorDB_Retrieve(const int id) {

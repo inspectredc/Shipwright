@@ -183,14 +183,15 @@ void GameInteractor::DisableRemoteInteractor() {
     if (CVarGetInteger("gRemoteGIScheme", 0) == 2) {
         GameInteractor::State::CoopPlayerIds.clear();
         if (IsSaveLoaded()) {
-            GameInteractor_SpawnCoopFairies();
+            //GameInteractor_SpawnCoopFairies();
+            GameInteractor_SpawnCoopDummyPlayers();
         }
     }
 }
 
 void GameInteractor::TransmitMessageToRemote(nlohmann::json payload) {
     std::string jsonPayload = payload.dump();
-    if (payload["type"] != "PlayerPosition") {
+    if (payload["type"] != "PlayerData") {
         SPDLOG_INFO("Sending payload: \n{}\n", jsonPayload);
     }
     jsonPayload += "\n";
@@ -288,11 +289,28 @@ void from_json(const json& j, PosRot& posRot) {
     j.at("rot").get_to(posRot.rot);
 }
 
+void from_json(const json& j, Cylinder16& cylinder) {
+    j.at("radius").get_to(cylinder.radius);
+    j.at("height").get_to(cylinder.height);
+    j.at("yShift").get_to(cylinder.yShift);
+    j.at("pos").get_to(cylinder.pos);
+}
+
+void from_json(const json& j, Color_RGB8& color) {
+    j.at("r").get_to(color.r);
+    j.at("g").get_to(color.g);
+    j.at("b").get_to(color.b);
+}
+
+void from_json(const json& j, AnimationHeaderCommon& common) {
+    j.at("frameCount").get_to(common.frameCount);
+}
+
 void GameInteractor::HandleRemoteMessage(std::string message) {
     nlohmann::json payload;
     try {
         payload = nlohmann::json::parse(message);
-        if (payload["type"] != "PlayerPosition") {
+        if (payload["type"] != "PlayerData") {
             SPDLOG_INFO("Received payload: \n{}\n", message);
         }
     } catch (const std::exception& e) {
@@ -339,8 +357,23 @@ void GameInteractor::HandleRemoteMessage(std::string message) {
         effect->parameters[1] = payload["flag"].get<int16_t>();
         effect->Apply();
     }
-    if (payload["type"] == "PlayerPosition") {
+    if (payload["type"] == "PlayerData") {
         GameInteractor::State::CoopPlayerPositions[payload["clientId"].get<uint32_t>()] = { payload["sceneNum"].get<int16_t>(), payload["posRot"].get<PosRot>() };
+        GameInteractor::State::CoopPlayerShapeRotations[payload["clientId"].get<uint32_t>()] = payload["rot"].get<Vec3s>();
+        GameInteractor::State::CoopPlayerAges[payload["clientId"].get<uint32_t>()] = payload["linkAge"].get<int32_t>();
+        GameInteractor::State::CoopPlayerCylinders[payload["clientId"].get<uint32_t>()] = payload["cylinder"].get<Cylinder16>();
+        GameInteractor::State::CoopPlayerColors[payload["clientId"].get<uint32_t>()] = payload["color"].get<Color_RGB8>();
+        GameInteractor::State::CoopPlayerAnim[payload["clientId"].get<uint32_t>()] = payload["anim"].get<std::string>();
+        GameInteractor::State::CoopPlayerAnimUpper[payload["clientId"].get<uint32_t>()] = payload["animUpper"].get<std::string>();
+        GameInteractor::State::CoopPlayerStateFlags2[payload["clientId"].get<uint32_t>()] = payload["stateFlags2"].get<uint32_t>();
+        GameInteractor::State::CoopPlayerPlaySpeeds[payload["clientId"].get<uint32_t>()] = payload["playSpeed"].get<float>();
+        GameInteractor::State::CoopPlayerStartFrames[payload["clientId"].get<uint32_t>()] = payload["startFrame"].get<float>();
+        GameInteractor::State::CoopPlayerEndFrames[payload["clientId"].get<uint32_t>()] = payload["endFrame"].get<float>();
+        GameInteractor::State::CoopPlayerModes[payload["clientId"].get<uint32_t>()] = payload["mode"].get<uint8_t>();
+        GameInteractor::State::CoopPlayerPlaySpeeds2[payload["clientId"].get<uint32_t>()] = payload["playSpeed2"].get<float>();
+        GameInteractor::State::CoopPlayerStartFrames2[payload["clientId"].get<uint32_t>()] = payload["startFrame2"].get<float>();
+        GameInteractor::State::CoopPlayerEndFrames2[payload["clientId"].get<uint32_t>()] = payload["endFrame2"].get<float>();
+        GameInteractor::State::CoopPlayerModes2[payload["clientId"].get<uint32_t>()] = payload["mode2"].get<uint8_t>();
     }
     if (payload["type"] == "PushSaveState" && IsSaveLoaded()) {
         ParseSaveStateFromRemote(payload);
@@ -351,7 +384,8 @@ void GameInteractor::HandleRemoteMessage(std::string message) {
     if (payload["type"] == "RoomClientIds") {
         GameInteractor::State::CoopPlayerIds = payload["clientIds"].get<std::vector<uint32_t>>();
         if (IsSaveLoaded()) {
-            GameInteractor_SpawnCoopFairies();
+            //GameInteractor_SpawnCoopFairies();
+            GameInteractor_SpawnCoopDummyPlayers();
         }
     }
 }

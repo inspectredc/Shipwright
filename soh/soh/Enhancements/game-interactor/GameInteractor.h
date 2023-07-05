@@ -4,7 +4,9 @@
 #define GameInteractor_h
 
 #include "GameInteractionEffect.h"
+#include <libultraship/color.h>
 #include "soh/Enhancements/item-tables/ItemTableTypes.h"
+#include "objects/gameplay_keep/gameplay_keep.h"
 
 #define MAX_IP_BUFFER_SIZE 256
 #define MAX_PORT_BUFFER_SIZE 6
@@ -90,7 +92,19 @@ uint8_t GameInteractor_GetSlipperyFloorActive();
 uint8_t GameInteractor_SecondCollisionUpdate();
 uint8_t GameInteractor_GetCoopPlayerScene(uint32_t playerId);
 PosRot GameInteractor_GetCoopPlayerPosition(uint32_t playerId);
+Vec3s GameInteractor_GetCoopPlayerShapeRotation(uint32_t playerId);
+int32_t GameInteractor_GetCoopPlayerAge(uint32_t playerId);
+Cylinder16 GameInteractor_GetCoopPlayerCylinder(uint32_t playerId);
+Color_RGB8 GameInteractor_GetCoopPlayerColor(uint32_t playerId);
+char* GameInteractor_GetCoopPlayerAnim(uint32_t playerId, char* anim);
+char* GameInteractor_GetCoopPlayerAnimUpper(uint32_t playerId, char* anim);
+uint32_t GameInteractor_GetCoopPlayerStateFlags2(uint32_t playerId);
+float GameInteractor_GetCoopPlayerPlaySpeed(uint32_t playerId, bool isUpper);
+float GameInteractor_GetCoopPlayerStartFrame(uint32_t playerId, bool isUpper);
+float GameInteractor_GetCoopPlayerEndFrame(uint32_t playerId, bool isUpper);
+uint8_t GameInteractor_GetCoopPlayerMode(uint32_t playerId, bool isUpper);
 void GameInteractor_SpawnCoopFairies();
+void GameInteractor_SpawnCoopDummyPlayers();
 #ifdef __cplusplus
 }
 #endif
@@ -138,6 +152,21 @@ public:
         static uint8_t SecondCollisionUpdate;
         static std::vector<uint32_t> CoopPlayerIds;
         static std::map<uint32_t, std::pair<uint8_t, PosRot>> CoopPlayerPositions;
+        static std::unordered_map<uint32_t, Vec3s> CoopPlayerShapeRotations;
+        static std::unordered_map<uint32_t, int32_t> CoopPlayerAges;
+        static std::unordered_map<uint32_t, Cylinder16> CoopPlayerCylinders;
+        static std::unordered_map<uint32_t, Color_RGB8> CoopPlayerColors;
+        static std::unordered_map<uint32_t, std::string> CoopPlayerAnim;
+        static std::unordered_map<uint32_t, std::string> CoopPlayerAnimUpper;
+        static std::unordered_map<uint32_t, uint32_t> CoopPlayerStateFlags2;
+        static std::unordered_map<uint32_t, float> CoopPlayerPlaySpeeds;
+        static std::unordered_map<uint32_t, float> CoopPlayerStartFrames;
+        static std::unordered_map<uint32_t, float> CoopPlayerEndFrames;
+        static std::unordered_map<uint32_t, uint8_t> CoopPlayerModes;
+        static std::unordered_map<uint32_t, float> CoopPlayerPlaySpeeds2;
+        static std::unordered_map<uint32_t, float> CoopPlayerStartFrames2;
+        static std::unordered_map<uint32_t, float> CoopPlayerEndFrames2;
+        static std::unordered_map<uint32_t, uint8_t> CoopPlayerModes2;
 
         static void SetPacifistMode(bool active);
     };

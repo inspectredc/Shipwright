@@ -1,5 +1,6 @@
 #include "mods.h"
 #include <libultraship/bridge.h>
+#include <libultraship/color.h>
 #include "game-interactor/GameInteractor.h"
 #include "tts/tts.h"
 #include "soh/Enhancements/boss-rush/BossRushTypes.h"
@@ -426,6 +427,29 @@ void to_json(json& j, const PosRot& posRot) {
     };
 }
 
+void to_json(json& j, const Cylinder16& cylinder) {
+    j = json{
+        {"radius", cylinder.radius},
+        {"height", cylinder.height},
+        {"yShift", cylinder.yShift},
+        {"pos", cylinder.pos},
+    };
+}
+
+void to_json(json& j, const Color_RGB8& color) {
+    j = json{
+        {"r", color.r},
+        {"g", color.g},
+        {"b", color.b},
+    };
+}
+
+void to_json(json& j, const AnimationHeaderCommon& common) {
+    j = json{
+        {"frameCount", common.frameCount},
+    };
+}
+
 void PushSaveStateToRemote() {
     json payload = gSaveContext;
     payload["roomId"] = CVarGetString("gAnchorRoomId", "");
@@ -551,16 +575,41 @@ void RegisterAnchorSupport() {
         nlohmann::json payload;
         float currentPosition = player->actor.world.pos.x + player->actor.world.pos.y + player->actor.world.pos.z + player->actor.world.rot.y;
         static float lastPosition = 0.0f;
+        static std::string lastAnim = "";
+        static std::string lastAnimUpper = "";
+        std::string anim((char*)player->skelAnime.animation);
+        std::string animUpper((char*)player->skelAnime2.animation);
 
-        if (currentPosition == lastPosition && currentPlayerCount == lastPlayerCount) return;
+        if (currentPosition == lastPosition && currentPlayerCount == lastPlayerCount && lastAnim.compare(anim) == 0 && lastAnimUpper.compare(animUpper) == 0) return;
 
         payload["roomId"] = CVarGetString("gAnchorRoomId", "");
-        payload["type"] = "PlayerPosition";
+        payload["type"] = "PlayerData";
         payload["sceneNum"] = gPlayState->sceneNum;
         payload["posRot"] = player->actor.world;
+        payload["rot"] = player->actor.shape.rot;
+        payload["linkAge"] = gSaveContext.linkAge;
+        payload["cylinder"] = player->cylinder.dim;
+        Color_RGB8 defaultColor = { 30, 105, 27 };
+        payload["color"] = CVarGetColor24("gAnchorTunicColor", defaultColor);
+        
+        //todo split into own payload on animation change
+        payload["anim"] = anim;
+        payload["animUpper"] = animUpper;
+        payload["stateFlags2"] = player->stateFlags2;
+        payload["playSpeed"] = player->skelAnime.playSpeed;
+        payload["startFrame"] = player->skelAnime.startFrame;
+        payload["endFrame"] = player->skelAnime.endFrame;
+        payload["mode"] = player->skelAnime.mode;
+        payload["playSpeed2"] = player->skelAnime2.playSpeed;
+        payload["startFrame2"] = player->skelAnime2.startFrame;
+        payload["endFrame2"] = player->skelAnime2.endFrame;
+        payload["mode2"] = player->skelAnime2.mode;
 
         lastPosition = currentPosition;
         lastPlayerCount = currentPlayerCount;
+        lastAnim = anim;
+        lastAnimUpper = animUpper;
+        
 
         GameInteractor::Instance->TransmitMessageToRemote(payload);
     });

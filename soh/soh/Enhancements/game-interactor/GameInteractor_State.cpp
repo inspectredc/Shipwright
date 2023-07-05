@@ -5,6 +5,7 @@ extern "C" {
 #include "functions.h"
 extern PlayState* gPlayState;
 extern "C" s16 gEnPartnerId;
+extern "C" s16 gDummyPlayerId;
 }
 
 // MARK: - State Definitions
@@ -29,6 +30,22 @@ uint8_t GameInteractor::State::SlipperyFloorActive = 0;
 uint8_t GameInteractor::State::SecondCollisionUpdate = 0;
 std::vector<uint32_t> GameInteractor::State::CoopPlayerIds = {};
 std::map<uint32_t, std::pair<uint8_t, PosRot>> GameInteractor::State::CoopPlayerPositions = {};
+std::unordered_map<uint32_t, Vec3s> GameInteractor::State::CoopPlayerShapeRotations = {};
+std::unordered_map<uint32_t, int32_t> GameInteractor::State::CoopPlayerAges = {};
+std::unordered_map<uint32_t, Cylinder16> GameInteractor::State::CoopPlayerCylinders = {};
+std::unordered_map<uint32_t, Color_RGB8> GameInteractor::State::CoopPlayerColors = {};
+std::unordered_map<uint32_t, std::string> GameInteractor::State::CoopPlayerAnim = {};
+std::unordered_map<uint32_t, std::string> GameInteractor::State::CoopPlayerAnimUpper = {};
+std::unordered_map<uint32_t, uint32_t> GameInteractor::State::CoopPlayerStateFlags2 = {};
+std::unordered_map<uint32_t, float> GameInteractor::State::CoopPlayerPlaySpeeds = {};
+std::unordered_map<uint32_t, float> GameInteractor::State::CoopPlayerStartFrames = {};
+std::unordered_map<uint32_t, float> GameInteractor::State::CoopPlayerEndFrames = {};
+std::unordered_map<uint32_t, uint8_t> GameInteractor::State::CoopPlayerModes = {};
+std::unordered_map<uint32_t, float> GameInteractor::State::CoopPlayerPlaySpeeds2 = {};
+std::unordered_map<uint32_t, float> GameInteractor::State::CoopPlayerStartFrames2 = {};
+std::unordered_map<uint32_t, float> GameInteractor::State::CoopPlayerEndFrames2 = {};
+std::unordered_map<uint32_t, uint8_t> GameInteractor::State::CoopPlayerModes2 = {};
+
 
 void GameInteractor::State::SetPacifistMode(bool active) {
     PacifistModeActive = active;
@@ -159,6 +176,179 @@ PosRot GameInteractor_GetCoopPlayerPosition(uint32_t playerId) {
     return GameInteractor::State::CoopPlayerPositions[playerId].second;
 }
 
+Vec3s GameInteractor_GetCoopPlayerShapeRotation(uint32_t playerId) {
+    if (
+        GameInteractor::State::CoopPlayerShapeRotations.find(playerId) == GameInteractor::State::CoopPlayerShapeRotations.end() ||
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return { 0, 0, 0 };
+    }
+
+    return GameInteractor::State::CoopPlayerShapeRotations[playerId];
+}
+
+int32_t GameInteractor_GetCoopPlayerAge(uint32_t playerId) {
+    if (
+        GameInteractor::State::CoopPlayerAges.find(playerId) == GameInteractor::State::CoopPlayerAges.end() || 
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return 1;
+    }
+
+    return GameInteractor::State::CoopPlayerAges[playerId];
+}
+
+Cylinder16 GameInteractor_GetCoopPlayerCylinder(uint32_t playerId) {
+    if (
+        GameInteractor::State::CoopPlayerCylinders.find(playerId) == GameInteractor::State::CoopPlayerCylinders.end() || 
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return { 12, 60, 0, { 0, 0, 0 } };
+    }
+
+    return GameInteractor::State::CoopPlayerCylinders[playerId];
+}
+
+Color_RGB8 GameInteractor_GetCoopPlayerColor(uint32_t playerId) {
+    if (
+        GameInteractor::State::CoopPlayerColors.find(playerId) == GameInteractor::State::CoopPlayerColors.end() || 
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return {255, 255, 255};
+    }
+
+    return GameInteractor::State::CoopPlayerColors[playerId];
+}
+
+char* GameInteractor_GetCoopPlayerAnim(uint32_t playerId, char* anim) {
+    if (
+        GameInteractor::State::CoopPlayerAnim.find(playerId) == GameInteractor::State::CoopPlayerAnim.end() || 
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        strcpy(anim, gPlayerAnim_link_normal_wait_free);
+        return anim;
+    }
+
+    strcpy(anim, GameInteractor::State::CoopPlayerAnim[playerId].c_str());
+    return anim;
+}
+
+char* GameInteractor_GetCoopPlayerAnimUpper(uint32_t playerId, char* anim) {
+    if (
+        GameInteractor::State::CoopPlayerAnimUpper.find(playerId) == GameInteractor::State::CoopPlayerAnimUpper.end() || 
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        strcpy(anim, gPlayerAnim_link_normal_wait_free);
+        return anim;
+    }
+
+    strcpy(anim, GameInteractor::State::CoopPlayerAnimUpper[playerId].c_str());
+    return anim;
+}
+
+uint32_t GameInteractor_GetCoopPlayerStateFlags2(uint32_t playerId) {
+    if (
+        GameInteractor::State::CoopPlayerStateFlags2.find(playerId) == GameInteractor::State::CoopPlayerStateFlags2.end() || 
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return 0;
+    }
+
+    return GameInteractor::State::CoopPlayerStateFlags2[playerId];
+}
+
+float GameInteractor_GetCoopPlayerPlaySpeed(uint32_t playerId, bool isUpper) {
+    if (
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return 1.0f;
+    }
+    if (!isUpper) {
+        if (
+            GameInteractor::State::CoopPlayerPlaySpeeds.find(playerId) == GameInteractor::State::CoopPlayerPlaySpeeds.end()
+        ) {
+            return 1.0f;
+        }
+        return GameInteractor::State::CoopPlayerPlaySpeeds[playerId];
+    } else {
+        if (
+            GameInteractor::State::CoopPlayerPlaySpeeds2.find(playerId) == GameInteractor::State::CoopPlayerPlaySpeeds2.end()
+        ) {
+            return 1.0f;
+        }
+        return GameInteractor::State::CoopPlayerPlaySpeeds2[playerId];
+    }
+}
+
+float GameInteractor_GetCoopPlayerStartFrame(uint32_t playerId, bool isUpper) {
+    if (
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return 0.0f;
+    }
+    if (!isUpper) {
+        if (
+            GameInteractor::State::CoopPlayerStartFrames.find(playerId) == GameInteractor::State::CoopPlayerStartFrames.end()
+        ) {
+            return 0.0f;
+        }
+        return GameInteractor::State::CoopPlayerStartFrames[playerId];
+    } else {
+        if (
+            GameInteractor::State::CoopPlayerStartFrames2.find(playerId) == GameInteractor::State::CoopPlayerStartFrames2.end()
+        ) {
+            return 0.0f;
+        }
+        return GameInteractor::State::CoopPlayerStartFrames2[playerId];
+    }
+}
+
+float GameInteractor_GetCoopPlayerEndFrame(uint32_t playerId, bool isUpper) {
+    if (
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return 1.0f;
+    }
+    if (!isUpper) {
+        if (
+            GameInteractor::State::CoopPlayerEndFrames.find(playerId) == GameInteractor::State::CoopPlayerEndFrames.end()
+        ) {
+            return 1.0f;
+        }
+        return GameInteractor::State::CoopPlayerEndFrames[playerId];
+    } else {
+        if (
+            GameInteractor::State::CoopPlayerEndFrames2.find(playerId) == GameInteractor::State::CoopPlayerEndFrames2.end()
+        ) {
+            return 1.0f;
+        }
+        return GameInteractor::State::CoopPlayerEndFrames2[playerId];
+    }
+}
+
+uint8_t GameInteractor_GetCoopPlayerMode(uint32_t playerId, bool isUpper) {
+    if (
+        std::find(GameInteractor::State::CoopPlayerIds.begin(), GameInteractor::State::CoopPlayerIds.end(), playerId) == GameInteractor::State::CoopPlayerIds.end()
+    ) {
+        return 0;
+    }
+    if (!isUpper) {
+        if (
+            GameInteractor::State::CoopPlayerModes.find(playerId) == GameInteractor::State::CoopPlayerModes.end()
+        ) {
+            return 0;
+        }
+        return GameInteractor::State::CoopPlayerModes[playerId];
+    } else {
+        if (
+            GameInteractor::State::CoopPlayerModes2.find(playerId) == GameInteractor::State::CoopPlayerModes2.end()
+        ) {
+            return 0;
+        }
+        return GameInteractor::State::CoopPlayerModes2[playerId];
+    }
+}
+
 void GameInteractor_SpawnCoopFairies() {
     if (gPlayState == NULL) return;
     Actor* actor = gPlayState->actorCtx.actorLists[ACTORCAT_ITEMACTION].head;
@@ -176,5 +366,25 @@ void GameInteractor_SpawnCoopFairies() {
 
     for (uint32_t playerId : GameInteractor::State::CoopPlayerIds) {
         Actor_Spawn(&gPlayState->actorCtx, gPlayState, gEnPartnerId, -9999.0, -9999.0, -9999.0, 0, 0, 0, 3 + playerId, false);
+    }
+}
+
+void GameInteractor_SpawnCoopDummyPlayers() {
+    if (gPlayState == NULL) return;
+    Actor* actor = gPlayState->actorCtx.actorLists[ACTORCAT_ITEMACTION].head;
+
+    while (actor != NULL) {
+        if (gDummyPlayerId == actor->id) {
+            Actor_Kill(actor);
+        }
+        actor = actor->next;
+    }
+
+    if (GameInteractor::State::CoopPlayerIds.size() == 0) {
+        return;
+    }
+
+    for (uint32_t playerId : GameInteractor::State::CoopPlayerIds) {
+        Actor_Spawn(&gPlayState->actorCtx, gPlayState, gDummyPlayerId, -9999.0, -9999.0, -9999.0, 0, 0, 0, playerId, false);
     }
 }

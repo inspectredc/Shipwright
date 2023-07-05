@@ -762,7 +762,7 @@ void func_8008F470(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dLis
 
     if (eyeIndex > 7)
         eyeIndex = 7;
-
+    //Anchor todo: apply right eyetextures for age
 #if defined(MODDING) || defined(_MSC_VER) || defined(__GNUC__)
     gSPSegment(POLY_OPA_DISP++, 0x08, SEGMENTED_TO_VIRTUAL(sEyeTextures[gSaveContext.linkAge][eyeIndex]));
 #else
@@ -783,14 +783,19 @@ void func_8008F470(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dLis
 
     Color_RGB8 sTemp;
     color = &sTunicColors[tunic];
-    if (tunic == PLAYER_TUNIC_KOKIRI && CVarGetInteger("gCosmetics.Link_KokiriTunic.Changed", 0)) {
-        sTemp = CVarGetColor24("gCosmetics.Link_KokiriTunic.Value", sTunicColors[PLAYER_TUNIC_KOKIRI]);
-        color = &sTemp;
-    } else if (tunic == PLAYER_TUNIC_GORON && CVarGetInteger("gCosmetics.Link_GoronTunic.Changed", 0)) {
-        sTemp = CVarGetColor24("gCosmetics.Link_GoronTunic.Value", sTunicColors[PLAYER_TUNIC_GORON]);
-        color = &sTemp;
-    } else if (tunic == PLAYER_TUNIC_ZORA && CVarGetInteger("gCosmetics.Link_ZoraTunic.Changed", 0)) {
-        sTemp = CVarGetColor24("gCosmetics.Link_ZoraTunic.Value", sTunicColors[PLAYER_TUNIC_ZORA]);
+    if (tunic < PLAYER_TUNIC_DUMMY) {
+        if (tunic == PLAYER_TUNIC_KOKIRI && CVarGetInteger("gCosmetics.Link_KokiriTunic.Changed", 0)) {
+            sTemp = CVarGetColor24("gCosmetics.Link_KokiriTunic.Value", sTunicColors[PLAYER_TUNIC_KOKIRI]);
+            color = &sTemp;
+        } else if (tunic == PLAYER_TUNIC_GORON && CVarGetInteger("gCosmetics.Link_GoronTunic.Changed", 0)) {
+            sTemp = CVarGetColor24("gCosmetics.Link_GoronTunic.Value", sTunicColors[PLAYER_TUNIC_GORON]);
+            color = &sTemp;
+        } else if (tunic == PLAYER_TUNIC_ZORA && CVarGetInteger("gCosmetics.Link_ZoraTunic.Changed", 0)) {
+            sTemp = CVarGetColor24("gCosmetics.Link_ZoraTunic.Value", sTunicColors[PLAYER_TUNIC_ZORA]);
+            color = &sTemp;
+        }
+    } else {
+        sTemp = GameInteractor_GetCoopPlayerColor(tunic - PLAYER_TUNIC_DUMMY);
         color = &sTemp;
     }
 
@@ -1036,6 +1041,10 @@ s32 func_8008FCC8(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
     return false;
 }
 
+s32 Dummy_OverrideLimbDrawGameplayDefault() {
+    return false;
+}
+
 s32 func_80090014(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
     Player* this = (Player*)thisx;
 
@@ -1139,6 +1148,10 @@ s32 func_800902F0(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
         }
     }
 
+    return false;
+}
+
+s32 Dummy_OverrideLimbDrawGameplayCrawling() {
     return false;
 }
 
@@ -1416,6 +1429,11 @@ Vec3f D_801261E0[] = {
 // This was originally obtained by working down from FLT_MAX until the math
 // started working out properly
 #define RETICLE_MAX 3.402823466e+12f
+
+void Dummy_PostLimbDrawGameplay() {
+    //Anchor todo: Draw Equipment
+    return;
+}
 
 void func_80090D20(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx) {
     Player* this = (Player*)thisx;

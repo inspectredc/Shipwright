@@ -2452,6 +2452,11 @@ void Message_OpenText(PlayState* play, u16 textId);
 void Message_Decode(PlayState* play);
 void Message_DrawText(PlayState* play, Gfx** gfxP);
 
+// Anchor Dummy Actor functions
+s32 Dummy_OverrideLimbDrawGameplayDefault();
+s32 Dummy_OverrideLimbDrawGameplayCrawling();
+void Dummy_PostLimbDrawGameplay();
+
 #ifdef __cplusplus
 #undef this
 };

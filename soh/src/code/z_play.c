@@ -34,6 +34,7 @@ u64 D_801614D0[0xA00];
 PlayState* gPlayState;
 
 s16 gEnPartnerId;
+s16 gDummyPlayerId;
 
 void OTRPlay_SpawnScene(PlayState* play, s32 sceneNum, s32 spawn);
 
@@ -746,7 +747,8 @@ void Play_Init(GameState* thisx) {
     }
     // #region SOH [Co-op]
     if (CVarGetInteger("gRemoteGIScheme", 0) == 2) {
-        GameInteractor_SpawnCoopFairies();
+        //GameInteractor_SpawnCoopFairies();
+        GameInteractor_SpawnCoopDummyPlayers();
     }
     // #endregion
 }

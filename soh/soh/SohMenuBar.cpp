@@ -1385,6 +1385,19 @@ void DrawRemoteControlMenu() {
             ImGui::PopItemWidth();
             ImGui::Spacing();
         } else {
+            static ImVec4 anchorTunicColor;
+            if (ImGui::ColorEdit3("anchorTunicColor", (float*)&anchorTunicColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+                Color_RGBA8 color;
+                color.r = anchorTunicColor.x * 255.0;
+                color.g = anchorTunicColor.y * 255.0;
+                color.b = anchorTunicColor.z * 255.0;
+                color.a = anchorTunicColor.w * 255.0;
+
+                CVarSetColor("gAnchorTunicColor", color);
+                LUS::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesOnNextTick();
+            }
+            ImGui::SameLine();
+            ImGui::Text("Tunic Color Identifier");
             ImGui::Text("Room ID");
             if (ImGui::InputText("##roomId", GameInteractor::Instance->anchorRoomId, MAX_ROOM_ID_BUFFER_SIZE)) {
                 if (GameInteractor::Instance->anchorRoomId[0] != '\0') {
