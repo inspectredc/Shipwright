@@ -157,6 +157,28 @@ void RegisterFreezeTime() {
     });
 }
 
+/// Clears the cutscene pointer to a value safe for wrong warps.
+void RegisterClearCutscenePointer() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>([]() {
+        if (!gPlayState) return;
+        if (CVarGetInteger("gClearCutscenePointer", 0)) {
+            static uint32_t null_cs[] = {0, 0};
+            gPlayState->csCtx.segment = &null_cs;
+            CVarSetInteger("gClearCutscenePointer", 0);
+        }
+    });
+}
+
+void RegisterSafeWrongWarp() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnTransitionEnd>([](int32_t sceneNum) {
+        if (!gPlayState) return;
+        if (CVarGetInteger("gSafeWrongWarps", 0) && (sceneNum == 17 || sceneNum == 18 || sceneNum == 19 || sceneNum == 21)) {
+            static uint32_t null_cs[] = {0, 0};
+            gPlayState->csCtx.segment = &null_cs;
+        }
+    });
+}
+
 /// Switches Link's age and respawns him at the last entrance he entered.
 void RegisterSwitchAge() {
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>([]() {
@@ -610,6 +632,8 @@ void InitMods() {
     RegisterInfiniteISG();
     RegisterUnrestrictedItems();
     RegisterFreezeTime();
+    RegisterClearCutscenePointer();
+    RegisterSafeWrongWarp();
     RegisterSwitchAge();
     RegisterOcarinaTimeTravel();
     RegisterAutoSave();
