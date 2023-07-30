@@ -99,10 +99,16 @@ Color_RGB8 GameInteractor_GetCoopPlayerColor(uint32_t playerId);
 char* GameInteractor_GetCoopPlayerAnim(uint32_t playerId, char* anim);
 char* GameInteractor_GetCoopPlayerAnimUpper(uint32_t playerId, char* anim);
 uint32_t GameInteractor_GetCoopPlayerStateFlags2(uint32_t playerId);
+uint8_t GameInteractor_GetCoopPlayerMoveFlags(uint32_t playerId);
+int16_t GameInteractor_GetCoopPlayerPitchOffset(uint32_t playerId);
+float GameInteractor_GetCoopPlayerOffsetY(uint32_t playerId);
 float GameInteractor_GetCoopPlayerPlaySpeed(uint32_t playerId, bool isUpper);
 float GameInteractor_GetCoopPlayerStartFrame(uint32_t playerId, bool isUpper);
+float GameInteractor_GetCoopPlayerCurFrame(uint32_t playerId, bool isUpper);
 float GameInteractor_GetCoopPlayerEndFrame(uint32_t playerId, bool isUpper);
 uint8_t GameInteractor_GetCoopPlayerMode(uint32_t playerId, bool isUpper);
+Vec3s GameInteractor_GetCoopPlayerLimb(uint32_t playerId, uint16_t limbIndex);
+Vec3s GameInteractor_GetCoopPlayerLimbUpper(uint32_t playerId, uint16_t limbIndex);
 void GameInteractor_SpawnCoopFairies();
 void GameInteractor_SpawnCoopDummyPlayers();
 #ifdef __cplusplus
@@ -161,12 +167,19 @@ public:
         static std::unordered_map<uint32_t, uint32_t> CoopPlayerStateFlags2;
         static std::unordered_map<uint32_t, float> CoopPlayerPlaySpeeds;
         static std::unordered_map<uint32_t, float> CoopPlayerStartFrames;
+        static std::unordered_map<uint32_t, float> CoopPlayerCurFrames;
         static std::unordered_map<uint32_t, float> CoopPlayerEndFrames;
         static std::unordered_map<uint32_t, uint8_t> CoopPlayerModes;
+        static std::unordered_map<uint32_t, uint8_t> CoopPlayerMoveFlags;
+        static std::unordered_map<uint32_t, int16_t> CoopPlayerPitchOffset;
+        static std::unordered_map<uint32_t, float> CoopPlayerOffsetY;
         static std::unordered_map<uint32_t, float> CoopPlayerPlaySpeeds2;
         static std::unordered_map<uint32_t, float> CoopPlayerStartFrames2;
+        static std::unordered_map<uint32_t, float> CoopPlayerCurFrames2;
         static std::unordered_map<uint32_t, float> CoopPlayerEndFrames2;
         static std::unordered_map<uint32_t, uint8_t> CoopPlayerModes2;
+        static std::unordered_map<uint32_t, std::vector<Vec3s>> CoopPlayerLimbs;
+        static std::unordered_map<uint32_t, std::vector<Vec3s>> CoopPlayerLimbsUpper;
 
         static void SetPacifistMode(bool active);
     };
@@ -211,6 +224,8 @@ public:
     DEFINE_HOOK(OnFlagUnset, void(int16_t flagType, int16_t flag));
     DEFINE_HOOK(OnSceneSpawnActors, void());
     DEFINE_HOOK(OnPlayerUpdate, void());
+    DEFINE_HOOK(OnAnimChange, void());
+    DEFINE_HOOK(OnAnimUpperChange, void());
     DEFINE_HOOK(OnOcarinaSongAction, void());
 
     DEFINE_HOOK(OnActorUpdate, void(void* actor));

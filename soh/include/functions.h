@@ -2453,9 +2453,10 @@ void Message_Decode(PlayState* play);
 void Message_DrawText(PlayState* play, Gfx** gfxP);
 
 // Anchor Dummy Actor functions
-s32 Dummy_OverrideLimbDrawGameplayDefault();
-s32 Dummy_OverrideLimbDrawGameplayCrawling();
-void Dummy_PostLimbDrawGameplay();
+s32 Dummy_OverrideLimbDrawGameplayDefault(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx);
+s32 Dummy_OverrideLimbDrawGameplayCrawling(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx);
+s32 Dummy_OverrideLimbDrawGameplayCommon(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx);
+void Dummy_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx);
 
 #ifdef __cplusplus
 #undef this

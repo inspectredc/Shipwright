@@ -16,11 +16,15 @@ typedef struct DummyPlayer {
     SkelAnime            skelAnimeUpper;
     Vec3s                jointTable2[PLAYER_LIMB_BUF_COUNT];
     Vec3s                morphTable2[PLAYER_LIMB_BUF_COUNT];
-    char                 anim[128];          //todo
-    char                 animUpper[128];     //todo
+    char                 anim[128];          //todo max_size
+    char                 animUpper[128];     //todo max_size
     u16                  animGroup;
     u16                  animGroupUpper;
     u8                   modelAnimType;
+    s16                  shapePitchOffset;
+    f32                  shapeOffsetY;
+    u8                   moveFlags;
+    s32                  linkAge;
     //todo held actor maybe?
 } DummyPlayer;
 

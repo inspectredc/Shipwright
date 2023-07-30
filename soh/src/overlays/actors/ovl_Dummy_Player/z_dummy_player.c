@@ -68,14 +68,15 @@ static Vec3s sBaseTransl = { -57, 3377, 0 };
 
 void DummyPlayer_Init(Actor* thisx, PlayState* play) {
     DummyPlayer* this = (DummyPlayer*)thisx;
-    s32 dummyAge = GameInteractor_GetCoopPlayerAge(this->actor.params);
+    this->linkAge = /*GameInteractor_GetCoopPlayerAge(this->actor.params)*/ 1;
 
-    SkelAnime_InitLink(play, &this->skelAnime, gPlayerSkelHeaders[((void)0, dummyAge)], &gPlayerAnim_link_normal_wait_free, 9, this->jointTable, this->morphTable, PLAYER_LIMB_MAX);
+    SkelAnime_InitLink(play, &this->skelAnime, gPlayerSkelHeaders[((void)0, 1/*this->linkAge*/)], &gPlayerAnim_link_normal_wait_free, 9, this->jointTable, this->morphTable, PLAYER_LIMB_MAX);
     this->skelAnime.baseTransl = sBaseTransl;
-    SkelAnime_InitLink(play, &this->skelAnimeUpper, gPlayerSkelHeaders[((void)0, dummyAge)], &gPlayerAnim_link_normal_wait_free, 9, this->jointTable2, this->morphTable2, PLAYER_LIMB_MAX);
+    SkelAnime_InitLink(play, &this->skelAnimeUpper, gPlayerSkelHeaders[((void)0, 1/*this->linkAge*/)], &gPlayerAnim_link_normal_wait_free, 9, this->jointTable2, this->morphTable2, PLAYER_LIMB_MAX);
     this->skelAnimeUpper.baseTransl = sBaseTransl;
     strcpy(this->anim , gPlayerAnim_link_normal_wait_free);
     strcpy(this->animUpper , gPlayerAnim_link_normal_wait_free);
+    this->moveFlags = this->skelAnime.moveFlags;
 
     Collider_InitCylinder(play, &this->collider);
     Collider_SetCylinder(play, &this->collider, &this->actor, &sDummyColliderInit);
@@ -84,9 +85,17 @@ void DummyPlayer_Init(Actor* thisx, PlayState* play) {
 
 void DummyPlayer_Update(Actor* thisx, PlayState* play) {
     DummyPlayer* this = (DummyPlayer*)thisx;
+    bool updateLimb = false;
 
     if (GameInteractor_GetCoopPlayerScene(this->actor.params) == play->sceneNum) {
         PosRot coopPlayerPos = GameInteractor_GetCoopPlayerPosition(this->actor.params);
+         if (this->actor.world.pos.x != coopPlayerPos.pos.x || this->actor.world.pos.y != coopPlayerPos.pos.y || this->actor.world.pos.z != coopPlayerPos.pos.z) {
+            for (u16 limbIndex = 0; limbIndex < PLAYER_LIMB_BUF_COUNT; ++limbIndex) {
+                this->skelAnime.jointTable[limbIndex] = GameInteractor_GetCoopPlayerLimb(this->actor.params, limbIndex);
+                this->skelAnimeUpper.jointTable[limbIndex] = GameInteractor_GetCoopPlayerLimbUpper(this->actor.params, limbIndex);
+            }
+            updateLimb = true;
+         }
         // if hidden, immediately update position
         if (this->actor.world.pos.y == -9999.0f) { 
             this->actor.world = coopPlayerPos;
@@ -100,6 +109,10 @@ void DummyPlayer_Update(Actor* thisx, PlayState* play) {
         this->actor.shape.rot = GameInteractor_GetCoopPlayerShapeRotation(this->actor.params);
         //this->actor.scale = GameInteractor_GetCoopPlayerScale(this->actor.params);
         this->collider.dim = GameInteractor_GetCoopPlayerCylinder(this->actor.params);
+        this->moveFlags = GameInteractor_GetCoopPlayerMoveFlags(this->actor.params);
+        this->skelAnime.moveFlags = this->moveFlags;
+        this->shapePitchOffset = GameInteractor_GetCoopPlayerPitchOffset(this->actor.params);
+        this->shapeOffsetY = GameInteractor_GetCoopPlayerOffsetY(this->actor.params);
         
 
         Collider_UpdateCylinder(&this->actor, &this->collider);
@@ -108,27 +121,52 @@ void DummyPlayer_Update(Actor* thisx, PlayState* play) {
         char animUpper[128];
         GameInteractor_GetCoopPlayerAnim(this->actor.params, anim);
         GameInteractor_GetCoopPlayerAnimUpper(this->actor.params, animUpper);
+
+        f32 playSpeed = GameInteractor_GetCoopPlayerPlaySpeed(this->actor.params, false);
+        f32 startFrame = GameInteractor_GetCoopPlayerStartFrame(this->actor.params, false);
+        f32 curFrame = GameInteractor_GetCoopPlayerCurFrame(this->actor.params,false);
+        f32 endFrame = GameInteractor_GetCoopPlayerEndFrame(this->actor.params, false);
+        u8 mode = GameInteractor_GetCoopPlayerMode(this->actor.params, false);
+        
         
         if (strcmp(this->anim, anim)) {
-            f32 playSpeed = GameInteractor_GetCoopPlayerPlaySpeed(this->actor.params, false);
-            f32 startFrame = GameInteractor_GetCoopPlayerStartFrame(this->actor.params, false);
-            f32 endFrame = GameInteractor_GetCoopPlayerEndFrame(this->actor.params, false);
-            u8 mode = GameInteractor_GetCoopPlayerMode(this->actor.params, false);
-            LinkAnimation_Change(play, &this->skelAnime, &this->anim, playSpeed, startFrame, endFrame, mode, -1.0f);
+            f32 morphFrames = 0.0f;//GameInteractor_GetCoopPlayerMorphFrames(this->actor.params, false);
             strcpy(this->anim, anim);
+            LinkAnimation_Change(play, &this->skelAnime, &this->anim, playSpeed, startFrame, endFrame, mode, morphFrames);
+        } else {
+            this->skelAnime.playSpeed = playSpeed;
+            this->skelAnime.startFrame = startFrame;
+            //this->skelAnime.curFrame = curFrame;
+            this->skelAnime.endFrame = endFrame;
+            this->skelAnime.mode = mode;
         }
 
+        playSpeed = GameInteractor_GetCoopPlayerPlaySpeed(this->actor.params, true);
+        startFrame = GameInteractor_GetCoopPlayerStartFrame(this->actor.params, true);
+        curFrame = GameInteractor_GetCoopPlayerCurFrame(this->actor.params,true);
+        endFrame = GameInteractor_GetCoopPlayerEndFrame(this->actor.params, true);
+        mode = GameInteractor_GetCoopPlayerMode(this->actor.params, true);
+
         if (strcmp(this->animUpper, animUpper)) {
-            f32 playSpeed = GameInteractor_GetCoopPlayerPlaySpeed(this->actor.params, true);
-            f32 startFrame = GameInteractor_GetCoopPlayerStartFrame(this->actor.params, true);
-            f32 endFrame = GameInteractor_GetCoopPlayerEndFrame(this->actor.params, true);
-            u8 mode = GameInteractor_GetCoopPlayerMode(this->actor.params, true);
-            LinkAnimation_Change(play, &this->skelAnimeUpper, &this->animUpper, playSpeed, startFrame, endFrame, mode, 0.0f);
             strcpy(this->animUpper, animUpper);
+            LinkAnimation_Change(play, &this->skelAnimeUpper, &this->animUpper, playSpeed, startFrame, endFrame, mode, 0.0f);
+        } else {
+            this->skelAnimeUpper.playSpeed = playSpeed;
+            this->skelAnimeUpper.startFrame = startFrame;
+            //this->skelAnimeUpper.curFrame = curFrame;
+            this->skelAnimeUpper.endFrame = endFrame;
+            this->skelAnimeUpper.mode = mode;
         }
+
         
         LinkAnimation_Update(play, &this->skelAnime);
         LinkAnimation_Update(play, &this->skelAnimeUpper);
+        // if (updateLimb) {
+        //     for (u16 limbIndex = 0; limbIndex < PLAYER_LIMB_BUF_COUNT; ++limbIndex) {
+        //         this->skelAnime.jointTable[limbIndex] = GameInteractor_GetCoopPlayerLimb(this->actor.params, limbIndex);
+        //         this->skelAnimeUpper.jointTable[limbIndex] = GameInteractor_GetCoopPlayerLimbUpper(this->actor.params, limbIndex);
+        //     }
+        // }
     } else {
         this->actor.world.pos.x = -9999.0f;
         this->actor.world.pos.y = -9999.0f;

@@ -614,12 +614,8 @@ void RegisterAnchorSupport() {
         nlohmann::json payload;
         float currentPosition = player->actor.world.pos.x + player->actor.world.pos.y + player->actor.world.pos.z + player->actor.world.rot.y;
         static float lastPosition = 0.0f;
-        static std::string lastAnim = "";
-        static std::string lastAnimUpper = "";
-        std::string anim((char*)player->skelAnime.animation);
-        std::string animUpper((char*)player->skelAnime2.animation);
 
-        if (currentPosition == lastPosition && currentPlayerCount == lastPlayerCount && lastAnim.compare(anim) == 0 && lastAnimUpper.compare(animUpper) == 0) return;
+        if (currentPosition == lastPosition && currentPlayerCount == lastPlayerCount) return;
 
         payload["roomId"] = CVarGetString("gAnchorRoomId", "");
         payload["type"] = "PlayerData";
@@ -630,27 +626,79 @@ void RegisterAnchorSupport() {
         payload["cylinder"] = player->cylinder.dim;
         Color_RGB8 defaultColor = { 30, 105, 27 };
         payload["color"] = CVarGetColor24("gAnchorTunicColor", defaultColor);
-        
-        //todo split into own payload on animation change
-        payload["anim"] = anim;
-        payload["animUpper"] = animUpper;
         payload["stateFlags2"] = player->stateFlags2;
-        payload["playSpeed"] = player->skelAnime.playSpeed;
-        payload["startFrame"] = player->skelAnime.startFrame;
-        payload["endFrame"] = player->skelAnime.endFrame;
-        payload["mode"] = player->skelAnime.mode;
-        payload["playSpeed2"] = player->skelAnime2.playSpeed;
-        payload["startFrame2"] = player->skelAnime2.startFrame;
-        payload["endFrame2"] = player->skelAnime2.endFrame;
-        payload["mode2"] = player->skelAnime2.mode;
+        payload["moveFlags"] = player->skelAnime.moveFlags;
+        payload["shapePitchOffset"] = player->unk_6C2;
+        payload["shapeOffsetY"] = player->unk_6C4;
+        std::vector<Vec3s> playerLimbs;
+        for (uint16_t limbIndex = 0; limbIndex < PLAYER_LIMB_BUF_COUNT; ++limbIndex) {
+            playerLimbs.push_back(player->skelAnime.jointTable[limbIndex]);
+        }
+        payload["jointTable"] = playerLimbs;
+        std::vector<Vec3s> playerLimbsUpper;
+        for (uint16_t limbIndex = 0; limbIndex < PLAYER_LIMB_BUF_COUNT; ++limbIndex) {
+            playerLimbsUpper.push_back(player->skelAnime2.jointTable[limbIndex]);
+        }
+        payload["jointTableUpper"] = playerLimbsUpper;
 
         lastPosition = currentPosition;
         lastPlayerCount = currentPlayerCount;
-        lastAnim = anim;
-        lastAnimUpper = animUpper;
-        
 
         GameInteractor::Instance->TransmitMessageToRemote(payload);
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnAnimChange>([]() {
+        static uint32_t lastPlayerCount = 0;
+        uint32_t currentPlayerCount =  GameInteractor::State::CoopPlayerIds.size();
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || gPlayState == NULL || !GameInteractor::Instance->IsSaveLoaded()) {
+            lastPlayerCount = currentPlayerCount;
+            return;
+        }
+        Player* player = GET_PLAYER(gPlayState);
+        nlohmann::json payload;
+
+        static std::string lastAnim = "";
+        std::string anim((char*)player->skelAnime.animation);
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "PlayerAnim";
+        payload["anim"] = anim;
+        payload["playSpeed"] = player->skelAnime.playSpeed;
+        payload["startFrame"] = player->skelAnime.startFrame;
+        payload["curFrame"] = player->skelAnime.curFrame;
+        payload["endFrame"] = player->skelAnime.endFrame;
+        payload["mode"] = player->skelAnime.mode;
+
+        lastAnim = anim;
+        lastPlayerCount = currentPlayerCount;
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+
+    });
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnAnimUpperChange>([]() {
+        static uint32_t lastPlayerCount = 0;
+        uint32_t currentPlayerCount =  GameInteractor::State::CoopPlayerIds.size();
+        if (!GameInteractor::Instance->isRemoteInteractorConnected || gPlayState == NULL || !GameInteractor::Instance->IsSaveLoaded()) {
+            lastPlayerCount = currentPlayerCount;
+            return;
+        }
+        Player* player = GET_PLAYER(gPlayState);
+        nlohmann::json payload;
+
+        static std::string lastAnimUpper = "";
+        std::string animUpper((char*)player->skelAnime2.animation);
+
+        payload["roomId"] = CVarGetString("gAnchorRoomId", "");
+        payload["type"] = "PlayerAnimUpper";
+        payload["animUpper"] = animUpper;
+        payload["playSpeed2"] = player->skelAnime2.playSpeed;
+        payload["startFrame2"] = player->skelAnime2.startFrame;
+        payload["curFrame2"] = player->skelAnime2.curFrame;
+        payload["endFrame2"] = player->skelAnime2.endFrame;
+        payload["mode2"] = player->skelAnime2.mode;
+
+        lastAnimUpper = animUpper;
+        lastPlayerCount = currentPlayerCount;
+        GameInteractor::Instance->TransmitMessageToRemote(payload);
+
     });
 }
 #endif

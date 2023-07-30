@@ -1241,6 +1241,11 @@ void Animation_SetMorph(PlayState* play, SkelAnime* skelAnime, f32 morphFrames) 
 void LinkAnimation_Change(PlayState* play, SkelAnime* skelAnime, LinkAnimationHeader* animation, f32 playSpeed,
                           f32 startFrame, f32 endFrame, u8 mode, f32 morphFrames) {
     LinkAnimationHeader* ogAnim = animation;
+    if (&skelAnime == &GET_PLAYER(play)->skelAnime) {
+        CVarSetFloat("gMorphFrames", morphFrames);
+    } else {
+        CVarSetFloat("gMorphFramesUpper", morphFrames);
+    }
 
     if (ResourceMgr_OTRSigCheck(animation) != 0)
         animation = ResourceMgr_LoadAnimByName(animation);

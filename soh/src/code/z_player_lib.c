@@ -5,6 +5,7 @@
 #include "objects/object_link_child/object_link_child.h"
 #include "objects/object_triforce_spot/object_triforce_spot.h"
 #include "overlays/actors/ovl_Demo_Effect/z_demo_effect.h"
+#include "overlays/actors/ovl_Dummy_Player/z_dummy_player.h"
 
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 
@@ -960,6 +961,89 @@ void func_8008F87C(PlayState* play, Player* this, SkelAnime* skelAnime, Vec3f* p
     }
 }
 
+s32 Dummy_OverrideLimbDrawGameplayCommon(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
+    DummyPlayer* this = (DummyPlayer*)thisx;
+
+    if (limbIndex == PLAYER_LIMB_ROOT) {
+        //D_80160014 = this->leftHandType;
+        //D_80160018 = this->rightHandType;
+        //D_80160000 = &this->meleeWeaponInfo[2].base;
+
+        if (this->linkAge) {
+            if (!(this->moveFlags & 4) || (this->moveFlags & 1)) {
+                pos->x *= 0.64f;
+                pos->z *= 0.64f;
+            }
+
+            if (!(this->moveFlags & 4) || (this->moveFlags & 2)) {
+                pos->y *= 0.64f;
+            }
+        }
+        //todo
+        pos->y -= this->shapeOffsetY;
+
+        if (this->shapePitchOffset != 0) {
+            Matrix_Translate(pos->x, ((Math_CosS(this->shapePitchOffset) - 1.0f) * 200.0f) + pos->y, pos->z, MTXMODE_APPLY);
+            Matrix_RotateX(this->shapePitchOffset * (M_PI / 0x8000), MTXMODE_APPLY);
+            Matrix_RotateZYX(rot->x, rot->y, rot->z, MTXMODE_APPLY);
+            pos->x = pos->y = pos->z = 0.0f;
+            rot->x = rot->y = rot->z = 0;
+        }
+    } else {
+        /*if (*dList != NULL) {
+            D_80160000++;
+        }*/
+
+        // if (limbIndex == PLAYER_LIMB_HEAD) {
+        //     /*if (CVarGetInteger("gCosmetics.Link_HeadScale.Changed", 0)) {
+        //         f32 scale = CVarGetFloat("gCosmetics.Link_HeadScale.Value", 1.0f);
+        //         Matrix_Scale(scale, scale, scale, MTXMODE_APPLY);
+        //         if (scale > 1.2f) {
+        //             Matrix_Translate(-((LINK_IS_ADULT ? 320.0f : 200.0f) * scale), 0.0f, 0.0f, MTXMODE_APPLY);
+        //         } else if (scale < 1.0f) {
+        //             Matrix_Translate((LINK_IS_ADULT ? 3600.0f : 2900.0f) * ABS(scale - 1.0f), 0.0f, 0.0f, MTXMODE_APPLY);
+        //         }
+        //     }*/
+        //     // these rotations are only used in first person mode
+        //     /*rot->x += this->unk_6BA;
+        //     rot->y -= this->unk_6B8;
+        //     rot->z += this->unk_6B6;*/
+        // } else if (limbIndex == PLAYER_LIMB_L_HAND) {
+        //     /*if (CVarGetInteger("gCosmetics.Link_SwordScale.Changed", 0)) {
+        //         f32 scale = CVarGetFloat("gCosmetics.Link_SwordScale.Value", 1.0f);
+        //         Matrix_Scale(scale, scale, scale, MTXMODE_APPLY);
+        //         Matrix_Translate(-((LINK_IS_ADULT ? 320.0f : 200.0f) * scale), 0.0f, 0.0f, MTXMODE_APPLY);
+        //     }*/
+        // } else if (limbIndex == PLAYER_LIMB_UPPER) {
+        //     // these offsets are only used in first person mode
+        //     /*if (this->unk_6B0 != 0) {
+        //         Matrix_RotateZ(0x44C * (M_PI / 0x8000), MTXMODE_APPLY);
+        //         Matrix_RotateY(this->unk_6B0 * (M_PI / 0x8000), MTXMODE_APPLY);
+        //     }*/
+        //     /*if (this->unk_6BE != 0) {
+        //         Matrix_RotateY(this->unk_6BE * (M_PI / 0x8000), MTXMODE_APPLY);
+        //     }
+        //     if (this->unk_6BC != 0) {
+        //         Matrix_RotateX(this->unk_6BC * (M_PI / 0x8000), MTXMODE_APPLY);
+        //     }
+        //     if (this->unk_6C0 != 0) {
+        //         Matrix_RotateZ(this->unk_6C0 * (M_PI / 0x8000), MTXMODE_APPLY);
+        //     }*/
+        // } else if (limbIndex == PLAYER_LIMB_L_THIGH) {
+        //     // This is for drawing damaging effects/footprints which is not important to have for coop players
+        //     //func_8008F87C(play, this, &this->skelAnime, pos, rot, PLAYER_LIMB_L_THIGH, PLAYER_LIMB_L_SHIN, PLAYER_LIMB_L_FOOT);
+        // } else if (limbIndex == PLAYER_LIMB_R_THIGH) {
+        //     //func_8008F87C(play, this, &this->skelAnime, pos, rot, PLAYER_LIMB_R_THIGH, PLAYER_LIMB_R_SHIN, PLAYER_LIMB_R_FOOT);
+        //     return false;
+        // } else {
+        //     return false;
+        // }
+    }
+
+    return false;
+
+}
+
 s32 func_8008FCC8(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
     Player* this = (Player*)thisx;
 
@@ -1041,7 +1125,59 @@ s32 func_8008FCC8(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
     return false;
 }
 
-s32 Dummy_OverrideLimbDrawGameplayDefault() {
+s32 Dummy_OverrideLimbDrawGameplayDefault(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
+    
+    Dummy_OverrideLimbDrawGameplayCommon(play, limbIndex, dList, pos, rot, thisx);
+    // {
+    //     if (limbIndex == PLAYER_LIMB_L_HAND) {
+    //         // Gfx** dLists = GET_PLAYER(play)->leftHandDLists;
+
+    //         // if ((D_80160014 == 4) && (gSaveContext.swordHealth <= 0.0f)) {
+    //         //     dLists += 4;
+    //         // } else if ((D_80160014 == 6) && (this->stateFlags1 & 0x2000000)) {
+    //         //     dLists = &D_80125E08[gSaveContext.linkAge];
+    //         //     D_80160014 = 0;
+    //         // } else if ((this->leftHandType == 0) && (this->actor.speedXZ > 2.0f) && !(this->stateFlags1 & 0x8000000)) {
+    //         //     dLists = &D_80125E18[gSaveContext.linkAge];
+    //         //     D_80160014 = 1;
+    //         // }
+
+    //         // *dList = ResourceMgr_LoadGfxByName(dLists[sDListsLodOffset]);
+    //     } else if (limbIndex == PLAYER_LIMB_R_HAND) {
+    //         // Gfx** dLists = GET_PLAYER(play)->rightHandDLists;
+
+    //         // if (D_80160018 == 10) {
+    //         //     dLists += this->currentShield * 4;
+    //         // } else if ((this->rightHandType == 8) && (this->actor.speedXZ > 2.0f) && !(this->stateFlags1 & 0x8000000)) {
+    //         //     dLists = &D_80125E58[gSaveContext.linkAge];
+    //         //     D_80160018 = 9;
+    //         // }
+
+    //         // *dList = ResourceMgr_LoadGfxByName(dLists[sDListsLodOffset]);
+    //     } else if (limbIndex == PLAYER_LIMB_SHEATH) {
+    //         // Anchor todo: deal with sheath limb here if we want
+
+    //         // Gfx** dLists = this->sheathDLists;
+
+    //         // if ((this->sheathType == 18) || (this->sheathType == 19)) {
+    //         //     dLists += this->currentShield * 4;
+    //         //     if (!LINK_IS_ADULT && (this->currentShield < PLAYER_SHIELD_HYLIAN) &&
+    //         //         (gSaveContext.equips.buttonItems[0] != ITEM_SWORD_KOKIRI)) {
+    //         //         dLists += 16;
+    //         //     }
+    //         // } else if (!LINK_IS_ADULT && ((this->sheathType == 16) || (this->sheathType == 17)) &&
+    //         //            (gSaveContext.equips.buttonItems[0] != ITEM_SWORD_KOKIRI)) {
+    //         //     dLists = &D_80125D28[16];
+    //         // }
+
+    //         // if (dLists[sDListsLodOffset] != NULL) {
+    //         //     *dList = ResourceMgr_LoadGfxByName(dLists[sDListsLodOffset]);
+    //         // } else {
+    //         //     *dList = NULL;
+    //         // }
+    //     }
+    // }
+
     return false;
 }
 
@@ -1151,7 +1287,8 @@ s32 func_800902F0(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s
     return false;
 }
 
-s32 Dummy_OverrideLimbDrawGameplayCrawling() {
+s32 Dummy_OverrideLimbDrawGameplayCrawling(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
+    Dummy_OverrideLimbDrawGameplayCommon(play, limbIndex, dList, pos, rot, thisx);
     return false;
 }
 
@@ -1430,8 +1567,11 @@ Vec3f D_801261E0[] = {
 // started working out properly
 #define RETICLE_MAX 3.402823466e+12f
 
-void Dummy_PostLimbDrawGameplay() {
-    //Anchor todo: Draw Equipment
+void Dummy_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx) {
+    //Anchor todo: Draw Equipment Here
+    if (*dList != NULL) {
+        Matrix_MultVec3f(&D_8012602C, D_80160000);
+    }
     return;
 }
 

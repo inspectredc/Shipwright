@@ -10995,6 +10995,10 @@ static Vec3f D_80854838 = { 0.0f, 0.0f, -30.0f };
 
 void Player_Update(Actor* thisx, PlayState* play) {
     static Vec3f sDogSpawnPos;
+    static float animPlaySpeed = 1.0f;
+    static float animPlaySpeed2 = 1.0f;
+    // static char anim[128] = gPlayerAnim_link_normal_wait_free;
+    // static char animUpper[128] = gPlayerAnim_link_normal_wait_free;
     Player* this = (Player*)thisx;
     s32 dogParams;
     s32 pad;
@@ -11117,6 +11121,27 @@ void Player_Update(Actor* thisx, PlayState* play) {
         // Play fan sound (too annoying)
         //func_8002F974(&player->actor, NA_SE_EV_WIND_TRAP - SFX_FLAG);
     }
+
+    // if (this->skelAnime.curFrame == this->skelAnime.startFrame && this->skelAnime.curFrame != this->skelAnime.endFrame) {
+    //     GameInteractor_ExecuteOnAnimChange();
+    // } else if (this->skelAnime.playSpeed != animPlaySpeed) {
+    //     GameInteractor_ExecuteOnAnimChange();
+    // } else if (strcmp(this->skelAnime.animation, anim)) {
+    //     GameInteractor_ExecuteOnAnimChange();
+    //     strcpy(anim, this->skelAnime.animation);
+    // }
+    // if (this->skelAnime2.curFrame == this->skelAnime.startFrame && this->skelAnime.curFrame != this->skelAnime.endFrame) {
+    //     GameInteractor_ExecuteOnAnimUpperChange();
+    // } else if (this->skelAnime2.playSpeed != animPlaySpeed2) {
+    //     GameInteractor_ExecuteOnAnimUpperChange();
+    // } else if (strcmp(this->skelAnime2.animation, animUpper)) {
+    //     GameInteractor_ExecuteOnAnimChange();
+    //     strcpy(animUpper, this->skelAnime2.animation);
+    // }
+    // animPlaySpeed = this->skelAnime.playSpeed;
+    // animPlaySpeed2 = this->skelAnime2.playSpeed;
+    GameInteractor_ExecuteOnAnimChange();
+    GameInteractor_ExecuteOnAnimUpperChange();
     
     GameInteractor_ExecuteOnPlayerUpdate();
 }

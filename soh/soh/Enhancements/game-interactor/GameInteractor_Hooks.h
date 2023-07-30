@@ -17,6 +17,8 @@ void GameInteractor_ExecuteOnFlagSet(int16_t flagType, int16_t flag);
 void GameInteractor_ExecuteOnFlagUnset(int16_t flagType, int16_t flag);
 void GameInteractor_ExecuteOnSceneSpawnActors();
 void GameInteractor_ExecuteOnPlayerUpdate();
+void GameInteractor_ExecuteOnAnimChange();
+void GameInteractor_ExecuteOnAnimUpperChange();
 void GameInteractor_ExecuteOnOcarinaSongAction();
 void GameInteractor_ExecuteOnActorUpdate(void* actor);
 void GameInteractor_ExecuteOnPlayerBonk();

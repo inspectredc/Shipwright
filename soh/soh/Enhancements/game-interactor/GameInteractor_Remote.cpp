@@ -363,18 +363,29 @@ void GameInteractor::HandleRemoteMessage(std::string message) {
         GameInteractor::State::CoopPlayerAges[payload["clientId"].get<uint32_t>()] = payload["linkAge"].get<int32_t>();
         GameInteractor::State::CoopPlayerCylinders[payload["clientId"].get<uint32_t>()] = payload["cylinder"].get<Cylinder16>();
         GameInteractor::State::CoopPlayerColors[payload["clientId"].get<uint32_t>()] = payload["color"].get<Color_RGB8>();
-        GameInteractor::State::CoopPlayerAnim[payload["clientId"].get<uint32_t>()] = payload["anim"].get<std::string>();
-        GameInteractor::State::CoopPlayerAnimUpper[payload["clientId"].get<uint32_t>()] = payload["animUpper"].get<std::string>();
         GameInteractor::State::CoopPlayerStateFlags2[payload["clientId"].get<uint32_t>()] = payload["stateFlags2"].get<uint32_t>();
+        GameInteractor::State::CoopPlayerMoveFlags[payload["clientId"].get<uint32_t>()] = payload["moveFlags"].get<uint8_t>();
+        GameInteractor::State::CoopPlayerPitchOffset[payload["clientId"].get<uint32_t>()] = payload["shapePitchOffset"].get<int16_t>();
+        GameInteractor::State::CoopPlayerOffsetY[payload["clientId"].get<uint32_t>()] = payload["shapeOffsetY"].get<float>();
+        GameInteractor::State::CoopPlayerLimbs[payload["clientId"].get<uint32_t>()] = payload["jointTable"].get<std::vector<Vec3s>>();
+        GameInteractor::State::CoopPlayerLimbsUpper[payload["clientId"].get<uint32_t>()] = payload["jointTableUpper"].get<std::vector<Vec3s>>();
+    }
+    if (payload["type"] == "PlayerAnim") {
+        GameInteractor::State::CoopPlayerAnim[payload["clientId"].get<uint32_t>()] = payload["anim"].get<std::string>();
         GameInteractor::State::CoopPlayerPlaySpeeds[payload["clientId"].get<uint32_t>()] = payload["playSpeed"].get<float>();
         GameInteractor::State::CoopPlayerStartFrames[payload["clientId"].get<uint32_t>()] = payload["startFrame"].get<float>();
+        GameInteractor::State::CoopPlayerCurFrames[payload["clientId"].get<uint32_t>()] = payload["curFrame"].get<float>();
         GameInteractor::State::CoopPlayerEndFrames[payload["clientId"].get<uint32_t>()] = payload["endFrame"].get<float>();
         GameInteractor::State::CoopPlayerModes[payload["clientId"].get<uint32_t>()] = payload["mode"].get<uint8_t>();
+    }
+    if (payload["type"] == "PlayerAnimUpper") {
+        GameInteractor::State::CoopPlayerAnimUpper[payload["clientId"].get<uint32_t>()] = payload["animUpper"].get<std::string>();
         GameInteractor::State::CoopPlayerPlaySpeeds2[payload["clientId"].get<uint32_t>()] = payload["playSpeed2"].get<float>();
         GameInteractor::State::CoopPlayerStartFrames2[payload["clientId"].get<uint32_t>()] = payload["startFrame2"].get<float>();
+        GameInteractor::State::CoopPlayerCurFrames2[payload["clientId"].get<uint32_t>()] = payload["curFrame2"].get<float>();
         GameInteractor::State::CoopPlayerEndFrames2[payload["clientId"].get<uint32_t>()] = payload["endFrame2"].get<float>();
         GameInteractor::State::CoopPlayerModes2[payload["clientId"].get<uint32_t>()] = payload["mode2"].get<uint8_t>();
-    }
+    } 
     if (payload["type"] == "UnsetSceneFlag") {
         auto effect = new GameInteractionEffect::UnsetSceneFlag();
         effect->parameters[0] = payload["sceneNum"].get<int16_t>();
