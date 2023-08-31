@@ -5077,7 +5077,8 @@ s32 func_8083B040(Player* this, PlayState* play) {
                       ((this->itemAction > PLAYER_IA_BOTTLE_POE) ||
                        ((this->targetActor != NULL) &&
                         (((this->itemAction == PLAYER_IA_BOTTLE_POE) && (this->exchangeItemId == EXCH_ITEM_POE)) ||
-                         (this->exchangeItemId == EXCH_ITEM_BLUE_FIRE))))))) {
+                         (this->exchangeItemId == EXCH_ITEM_BLUE_FIRE)))))
+                         || (CVarGetInteger("gBeggarBuysFairy", 0) && sp28 == 11))) {
 
                     if ((play->actorCtx.titleCtx.delayTimer == 0) && (play->actorCtx.titleCtx.alpha == 0)) {
                         func_80835DE4(play, this, func_8084F104, 0);

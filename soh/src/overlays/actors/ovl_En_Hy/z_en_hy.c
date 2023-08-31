@@ -735,7 +735,7 @@ void func_80A70834(EnHy* this, PlayState* play) {
 
     if ((this->actor.params & 0x7F) == ENHY_TYPE_BOJ_5) {
         if (!Inventory_HasSpecificBottle(ITEM_BLUE_FIRE) && !Inventory_HasSpecificBottle(ITEM_BUG) &&
-            !Inventory_HasSpecificBottle(ITEM_FISH)) {
+            !Inventory_HasSpecificBottle(ITEM_FISH) && (CVarGetInteger("gBeggarBuysFairy", 0) && !Inventory_HasSpecificBottle(ITEM_FAIRY))) {
             switch (func_8002F368(play)) {
                 case EXCH_ITEM_POE:
                 case EXCH_ITEM_BIG_POE:
@@ -757,6 +757,9 @@ void func_80A70834(EnHy* this, PlayState* play) {
                     this->actor.textId = 0x70F1;
                     break;
                 case EXCH_ITEM_BUG:
+                    this->actor.textId = 0x70F2;
+                    break;
+                case EXCH_ITEM_FAIRY:
                     this->actor.textId = 0x70F2;
                     break;
                 default:
