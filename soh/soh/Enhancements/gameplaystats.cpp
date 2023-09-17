@@ -1,17 +1,18 @@
 extern "C" {
 #include "gameplaystats.h"
 }
+#include "gameplaystatswindow.h"
 
 #include "soh/SaveManager.h"
 #include "functions.h"
 #include "macros.h"
-#include "ImGuiImpl.h"
 #include "../UIWidgets.hpp"
 
 #include <vector>
 #include <string>
 #include <libultraship/bridge.h>
-#include <Hooks.h>
+#include <libultraship/libultraship.h>
+#include "soh/Enhancements/enhancementTypes.h"
 
 extern "C" {
 #include <z64.h>
@@ -278,8 +279,8 @@ std::string formatHexOnlyGameplayStat(uint32_t value) {
 
 extern "C" char* GameplayStats_GetCurrentTime() {
     std::string timeString = formatTimestampGameplayStat(GAMEPLAYSTAT_TOTAL_TIME).c_str();
-    const int stringLength = timeString.length();
-    char* timeChar = new char[stringLength + 1];
+    const size_t stringLength = timeString.length();
+    char* timeChar = (char*)malloc(stringLength + 1); // We need to use malloc so we can free this from a C file.
     strcpy(timeChar, timeString.c_str());
     return timeChar;
 }
@@ -338,7 +339,7 @@ void LoadStatsVersion1() {
     });
 }
 
-void SaveStats(SaveContext* saveContext, int sectionID) {
+void SaveStats(SaveContext* saveContext, int sectionID, bool fullSave) {
     SaveManager::Instance->SaveData("buildVersion", saveContext->sohStats.buildVersion);
     SaveManager::Instance->SaveData("buildVersionMajor", saveContext->sohStats.buildVersionMajor);
     SaveManager::Instance->SaveData("buildVersionMinor", saveContext->sohStats.buildVersionMinor);
@@ -382,11 +383,11 @@ void SaveStats(SaveContext* saveContext, int sectionID) {
     });
 }
 
-void GameplayStatsRow(const char* label, std::string value, ImVec4 color = COLOR_WHITE) {
+void GameplayStatsRow(const char* label, const std::string& value, ImVec4 color = COLOR_WHITE) {
     ImGui::PushStyleColor(ImGuiCol_Text, color);
     ImGui::TableNextRow();
     ImGui::TableNextColumn();
-    ImGui::Text(label);
+    ImGui::Text("%s", label);
     ImGui::SameLine(ImGui::GetContentRegionAvail().x - (ImGui::CalcTextSize(value.c_str()).x - 8.0f));
     ImGui::Text("%s", value.c_str());
     ImGui::PopStyleColor();
@@ -544,7 +545,7 @@ void DrawGameplayStatsCountsTab() {
     GameplayStatsRow("Sword Swings:", formatIntGameplayStat(gSaveContext.sohStats.count[COUNT_SWORD_SWINGS]));
     GameplayStatsRow("Steps Taken:", formatIntGameplayStat(gSaveContext.sohStats.count[COUNT_STEPS]));
     // If using MM Bunny Hood enhancement, show how long it's been equipped (not counting pause time)
-    if (CVarGetInteger("gMMBunnyHood", 0) || gSaveContext.sohStats.count[COUNT_TIME_BUNNY_HOOD] > 0) {
+    if (CVarGetInteger("gMMBunnyHood", BUNNY_HOOD_VANILLA) != BUNNY_HOOD_VANILLA || gSaveContext.sohStats.count[COUNT_TIME_BUNNY_HOOD] > 0) {
         GameplayStatsRow("Bunny Hood Time:", formatTimestampGameplayStat(gSaveContext.sohStats.count[COUNT_TIME_BUNNY_HOOD] / 2));
     }
     GameplayStatsRow("Rolls:", formatIntGameplayStat(gSaveContext.sohStats.count[COUNT_ROLLS]));
@@ -623,17 +624,9 @@ void DrawGameplayStatsOptionsTab() {
     UIWidgets::PaddedEnhancementCheckbox("Show Debug Info", "gGameplayStats.ShowDebugInfo");
 }
 
-void DrawStatsTracker(bool& open) {
-    if (!open) {
-        if (CVarGetInteger("gGameplayStats.Enabled", 0)) {
-            CVarClear("gGameplayStats.Enabled");
-            LUS::RequestCvarSaveOnNextTick();
-        }
-        return;
-    }
-
+void GameplayStatsWindow::DrawElement() {
     ImGui::SetNextWindowSize(ImVec2(480, 550), ImGuiCond_Appearing);
-    if (!ImGui::Begin("Gameplay Stats", &open, ImGuiWindowFlags_NoFocusOnAppearing)) {
+    if (!ImGui::Begin("Gameplay Stats", &mIsVisible, ImGuiWindowFlags_NoFocusOnAppearing)) {
         ImGui::End();
         return;
     }
@@ -862,8 +855,7 @@ void SetupDisplayColors() {
     }
 }
 
-extern "C" void InitStatTracker() {
-    LUS::AddWindow("Enhancements", "Gameplay Stats", DrawStatsTracker, CVarGetInteger("gGameplayStats.Enabled", 0));
+void GameplayStatsWindow::InitElement() {
     SetupDisplayNames();
     SetupDisplayColors();
 

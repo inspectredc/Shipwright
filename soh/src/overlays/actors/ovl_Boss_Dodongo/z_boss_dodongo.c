@@ -88,7 +88,7 @@ void func_808C12C4(u8* arg1, s16 arg2) {
 
 void func_808C1554(void* arg0, void* floorTex, s32 arg2, f32 arg3) {
     arg0 = GetResourceDataByNameHandlingMQ(arg0);
-    floorTex = GetResourceDataByName(floorTex);
+    floorTex = ResourceGetDataByName(floorTex);
 
     u16* temp_s3 = SEGMENTED_TO_VIRTUAL(arg0);
     u16* temp_s1 = SEGMENTED_TO_VIRTUAL(floorTex);
@@ -187,8 +187,8 @@ void BossDodongo_Init(Actor* thisx, PlayState* play) {
     Collider_SetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->items);
 
     if (Flags_GetClear(play, play->roomCtx.curRoom.num)) { // KD is dead
-        u16* LavaFloorTex = GetResourceDataByName(gDodongosCavernBossLavaFloorTex);
-        u16* LavaFloorRockTex = GetResourceDataByName(sLavaFloorRockTex);
+        u16* LavaFloorTex = ResourceGetDataByName(gDodongosCavernBossLavaFloorTex);
+        u16* LavaFloorRockTex = ResourceGetDataByName(sLavaFloorRockTex);
         temp_s1_3 = SEGMENTED_TO_VIRTUAL(LavaFloorTex);
         temp_s2 = SEGMENTED_TO_VIRTUAL(LavaFloorRockTex);
         Actor_Kill(&this->actor);
@@ -353,7 +353,7 @@ void BossDodongo_IntroCutscene(BossDodongo* this, PlayState* play) {
                 this->cameraAt.z = player->actor.world.pos.z;
             }
 
-            if (gSaveContext.eventChkInf[7] & 2) {
+            if (Flags_GetEventChkInf(EVENTCHKINF_BEGAN_KING_DODONGO_BATTLE)) {
                 if (this->unk_198 == 100) {
                     this->actor.world.pos.x = -1114.0f;
                     this->actor.world.pos.z = -2804.0f;
@@ -394,7 +394,7 @@ void BossDodongo_IntroCutscene(BossDodongo* this, PlayState* play) {
         case 4:
             Math_SmoothStepToF(&this->unk_20C, 0.0f, 1.0f, 0.01f, 0.0f);
 
-            if (gSaveContext.eventChkInf[7] & 2) {
+            if (Flags_GetEventChkInf(EVENTCHKINF_BEGAN_KING_DODONGO_BATTLE)) {
                 phi_f0 = -50.0f;
             } else {
                 phi_f0 = 0.0f;
@@ -422,7 +422,7 @@ void BossDodongo_IntroCutscene(BossDodongo* this, PlayState* play) {
             }
 
             if (this->unk_198 == 0x5A) {
-                if (!(gSaveContext.eventChkInf[7] & 2)) {
+                if (!Flags_GetEventChkInf(EVENTCHKINF_BEGAN_KING_DODONGO_BATTLE)) {
                     TitleCard_InitBossName(play, &play->actorCtx.titleCtx,
                                            SEGMENTED_TO_VIRTUAL(gKingDodongoTitleCardENGTex), 160, 180, 128, 40, true);
                 }
@@ -441,7 +441,7 @@ void BossDodongo_IntroCutscene(BossDodongo* this, PlayState* play) {
                 this->unk_1DA = 50;
                 this->unk_1BC = 0;
                 player->actor.shape.rot.y = -0x4002;
-                gSaveContext.eventChkInf[7] |= 2;
+                Flags_SetEventChkInf(EVENTCHKINF_BEGAN_KING_DODONGO_BATTLE);
             }
             break;
     }
@@ -1019,8 +1019,8 @@ void BossDodongo_Update(Actor* thisx, PlayState* play2) {
     }
 
     if (this->unk_1C6 != 0) {
-        u16* ptr1 = GetResourceDataByName(sLavaFloorLavaTex);
-        u16* ptr2 = GetResourceDataByName(sLavaFloorRockTex);
+        u16* ptr1 = ResourceGetDataByName(sLavaFloorLavaTex);
+        u16* ptr2 = ResourceGetDataByName(sLavaFloorRockTex);
         s16 i2;
 
         for (i2 = 0; i2 < 20; i2++) {

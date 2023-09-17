@@ -41,7 +41,7 @@
 #ifdef __cplusplus
 namespace LUS
 {
-    class Resource;
+    class IResource;
     class Scene;
     class DisplayList;
 };
@@ -203,6 +203,7 @@ typedef struct {
     /* 0x0060 */ Mtx    projection;
     /* 0x00A0 */ Mtx    viewing;
     /* 0x00E0 */ Mtx*   projectionPtr;
+    /* 0x00E0 */ Mtx*   projectionFlippedPtr;
     /* 0x00E4 */ Mtx*   viewingPtr;
     /* 0x00E8 */ Vec3f  distortionOrientation;
     /* 0x00F4 */ Vec3f  distortionScale;

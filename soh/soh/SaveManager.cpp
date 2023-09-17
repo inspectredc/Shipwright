@@ -6,7 +6,6 @@
 #include "functions.h"
 #include "macros.h"
 #include <variables.h>
-#include <Hooks.h>
 #include "soh/Enhancements/boss-rush/BossRush.h"
 #include <libultraship/libultraship.h>
 
@@ -269,7 +268,7 @@ void SaveManager::LoadRandomizerVersion2() {
     });
 }
 
-void SaveManager::SaveRandomizer(SaveContext* saveContext, int sectionID) {
+void SaveManager::SaveRandomizer(SaveContext* saveContext, int sectionID, bool fullSave) {
 
     if(!saveContext->n64ddFlag) return;
 
@@ -354,7 +353,6 @@ void SaveManager::Init() {
     const std::filesystem::path sGlobalPath = sSavePath / std::string("global.sav");
     auto sOldSavePath = LUS::Context::GetPathRelativeToAppDirectory("oot_save.sav");
     auto sOldBackupSavePath = LUS::Context::GetPathRelativeToAppDirectory("oot_save.bak");
-    LUS::RegisterHook<LUS::ExitGame>([this]() { ThreadPoolWait(); });
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnExitGame>([this](uint32_t fileNum) { ThreadPoolWait(); });
 
     // If the save directory does not exist, create it
@@ -416,6 +414,17 @@ void SaveManager::InitMeta(int fileNum) {
     }
     fileMetaInfo[fileNum].healthCapacity = gSaveContext.healthCapacity;
     fileMetaInfo[fileNum].questItems = gSaveContext.inventory.questItems;
+    for (int i = 0; i < ARRAY_COUNT(fileMetaInfo[fileNum].inventoryItems); i++) {
+        fileMetaInfo[fileNum].inventoryItems[i] = gSaveContext.inventory.items[i];
+    }
+    fileMetaInfo[fileNum].equipment = gSaveContext.inventory.equipment;
+    fileMetaInfo[fileNum].upgrades = gSaveContext.inventory.upgrades;
+    fileMetaInfo[fileNum].isMagicAcquired = gSaveContext.isMagicAcquired;
+    fileMetaInfo[fileNum].isDoubleMagicAcquired = gSaveContext.isDoubleMagicAcquired;
+    fileMetaInfo[fileNum].rupees = gSaveContext.rupees;
+    fileMetaInfo[fileNum].gsTokens = gSaveContext.inventory.gsTokens;
+    fileMetaInfo[fileNum].isDoubleDefenseAcquired = gSaveContext.isDoubleDefenseAcquired;
+    fileMetaInfo[fileNum].gregFound = Flags_GetRandomizerInf(RAND_INF_GREG_FOUND);
     fileMetaInfo[fileNum].defense = gSaveContext.inventory.defenseHearts;
     fileMetaInfo[fileNum].health = gSaveContext.health;
 
@@ -730,7 +739,7 @@ void SaveManager::SaveFileThreaded(int fileNum, SaveContext* saveContext, int se
             }
 
             currentJsonContext = &sectionBlock["data"];
-            sectionHandlerPair.second.func(saveContext, sectionID);
+            sectionHandlerPair.second.func(saveContext, sectionID, true);
         }
     } else {
         SaveFuncInfo svi = sectionSaveHandlers.find(sectionID)->second;
@@ -745,7 +754,7 @@ void SaveManager::SaveFileThreaded(int fileNum, SaveContext* saveContext, int se
         nlohmann::json& sectionBlock = saveBlock["sections"][sectionName];
         sectionBlock["version"] = sectionVersion;
         currentJsonContext = &sectionBlock["data"];
-        svi.func(saveContext, sectionID);
+        svi.func(saveContext, sectionID, false);
     }
 
 #if defined(__SWITCH__) || defined(__WIIU__)
@@ -764,6 +773,7 @@ void SaveManager::SaveFileThreaded(int fileNum, SaveContext* saveContext, int se
 }
 
 // SaveSection creates a copy of gSaveContext to prevent mid-save data modification, and passes its reference to SaveFileThreaded
+// This should never be called with threaded == false except during file creation
 void SaveManager::SaveSection(int fileNum, int sectionID, bool threaded) {
     // Don't save in Boss rush.
     if (fileNum == 0xFF || fileNum == 0xFE) {
@@ -850,7 +860,9 @@ void SaveManager::LoadFile(int fileNum) {
 }
 
 void SaveManager::ThreadPoolWait() {
-    smThreadPool->wait_for_tasks();
+    if (smThreadPool) {
+        smThreadPool->wait_for_tasks();
+    }
 }
 
 bool SaveManager::SaveFile_Exist(int fileNum) {
@@ -883,11 +895,11 @@ void SaveManager::AddLoadFunction(const std::string& name, int version, LoadFunc
     sectionLoadHandlers[name][version] = func;
 }
 
-void SaveManager::AddSaveFunction(const std::string& name, int version, SaveFunc func, bool saveWithBase, int parentSection = -1) {
+int SaveManager::AddSaveFunction(const std::string& name, int version, SaveFunc func, bool saveWithBase, int parentSection = -1) {
     if (sectionRegistry.contains(name)) {
         SPDLOG_ERROR("Adding save function for section that already has one: " + name);
         assert(false);
-        return;
+        return -1;
     }
 
     int index = sectionIndex;
@@ -899,6 +911,7 @@ void SaveManager::AddSaveFunction(const std::string& name, int version, SaveFunc
     SaveFuncInfo sfi = { name, version, func, saveWithBase, parentSection };
     sectionSaveHandlers.emplace(index, sfi);
     sectionRegistry.emplace(name, index);
+    return index;
 }
 
 void SaveManager::AddPostFunction(const std::string& name, PostFunc func) {
@@ -1680,7 +1693,7 @@ void SaveManager::LoadBaseVersion4() {
     SaveManager::Instance->LoadData("dogParams", gSaveContext.dogParams);
 }
 
-void SaveManager::SaveBase(SaveContext* saveContext, int sectionID) {
+void SaveManager::SaveBase(SaveContext* saveContext, int sectionID, bool fullSave) {
     SaveManager::Instance->SaveData("entranceIndex", saveContext->entranceIndex);
     SaveManager::Instance->SaveData("linkAge", saveContext->linkAge);
     SaveManager::Instance->SaveData("cutsceneIndex", saveContext->cutsceneIndex);
@@ -2362,7 +2375,6 @@ extern "C" void Save_SaveGlobal(void) {
 
 extern "C" void Save_LoadFile(void) {
     SaveManager::Instance->LoadFile(gSaveContext.fileNum);
-    LUS::ExecuteHooks<LUS::LoadFile>(gSaveContext.fileNum);
 }
 
 extern "C" void Save_AddLoadFunction(char* name, int version, SaveManager::LoadFunc func) {
@@ -2383,7 +2395,6 @@ extern "C" void Save_CopyFile(int from, int to) {
 
 extern "C" void Save_DeleteFile(int fileNum) {
     SaveManager::Instance->DeleteZeldaFile(fileNum);
-    LUS::ExecuteHooks<LUS::DeleteFile>(fileNum);
 }
 
 extern "C" u32 Save_Exist(int fileNum) {
