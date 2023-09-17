@@ -1521,6 +1521,16 @@ void DrawRandomizerMenu() {
     }
 }
 
+void SohMenuBar::DrawItemModMenu() {
+    if (ImGui::BeginMenu("Menu Mod")) {
+        UIWidgets::EnhancementCheckbox("New Item Page", "gNewPage");
+        UIWidgets::Tooltip(
+            "This mods add an additional item page."
+        );
+        ImGui::EndMenu();
+    }
+}
+
 void SohMenuBar::DrawElement() {
     if (ImGui::BeginMenuBar()) {
         DrawMenuBarIcon();
@@ -1550,6 +1560,10 @@ void SohMenuBar::DrawElement() {
         ImGui::SetCursorPosY(0.0f);
 
         DrawRandomizerMenu();
+
+        ImGui::SetCursorPosY(0.0f);
+
+        DrawItemModMenu();
 
         ImGui::PopStyleVar(1);
         ImGui::EndMenuBar();
