@@ -241,7 +241,7 @@ void EnArrow_Shoot(EnArrow* this, PlayState* play) {
                 break;
         }
         if (this->actor.params >= ARROW_START && this->actor.params <= ARROW_END) {
-            func_8002F7DC(&player->actor, NA_SE_IT_MAGIC_ARROW_SHOT);
+            Player_PlaySfx(&player->actor, NA_SE_IT_MAGIC_ARROW_SHOT);
         }
 
         EnArrow_SetupAction(this, EnArrow_Fly);

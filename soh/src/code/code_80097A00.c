@@ -167,83 +167,83 @@ void* gItemIcons[] = {
     gOcarinaBtnIconCLeftTex,
     gOcarinaBtnIconCRightTex,
     gOcarinaBtnIconATex,
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             // unused
-    gSoldOutIconTex,             //NEW_ITEM_1
-    gSoldOutIconTex,             //NEW_ITEM_2
-    gSoldOutIconTex,             //NEW_ITEM_3
-    gSoldOutIconTex,             //NEW_ITEM_4
-    gSoldOutIconTex,             //NEW_ITEM_5
-    gSoldOutIconTex,             //NEW_ITEM_6
-    gSoldOutIconTex,             //NEW_ITEM_7
-    gSoldOutIconTex,             //NEW_ITEM_8
-    gSoldOutIconTex,             //NEW_ITEM_9
-    gSoldOutIconTex,             //NEW_ITEM_10
-    gSoldOutIconTex,             //NEW_ITEM_11
-    gSoldOutIconTex,             //NEW_ITEM_12
-    gSoldOutIconTex,             //NEW_ITEM_13
-    gSoldOutIconTex,             //NEW_ITEM_14
-    gSoldOutIconTex,             //NEW_ITEM_15
-    gSoldOutIconTex,             //NEW_ITEM_16
-    gSoldOutIconTex,             //NEW_ITEM_17
-    gSoldOutIconTex,             //NEW_ITEM_18
-    gSoldOutIconTex,             //NEW_ITEM_19
-    gSoldOutIconTex,             //NEW_ITEM_20
-    gSoldOutIconTex,             //NEW_ITEM_21
-    gSoldOutIconTex,             //NEW_ITEM_22
-    gSoldOutIconTex,             //NEW_ITEM_23
-    gSoldOutIconTex,             //NEW_ITEM_24
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             // unused
+    gItemIconSoldOutTex,             //NEW_ITEM_1
+    gItemIconSoldOutTex,             //NEW_ITEM_2
+    gItemIconSoldOutTex,             //NEW_ITEM_3
+    gItemIconSoldOutTex,             //NEW_ITEM_4
+    gItemIconSoldOutTex,             //NEW_ITEM_5
+    gItemIconSoldOutTex,             //NEW_ITEM_6
+    gItemIconSoldOutTex,             //NEW_ITEM_7
+    gItemIconSoldOutTex,             //NEW_ITEM_8
+    gItemIconSoldOutTex,             //NEW_ITEM_9
+    gItemIconSoldOutTex,             //NEW_ITEM_10
+    gItemIconSoldOutTex,             //NEW_ITEM_11
+    gItemIconSoldOutTex,             //NEW_ITEM_12
+    gItemIconSoldOutTex,             //NEW_ITEM_13
+    gItemIconSoldOutTex,             //NEW_ITEM_14
+    gItemIconSoldOutTex,             //NEW_ITEM_15
+    gItemIconSoldOutTex,             //NEW_ITEM_16
+    gItemIconSoldOutTex,             //NEW_ITEM_17
+    gItemIconSoldOutTex,             //NEW_ITEM_18
+    gItemIconSoldOutTex,             //NEW_ITEM_19
+    gItemIconSoldOutTex,             //NEW_ITEM_20
+    gItemIconSoldOutTex,             //NEW_ITEM_21
+    gItemIconSoldOutTex,             //NEW_ITEM_22
+    gItemIconSoldOutTex,             //NEW_ITEM_23
+    gItemIconSoldOutTex,             //NEW_ITEM_24
 };
 
 void* gNewItemIcons[] = { //todo shift usage to use these textures for page 2 slots
-    gSoldOutIconTex,             //NEW_ITEM_1
-    gSoldOutIconTex,             //NEW_ITEM_2
-    gSoldOutIconTex,             //NEW_ITEM_3
-    gSoldOutIconTex,             //NEW_ITEM_4
-    gSoldOutIconTex,             //NEW_ITEM_5
-    gSoldOutIconTex,             //NEW_ITEM_6
-    gSoldOutIconTex,             //NEW_ITEM_7
-    gSoldOutIconTex,             //NEW_ITEM_8
-    gSoldOutIconTex,             //NEW_ITEM_9
-    gSoldOutIconTex,             //NEW_ITEM_10
-    gSoldOutIconTex,             //NEW_ITEM_11
-    gSoldOutIconTex,             //NEW_ITEM_12
-    gSoldOutIconTex,             //NEW_ITEM_13
-    gSoldOutIconTex,             //NEW_ITEM_14
-    gSoldOutIconTex,             //NEW_ITEM_15
-    gSoldOutIconTex,             //NEW_ITEM_16
-    gSoldOutIconTex,             //NEW_ITEM_17
-    gSoldOutIconTex,             //NEW_ITEM_18
-    gSoldOutIconTex,             //NEW_ITEM_19
-    gSoldOutIconTex,             //NEW_ITEM_20
-    gSoldOutIconTex,             //NEW_ITEM_21
-    gSoldOutIconTex,             //NEW_ITEM_22
-    gSoldOutIconTex,             //NEW_ITEM_23
-    gSoldOutIconTex,             //NEW_ITEM_24
+    gItemIconSoldOutTex,             //NEW_ITEM_1
+    gItemIconSoldOutTex,             //NEW_ITEM_2
+    gItemIconSoldOutTex,             //NEW_ITEM_3
+    gItemIconSoldOutTex,             //NEW_ITEM_4
+    gItemIconSoldOutTex,             //NEW_ITEM_5
+    gItemIconSoldOutTex,             //NEW_ITEM_6
+    gItemIconSoldOutTex,             //NEW_ITEM_7
+    gItemIconSoldOutTex,             //NEW_ITEM_8
+    gItemIconSoldOutTex,             //NEW_ITEM_9
+    gItemIconSoldOutTex,             //NEW_ITEM_10
+    gItemIconSoldOutTex,             //NEW_ITEM_11
+    gItemIconSoldOutTex,             //NEW_ITEM_12
+    gItemIconSoldOutTex,             //NEW_ITEM_13
+    gItemIconSoldOutTex,             //NEW_ITEM_14
+    gItemIconSoldOutTex,             //NEW_ITEM_15
+    gItemIconSoldOutTex,             //NEW_ITEM_16
+    gItemIconSoldOutTex,             //NEW_ITEM_17
+    gItemIconSoldOutTex,             //NEW_ITEM_18
+    gItemIconSoldOutTex,             //NEW_ITEM_19
+    gItemIconSoldOutTex,             //NEW_ITEM_20
+    gItemIconSoldOutTex,             //NEW_ITEM_21
+    gItemIconSoldOutTex,             //NEW_ITEM_22
+    gItemIconSoldOutTex,             //NEW_ITEM_23
+    gItemIconSoldOutTex,             //NEW_ITEM_24
 };
 
 // Used to map item IDs to inventory slots

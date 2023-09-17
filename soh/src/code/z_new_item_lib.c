@@ -104,7 +104,7 @@ bool NewItem_IsActionParamMagicSpell(s16 actionParam) {
 }
 
 bool NewItem_IsActionParamOcarina(s16 actionParam) {
-    return (actionParam == PLAYER_IA_OCARINA_FAIRY || actionParam == PLAYER_IA_OCARINA_TIME || (actionParam >= PLAYER_IA_OCARINA_START && actionParam <= PLAYER_IA_OCARINA_END));
+    return (actionParam == PLAYER_IA_OCARINA_FAIRY || actionParam == PLAYER_IA_OCARINA_OF_TIME || (actionParam >= PLAYER_IA_OCARINA_START && actionParam <= PLAYER_IA_OCARINA_END));
 }
 
 bool NewItem_IsActionParamBottledItem(s16 actionParam) {
@@ -112,7 +112,7 @@ bool NewItem_IsActionParamBottledItem(s16 actionParam) {
 }
 
 bool NewItem_IsActionParamBottledSellable(s16 actionParam) {
-    return ((actionParam >= PLAYER_IA_BOTTLE_FISH && actionParam <= PLAYER_IA_BOTTLE_LETTER) || sCanSellNewBottle[actionParam - PLAYER_IA_BOTTLE_START]);
+    return ((actionParam >= PLAYER_IA_BOTTLE_FISH && actionParam <= PLAYER_IA_BOTTLE_RUTOS_LETTER) || sCanSellNewBottle[actionParam - PLAYER_IA_BOTTLE_START]);
 }
 
 bool NewItem_IsActionParamBottledConsumable(s16 actionParam) {
@@ -123,12 +123,12 @@ bool NewItem_IsActionParamBottledExchange(s16 actionParam) {
     if (actionParam >= PLAYER_IA_BOTTLE_START && actionParam <= PLAYER_IA_BOTTLE_END) {
         return sNewBottleExchangeItem[actionParam - PLAYER_IA_BOTTLE_START] >= 0;
     } else {
-        return actionParam == PLAYER_IA_BOTTLE_BIG_POE || actionParam == PLAYER_IA_BOTTLE_LETTER;
+        return actionParam == PLAYER_IA_BOTTLE_BIG_POE || actionParam == PLAYER_IA_BOTTLE_RUTOS_LETTER;
     }
 }
 
 bool NewItem_IsActionParamTradeItem(s16 actionParam) {
-    return ((actionParam >= PLAYER_IA_LETTER_ZELDA && actionParam <= PLAYER_IA_CLAIM_CHECK) || (actionParam >= PLAYER_IA_TI_START && actionParam <= PLAYER_IA_TI_END));
+    return ((actionParam >= PLAYER_IA_ZELDAS_LETTER && actionParam <= PLAYER_IA_CLAIM_CHECK) || (actionParam >= PLAYER_IA_TI_START && actionParam <= PLAYER_IA_TI_END));
 }
 
 bool NewItem_IsActionParamMask(s16 actionParam) {
@@ -196,8 +196,8 @@ u32 NewItem_GetArrowDamageFlag(s16 arrowType) {
 }
 
 s32 NewItem_GetCutsceneItem(s16 actionParam) { // 15 vanilla cutscene items todo:figure out bean
-    if (actionParam >= PLAYER_IA_LETTER_ZELDA && actionParam <= PLAYER_IA_CLAIM_CHECK) {
-        return actionParam - PLAYER_IA_LETTER_ZELDA;
+    if (actionParam >= PLAYER_IA_ZELDAS_LETTER && actionParam <= PLAYER_IA_CLAIM_CHECK) {
+        return actionParam - PLAYER_IA_ZELDAS_LETTER;
     } else if (actionParam >= PLAYER_IA_TI_START && actionParam <= PLAYER_IA_TI_END) {
         return actionParam - PLAYER_IA_TI_START + 15;
     } else {

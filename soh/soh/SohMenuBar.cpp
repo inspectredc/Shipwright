@@ -1544,7 +1544,7 @@ void DrawRandomizerMenu() {
     }
 }
 
-void SohMenuBar::DrawItemModMenu() {
+void DrawItemModMenu() {
     if (ImGui::BeginMenu("Menu Mod")) {
         UIWidgets::EnhancementCheckbox("New Item Page", "gNewPage");
         UIWidgets::Tooltip(
