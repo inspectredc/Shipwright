@@ -982,6 +982,7 @@ void UpdateSettings(std::unordered_map<RandomizerSettingKey, uint8_t> cvarSettin
   extern Option LogicFewerTunicRequirements;
   extern Option LogicRustedSwitches;
   extern Option LogicFlamingChests;
+  extern Option LogicBombchuBeehives;
   extern Option LogicBunnyHoodJump; //NEW not implemented
   extern Option LogicDamageBoost; //NEW not implemented
   extern Option LogicHoverBoost; //NEW not implemented

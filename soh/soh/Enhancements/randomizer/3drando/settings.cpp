@@ -663,6 +663,7 @@ namespace Settings {
   Option LogicFewerTunicRequirements              = LogicTrick(std::to_string(RT_FEWER_TUNIC_REQUIREMENTS));
   Option LogicRustedSwitches                      = LogicTrick(std::to_string(RT_RUSTED_SWITCHES));
   Option LogicFlamingChests                       = LogicTrick(std::to_string(RT_FLAMING_CHESTS));
+  Option LogicBombchuBeehives                     = LogicTrick(std::to_string(RT_BOMBCHU_BEEHIVES));
   Option LogicBunnyHoodJump                       = LogicTrick(std::to_string(RT_BUNNY_HOOD_JUMPS));
   Option LogicDamageBoost                         = LogicTrick(std::to_string(RT_DAMAGE_BOOST_SIMPLE));
   Option LogicHoverBoost                          = LogicTrick(std::to_string(RT_HOVER_BOOST_SIMPLE));
@@ -836,6 +837,7 @@ namespace Settings {
     &LogicFewerTunicRequirements,
     &LogicRustedSwitches,
     &LogicFlamingChests,
+    &LogicBombchuBeehives,
     &LogicBunnyHoodJump,
     &LogicDamageBoost,
     &LogicHoverBoost,
@@ -1009,6 +1011,7 @@ namespace Settings {
     {RT_FEWER_TUNIC_REQUIREMENTS,&LogicFewerTunicRequirements},
     {RT_RUSTED_SWITCHES,&LogicRustedSwitches},
     {RT_FLAMING_CHESTS,&LogicFlamingChests},
+    {RT_BOMBCHU_BEEHIVES,&LogicBombchuBeehives},
     {RT_BUNNY_HOOD_JUMPS,&LogicBunnyHoodJump},
     {RT_DAMAGE_BOOST_SIMPLE,&LogicDamageBoost},
     {RT_HOVER_BOOST_SIMPLE,&LogicHoverBoost},
