@@ -406,6 +406,13 @@ void AudioEditor::DrawElement() {
                     "Disables the volume of Malon singing from changing as you move further away. "
                     "Useful for hearing your custom music."
                 );
+                UIWidgets::EnhancementCheckbox("Disable Leading Music in Lost Woods", "gLostWoodsConsistentVolume");
+                UIWidgets::InsertHelpHoverText(
+                    "Disables the volume shifting in the Lost Woods. Useful for hearing "
+                    "your custom music in the Lost Woods if you don't need the navigation assitance "
+                    "the volume changing provides. If toggling this while in the Lost Woods, reload "
+                    "the area for the effect to kick in."
+                );
                 UIWidgets::EnhancementCheckbox("Display Sequence Name on Overlay", "gSeqNameOverlay");
                 UIWidgets::InsertHelpHoverText(
                     "Displays the name of the current sequence in the corner of the screen whenever a new sequence "
