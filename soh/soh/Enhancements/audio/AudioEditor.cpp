@@ -401,6 +401,11 @@ void AudioEditor::DrawElement() {
                 UIWidgets::InsertHelpHoverText(
                     "Disables the music change when getting close to enemies. Useful for hearing "
                     "your custom music for each scene more often.");
+                UIWidgets::EnhancementCheckbox("Disable Malon Getting Quieter from Further Away", "gMalonConsistentVolume");
+                UIWidgets::InsertHelpHoverText(
+                    "Disables the volume of Malon singing from changing as you move further away. "
+                    "Useful for hearing your custom music."
+                );
                 UIWidgets::EnhancementCheckbox("Display Sequence Name on Overlay", "gSeqNameOverlay");
                 UIWidgets::InsertHelpHoverText(
                     "Displays the name of the current sequence in the corner of the screen whenever a new sequence "

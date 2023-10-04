@@ -4835,7 +4835,9 @@ void func_800F6268(f32 dist, u16 arg1) {
         if (temp_a0 == (arg1 & 0xFF)) {
             if ((arg1 & 0xFF) == NA_BGM_LONLON) {
 
-                if (dist > 2000.0f) {
+                if (CVarGetInteger("gMalonConsistentVolume", 0)) {
+                    phi_v1 = 0;
+                } else if (dist > 2000.0f) {
                     phi_v1 = 127;
                 } else if (dist < 200.0f) {
                     phi_v1 = 0;
@@ -4858,7 +4860,9 @@ void func_800F6268(f32 dist, u16 arg1) {
                 D_8016B9D8 = 10;
             }
 
-            if (dist > 2000.0f) {
+            if (CVarGetInteger("gMalonConsistentVolume", 0)) {
+                phi_v1 = 0;
+            } else if (dist > 2000.0f) {
                 phi_v1 = 127;
             } else if (dist < 200.0f) {
                 phi_v1 = 0;
