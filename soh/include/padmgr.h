@@ -1,6 +1,7 @@
 #ifndef PADMGR_H
 #define PADMGR_H
 
+#include <libultraship/libultra.h>
 #include "irqmgr.h"
 
 typedef enum {
