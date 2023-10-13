@@ -1,0 +1,4 @@
+#ifndef Z64ANIMATION_LEGACY_H
+#define Z64ANIMATION_LEGACY_H
+
+#endif
