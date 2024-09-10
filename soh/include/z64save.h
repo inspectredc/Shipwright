@@ -201,6 +201,9 @@ typedef struct {
     Vec3f stickWeaponTip;
     s16 unk_860;
     s8 unk_862;
+    /* PropInfo */
+    s32 propId;
+    s32 propTeam;
 } PlayerData;
 
 typedef struct {
@@ -365,6 +368,9 @@ typedef struct {
     // #region SOH [Network]
     // Upstream TODO: Move these to their own struct or name to more obviously specific to Network
     /*        */ PlayerData playerData;
+    // Prop todo: Separate out into separate struct, or write directly into PlayerData
+    /*        */ s32 propId;
+    /*        */ s32 propTeam;
     // #endregion
 } SaveContext; // size = 0x1428
 

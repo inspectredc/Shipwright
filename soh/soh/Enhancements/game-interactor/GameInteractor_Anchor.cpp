@@ -19,7 +19,8 @@ extern "C" {
 #include "z64scene.h"
 #include "z64actor.h"
 #include "functions.h"
-extern "C" s16 gEnLinkPuppetId;
+#include "overlays/actors/ovl_Link_Puppet/z_prop_puppet.h"
+extern "C" s16 gEnPropPuppetId;
 extern PlayState* gPlayState;
 extern SaveContext gSaveContext;
 }
@@ -77,6 +78,8 @@ void from_json(const json& j, PlayerData& playerData) {
     j.at("stickWeaponTipZ").get_to(playerData.stickWeaponTip.z);
     j.at("unk_860").get_to(playerData.unk_860);
     j.at("unk_862").get_to(playerData.unk_862);
+    j.at("propId").get_to(playerData.propId);
+    j.at("propTeam").get_to(playerData.propTeam);
 }
 
 void to_json(json& j, const PlayerData& playerData) {
@@ -117,6 +120,8 @@ void to_json(json& j, const PlayerData& playerData) {
         { "stickWeaponTipZ", playerData.stickWeaponTip.z },
         { "unk_860", playerData.unk_860 },
         { "unk_862", playerData.unk_862 },
+        { "propId", playerData.propId },
+        { "propTeam", playerData.propTeam },
     };
 }
 
@@ -607,6 +612,8 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
             .message = "has killed Ganon.",
         });
     }
+    /* 
+        Prop Todo: Stubbed -- find better way of disabling certain features
     if (payload["type"] == "REQUEST_TELEPORT") {
         Anchor_TeleportToPlayer(payload["clientId"].get<uint32_t>());
     }
@@ -618,6 +625,7 @@ void GameInteractorAnchor::HandleRemoteJson(nlohmann::json payload) {
         Play_SetRespawnData(gPlayState, RESPAWN_MODE_DOWN, entranceIndex, roomIndex, 0xDFF, &posRot.pos, posRot.rot.y);
         Play_TriggerVoidOut(gPlayState);
     }
+     */
     if (payload["type"] == "SERVER_MESSAGE") {
         Anchor_DisplayMessage({
             .prefix = "Server:",
@@ -803,7 +811,7 @@ void Anchor_RefreshClientActors() {
     if (!GameInteractor::IsSaveLoaded()) return;
     Actor* actor = gPlayState->actorCtx.actorLists[ACTORCAT_ITEMACTION].head;
     while (actor != NULL) {
-        if (gEnLinkPuppetId == actor->id) {
+        if (gEnPropPuppetId == actor->id) {
             Actor_Kill(actor);
         }
         actor = actor->next;
@@ -815,7 +823,7 @@ void Anchor_RefreshClientActors() {
     for (auto [clientId, client] : GameInteractorAnchor::AnchorClients) {
         GameInteractorAnchor::ActorIndexToClientId.push_back(clientId);
         auto fairy = Actor_Spawn(
-            &gPlayState->actorCtx, gPlayState, gEnLinkPuppetId,
+            &gPlayState->actorCtx, gPlayState, gEnPropPuppetId,
             client.posRot.pos.x, client.posRot.pos.y, client.posRot.pos.z, 
             client.posRot.rot.x, client.posRot.rot.y, client.posRot.rot.z,
             3 + i, false
@@ -980,6 +988,11 @@ void Anchor_RegisterHooks() {
         gSaveContext.playerData.stickWeaponTip = player->meleeWeaponInfo[0].tip;
         gSaveContext.playerData.unk_860 = player->unk_860;
         gSaveContext.playerData.unk_862 = player->unk_862;
+        /* 
+            Prop Todo: figure out sourcing this
+         */
+        gSaveContext.playerData.propId = gSaveContext.propId;
+        gSaveContext.playerData.propTeam = gSaveContext.propTeam;
 
         payload["playerData"] = gSaveContext.playerData;
 

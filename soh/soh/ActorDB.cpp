@@ -624,13 +624,30 @@ static ActorDBInit EnLinkPuppetInit = {
     (ActorFunc)LinkPuppet_Draw,
     nullptr,
 };
+
+#include "src/overlays/actors/ovl_Link_Puppet/z_prop_puppet.h"
+static ActorDBInit EnPropPuppetInit = {
+    "En_Prop_Puppet",
+    "Prop",
+    ACTORCAT_ITEMACTION,
+    (ACTOR_FLAG_UPDATE_WHILE_CULLED | ACTOR_FLAG_DRAW_WHILE_CULLED),
+    OBJECT_GAMEPLAY_KEEP,
+    sizeof(PropPuppet),
+    (ActorFunc)PropPuppet_Init,
+    (ActorFunc)PropPuppet_Destroy,
+    (ActorFunc)PropPuppet_Update,
+    (ActorFunc)PropPuppet_Draw,
+    nullptr,
+};
 #endif
 extern "C" s16 gEnLinkPuppetId;
+extern "C" s16 gEnPropPuppetId;
 
 void ActorDB::AddBuiltInCustomActors() {
     gEnPartnerId = ActorDB::Instance->AddEntry(EnPartnerInit).entry.id;
 #ifdef ENABLE_REMOTE_CONTROL
     gEnLinkPuppetId = ActorDB::Instance->AddEntry(EnLinkPuppetInit).entry.id;
+    gEnPropPuppetId = ActorDB::Instance->AddEntry(EnPropPuppetInit).entry.id;
 #endif
 }
 
