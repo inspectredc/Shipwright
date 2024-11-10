@@ -289,6 +289,24 @@ typedef enum {
     // Opt: *EnFr
     // Vanilla condition: this->reward == GI_NONE
     VB_FROGS_GO_TO_IDLE,
+    // Opt: *PauseContext
+    // Vanilla condition: true
+    VB_DRAW_ITEM_SELECT,
+    // Opt: *PauseContext
+    // Vanilla condition: true
+    VB_UPDATE_ITEM_SELECT,
+    // Opt: *PlayState, *GraphicsContext
+    // Vanilla condition: true
+    VB_DRAW_ITEM_SELECT_PAGE,
+    // Opt: *PauseContext
+    // Vanilla condition: true
+    VB_SETUP_ITEM_EQUIP,
+    // Opt: *PauseContext
+    // Vanilla condition: true
+    VB_UPDATE_ITEM_EQUIP,
+    // Opt: *PlayState, *GraphicsContext
+    // Vanilla condition: true
+    VB_SETUP_ITEM_PAGE_POSITION,
 
     /*** Play Cutscenes ***/
 
@@ -592,7 +610,7 @@ struct HookInfo {
 #define COND_VB_SHOULD(id, condition, body)                                                               \
     {                                                                                                     \
         static HOOK_ID hookId = 0;                                                                        \
-        GameInteractor::Instance->UnregisterGameHookForID<GameInteractor::ShouldVanillaBehavior>(hookId); \
+        GameInteractor::Instance->UnregisterGameHookForID<GameInteractor::OnVanillaBehavior>(hookId); \
         hookId = 0;                                                                                       \
         if (condition) {                                                                                  \
             hookId = REGISTER_VB_SHOULD(id, body);                                                        \

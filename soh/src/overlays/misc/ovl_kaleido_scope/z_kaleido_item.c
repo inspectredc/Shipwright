@@ -426,6 +426,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     bool pauseAnyCursor = pauseCtx->cursorSpecialPos == 0 && ((CVarGetInteger(CVAR_ENHANCEMENT("PauseAnyCursor"), 0) == PAUSE_ANY_CURSOR_RANDO_ONLY && IS_RANDO) ||
                           (CVarGetInteger(CVAR_ENHANCEMENT("PauseAnyCursor"), 0) == PAUSE_ANY_CURSOR_ALWAYS_ON));
 
+
+    if (!GameInteractor_Should(VB_DRAW_ITEM_SELECT, true, pauseCtx)) {
+        return;
+    }
+
     OPEN_DISPS(play->state.gfxCtx);
 
     Gfx_SetupDL_42Opa(play->state.gfxCtx);
@@ -435,7 +440,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     pauseCtx->cursorColorSet = 0;
     pauseCtx->nameColorSet = 0;
 
-    if ((pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0) && (pauseCtx->pageIndex == PAUSE_ITEM)) {
+    if ((pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0) && (pauseCtx->pageIndex == PAUSE_ITEM) && GameInteractor_Should(VB_UPDATE_ITEM_SELECT, true, pauseCtx)) {
         moveCursorResult = 0 || IsItemCycling();
         oldCursorPoint = pauseCtx->cursorPoint[PAUSE_ITEM];
 
@@ -805,6 +810,10 @@ void KaleidoScope_SetupItemEquip(PlayState* play, u16 item, u16 slot, s16 animX,
     PauseContext* pauseCtx = &play->pauseCtx;
     KaleidoScope_ResetItemCycling();
 
+    if (!GameInteractor_Should(VB_SETUP_ITEM_EQUIP, true, pauseCtx)) {
+        return;
+    }
+
     if (CHECK_BTN_ALL(input->press.button, BTN_CLEFT)) {
         pauseCtx->equipTargetCBtn = 0;
     } else if (CHECK_BTN_ALL(input->press.button, BTN_CDOWN)) {
@@ -1029,6 +1038,10 @@ void KaleidoScope_UpdateItemEquip(PlayState* play) {
     sCButtonPosY[5] = 120 - sCButtonPosY[5];
     sCButtonPosX[6] = sCButtonPosX[6] - 160;
     sCButtonPosY[6] = 120 - sCButtonPosY[6];
+
+    if (!GameInteractor_Should(VB_UPDATE_ITEM_EQUIP, true, pauseCtx)) {
+        return;
+    }
 
     if (sEquipState == 0) {
         pauseCtx->equipAnimAlpha += 14;

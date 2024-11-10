@@ -270,3 +270,11 @@ void GameInteractor_RegisterOnAssetAltChange(void (*fn)(void)) {
 void GameInteractor_ExecuteOnKaleidoUpdate() {
     GameInteractor::Instance->ExecuteHooks<GameInteractor::OnKaleidoUpdate>();
 }
+
+void GameInteractor_ExecuteOnDrawItemSelectEnd() {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnDrawItemSelectEnd>();
+}
+
+void GameInteractor_ExecuteOnDrawCursorSpecialPos() {
+    GameInteractor::Instance->ExecuteHooks<GameInteractor::OnDrawCursorSpecialPos>();
+}

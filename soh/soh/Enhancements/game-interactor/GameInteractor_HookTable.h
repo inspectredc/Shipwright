@@ -61,3 +61,5 @@ DEFINE_HOOK(OnSetGameLanguage, ());
 DEFINE_HOOK(OnFileDropped, (std::string filePath));
 DEFINE_HOOK(OnAssetAltChange, ());
 DEFINE_HOOK(OnKaleidoUpdate, ());
+DEFINE_HOOK(OnDrawItemSelectEnd, ());
+DEFINE_HOOK(OnDrawCursorSpecialPos, ());

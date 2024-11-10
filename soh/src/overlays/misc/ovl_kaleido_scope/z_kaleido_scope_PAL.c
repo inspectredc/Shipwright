@@ -1374,17 +1374,22 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPPipeSync(OVERLAY_DISP++);
             gDPSetCombineMode(OVERLAY_DISP++, G_CC_MODULATEIA, G_CC_MODULATEIA);
 
-            Matrix_Translate(0.0f, (f32)WREG(2) / 100.0f, -(f32)WREG(3) / 100.0f, MTXMODE_NEW);
-            Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
-            Matrix_RotateX(-pauseCtx->unk_1F4 / 100.0f, MTXMODE_APPLY);
+            if (GameInteractor_Should(VB_SETUP_ITEM_PAGE_POSITION, true, play, gfxCtx)) {
+                Matrix_Translate(0.0f, (f32)WREG(2) / 100.0f, -(f32)WREG(3) / 100.0f, MTXMODE_NEW);
+                Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
+                Matrix_RotateX(-pauseCtx->unk_1F4 / 100.0f, MTXMODE_APPLY);
 
-            gSPMatrix(POLY_KAL_DISP++, MATRIX_NEWMTX(gfxCtx),
-                      G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                gSPMatrix(POLY_KAL_DISP++, MATRIX_NEWMTX(gfxCtx),
+                        G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            }
 
-            POLY_KAL_DISP = KaleidoScope_DrawPageSections(POLY_KAL_DISP, pauseCtx->itemPageVtx,
-                                                          sSelectItemTexs[gSaveContext.language]);
+            if (GameInteractor_Should(VB_DRAW_ITEM_SELECT_PAGE, true, play, gfxCtx)) {
+                POLY_KAL_DISP = KaleidoScope_DrawPageSections(POLY_KAL_DISP, pauseCtx->itemPageVtx,
+                                                            sSelectItemTexs[gSaveContext.language]);
+            }
 
             KaleidoScope_DrawItemSelect(play);
+            GameInteractor_ExecuteOnDrawItemSelectEnd();
         }
 
         if (pauseCtx->pageIndex != PAUSE_EQUIP) {
@@ -1464,17 +1469,22 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
 
         switch (pauseCtx->pageIndex) {
             case PAUSE_ITEM:
-                Matrix_Translate(0.0f, (f32)WREG(2) / 100.0f, -(f32)WREG(3) / 100.0f, MTXMODE_NEW);
-                Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
-                Matrix_RotateX(-pauseCtx->unk_1F4 / 100.0f, MTXMODE_APPLY);
+                if (GameInteractor_Should(VB_SETUP_ITEM_PAGE_POSITION, true, play, gfxCtx)) {
+                    Matrix_Translate(0.0f, (f32)WREG(2) / 100.0f, -(f32)WREG(3) / 100.0f, MTXMODE_NEW);
+                    Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
+                    Matrix_RotateX(-pauseCtx->unk_1F4 / 100.0f, MTXMODE_APPLY);
 
-                gSPMatrix(POLY_KAL_DISP++, MATRIX_NEWMTX(gfxCtx),
-                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                    gSPMatrix(POLY_KAL_DISP++, MATRIX_NEWMTX(gfxCtx),
+                            G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                }
 
-                POLY_KAL_DISP = KaleidoScope_DrawPageSections(POLY_KAL_DISP, pauseCtx->itemPageVtx,
-                                                              sSelectItemTexs[gSaveContext.language]);
+                if (GameInteractor_Should(VB_DRAW_ITEM_SELECT_PAGE, true, play, gfxCtx)) {
+                    POLY_KAL_DISP = KaleidoScope_DrawPageSections(POLY_KAL_DISP, pauseCtx->itemPageVtx,
+                                                                sSelectItemTexs[gSaveContext.language]);
+                }
 
                 KaleidoScope_DrawItemSelect(play);
+                GameInteractor_ExecuteOnDrawItemSelectEnd();
                 break;
 
             case PAUSE_MAP:
@@ -1922,6 +1932,8 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
     }
 
     gSPDisplayList(POLY_KAL_DISP++, gRButtonIconDL);
+
+    GameInteractor_ExecuteOnDrawCursorSpecialPos();
 
     if (pauseCtx->cursorSpecialPos != 0) {
         j = (pauseCtx->cursorSpecialPos * 4) - 32;
