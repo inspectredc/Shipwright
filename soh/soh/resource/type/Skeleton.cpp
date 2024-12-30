@@ -73,10 +73,10 @@ void SkeletonPatcher::ClearSkeletons()
 
 void SkeletonPatcher::UpdateSkeletons() {
     auto resourceMgr = Ship::Context::GetInstance()->GetResourceManager();
-    bool isHD = resourceMgr->IsAltAssetsEnabled();
+    bool isAlt = resourceMgr->IsAltAssetsEnabled();
     for (auto skel : skeletons) {
         Skeleton* newSkel =
-            (Skeleton*)resourceMgr->LoadResource((isHD ? Ship::IResource::gAltAssetPrefix : "") + skel.vanillaSkeletonPath, true).get();
+            (Skeleton*)resourceMgr->LoadResource((isAlt ? Ship::IResource::gAltAssetPrefix : "") + skel.vanillaSkeletonPath, true).get();
 
         if (newSkel != nullptr) {
             skel.skelAnime->skeleton = newSkel->skeletonData.skeletonHeader.segment;
@@ -136,7 +136,8 @@ void SkeletonPatcher::UpdateTunicSkeletons(SkeletonPatchInfo& skel) {
 void SkeletonPatcher::UpdateCustomSkeletonFromPath(const std::string& skeletonPath, SkeletonPatchInfo& skel) {
     Skeleton* newSkel = nullptr;
     Skeleton* altSkel = nullptr;
-    bool isAlt = CVarGetInteger("gAltAssets", 0);
+    auto resourceMgr = Ship::Context::GetInstance()->GetResourceManager();
+    bool isAlt = resourceMgr->IsAltAssetsEnabled();
 
     // If alt assets are on, look for alt tagged skeletons
     if (isAlt) {

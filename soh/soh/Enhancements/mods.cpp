@@ -1402,18 +1402,26 @@ void RegisterRandomizerCompasses() {
 }
 
 void RegisterCustomSkeletons() {
-    static int8_t previousTunic = PLAYER_TUNIC_KOKIRI;
+    int8_t previousTunic = -1;
 
-    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>([]() {
+
         if (!GameInteractor::IsSaveLoaded() || gPlayState == NULL) {
             return;
         }
 
-        Player* player = GET_PLAYER(gPlayState);
-        if (player->currentTunic != previousTunic) {
+        if (CUR_EQUIP_VALUE(EQUIP_TYPE_TUNIC) != previousTunic) {
             SOH::SkeletonPatcher::UpdateCustomSkeletons();
         }
-        previousTunic = player->currentTunic;
+        previousTunic = CUR_EQUIP_VALUE(EQUIP_TYPE_TUNIC);
+    });
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnAssetAltChange>([]() {
+        if (!GameInteractor::IsSaveLoaded() || gPlayState == NULL) {
+            return;
+        }
+
+        SOH::SkeletonPatcher::UpdateCustomSkeletons();
     });
 }
 
