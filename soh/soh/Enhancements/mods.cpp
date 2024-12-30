@@ -1402,7 +1402,7 @@ void RegisterRandomizerCompasses() {
 }
 
 void RegisterCustomSkeletons() {
-    int8_t previousTunic = -1;
+    static int8_t previousTunic = -1;
 
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnGameFrameUpdate>([]() {
 
