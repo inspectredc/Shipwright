@@ -5,6 +5,7 @@
 #include "soh/OTRGlobals.h"
 #include "soh/SaveManager.h"
 #include "soh/ResourceManagerHelpers.h"
+#include "soh/resource/type/Skeleton.h"
 #include "soh/Enhancements/boss-rush/BossRushTypes.h"
 #include "soh/Enhancements/boss-rush/BossRush.h"
 #include "soh/Enhancements/enhancementTypes.h"
@@ -38,6 +39,7 @@
 #include "src/overlays/actors/ovl_En_Door/z_en_door.h"
 #include "objects/object_link_boy/object_link_boy.h"
 #include "objects/object_link_child/object_link_child.h"
+#include "soh_assets.h"
 #include "kaleido.h"
 
 extern "C" {
@@ -1399,6 +1401,22 @@ void RegisterRandomizerCompasses() {
     });
 }
 
+void RegisterCustomSkeletons() {
+    static int8_t previousTunic = PLAYER_TUNIC_KOKIRI;
+
+    GameInteractor::Instance->RegisterGameHook<GameInteractor::OnPlayerUpdate>([]() {
+        if (!GameInteractor::IsSaveLoaded() || gPlayState == NULL) {
+            return;
+        }
+
+        Player* player = GET_PLAYER(gPlayState);
+        if (player->currentTunic != previousTunic) {
+            SOH::SkeletonPatcher::UpdateCustomSkeletons();
+        }
+        previousTunic = player->currentTunic;
+    });
+}
+
 void InitMods() {
     BossRush_RegisterHooks();
     RandomizerRegisterHooks();
@@ -1442,4 +1460,5 @@ void InitMods() {
     RegisterHurtContainerModeHandler();
     RegisterPauseMenuHooks();
     RandoKaleido_RegisterHooks();
+    RegisterCustomSkeletons();
 }
