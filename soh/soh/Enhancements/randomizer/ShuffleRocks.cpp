@@ -1,3 +1,4 @@
+#ifdef TODO_TRANSITION
 #include "ShuffleRocks.h"
 #include "static_data.h"
 #include "soh/ObjectExtension/ObjectExtension.h"
@@ -610,3 +611,4 @@ void Rando::StaticData::RegisterRockLocations() {
 
 static RegisterShipInitFunc initFunc(RegisterShuffleRock, { "IS_RANDO" });
 static RegisterShipInitFunc initFunc2(Rando::StaticData::RegisterRockLocations);
+#endif

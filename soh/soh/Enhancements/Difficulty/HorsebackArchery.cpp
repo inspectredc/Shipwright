@@ -1,3 +1,4 @@
+#ifdef TODO_TRANSITION
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
 
@@ -43,3 +44,4 @@ static RegisterShipInitFunc
     initFunc(RegisterHorsebackArcheryEnhancements,
              { CVAR_ENHANCEMENT("CustomizeHorsebackArchery"), CVAR_ENHANCEMENT("InstantHorsebackArcheryWin"),
                CVAR_ENHANCEMENT("HorsebackArcheryAlwaysScore"), CVAR_ENHANCEMENT("HorsebackArcheryAmmo") });
+#endif

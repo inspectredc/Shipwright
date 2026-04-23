@@ -1,3 +1,4 @@
+#ifdef TODO_TRANSITION
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
 
@@ -23,3 +24,4 @@ static void RegisterNoBugsDespawn() {
 }
 
 static RegisterShipInitFunc initFunc(RegisterNoBugsDespawn, { CVAR_CHEAT("NoBugsDespawn") });
+#endif

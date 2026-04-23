@@ -1,3 +1,4 @@
+#ifdef TODO_TRANSITION
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
 
@@ -16,3 +17,4 @@ static void RegisterSpot06GateSkip() {
 }
 
 static RegisterShipInitFunc initFunc(RegisterSpot06GateSkip, { CVAR_ENHANCEMENT("TimeSavers.SkipCutscene.OnePoint") });
+#endif
