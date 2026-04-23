@@ -145,7 +145,7 @@ void BuildSkulltulaPeopleMessage(IEvent* event) {
                                       "et j'aurai quelque chose à te donner! [[color]]([[1]])%w");
     msg.InsertNumber(count);
     msg.Replace("[[color]]", item.GetColor());
-    msg.InsertNames({ item.GetName() });
+    msg.InsertNames({ item.GetHint().GetHintMessage().GetForCurrentLanguage() });
     msg.AutoFormat();
     msg.LoadIntoFont();
     *ev->loadFromMessageTable = false;
@@ -161,12 +161,10 @@ void Build100SkullsHintMessage(IEvent* event) {
                                       /*french*/
                                       "Yeaaarrgh! Je suis maudit!^Détruit encore %y100 Araignées de la Malédiction%w "
                                       "et j'aurai quelque chose à te donner! [[color]]([[1]])%w");
-    msg.Replace("[[color]]", Rando::StaticData::RetrieveItem(
-                                 RAND_GET_ITEM_LOC(RC_KAK_100_GOLD_SKULLTULA_REWARD)->GetPlacedRandomizerGet())
-                                 .GetColor());
-    msg.InsertNames(
-        { Rando::StaticData::RetrieveItem(RAND_GET_ITEM_LOC(RC_KAK_100_GOLD_SKULLTULA_REWARD)->GetPlacedRandomizerGet())
-              .GetName() });
+    Rando::Item& item =
+        Rando::StaticData::RetrieveItem(RAND_GET_ITEM_LOC(RC_KAK_100_GOLD_SKULLTULA_REWARD)->GetPlacedRandomizerGet());
+    msg.Replace("[[color]]", item.GetColor());
+    msg.InsertNames({ item.GetHint().GetHintMessage().GetForCurrentLanguage() });
     msg.AutoFormat();
     msg.LoadIntoFont();
     *ev->loadFromMessageTable = false;
