@@ -7,3 +7,6 @@
 [submodule "OTRExporter"]
 	path = OTRExporter
 	url = https://github.com/harbourmasters/OTRExporter
+[submodule "workspace/LUS_ModdingTemplate"]
+	path = workspace/LUS_ModdingTemplate
+	url = https://github.com/inspectredc/LUS_ModdingTemplate.git
