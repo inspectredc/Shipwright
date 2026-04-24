@@ -39,6 +39,7 @@ class SohMenu : public Ship::Menu {
     void Draw() override;
 
     void AddSidebarEntry(std::string sectionName, std::string sidbarName, uint32_t columnCount);
+    void RemoveSidebarEntry(std::string sectionName, std::string sidebarName);
     WidgetInfo& AddWidget(WidgetPath& pathInfo, std::string widgetName, WidgetType widgetType);
     void AddMenuElements();
     void AddMenuSettings();

@@ -2,6 +2,17 @@
 #define MACROS_H
 
 #include <ship/utils/binarytools/endianness.h>
+#include <ship/Api.h>
+
+#ifdef _WIN32
+#ifndef __DLL__
+#define extern_s API_EXTERN __declspec(dllexport)
+#else
+#define extern_s API_EXTERN __declspec(dllimport)
+#endif
+#else
+#define extern_s API_EXTERN
+#endif
 
 // Upstream TODO: Document reasoning for change
 // #ifndef __GNUC__

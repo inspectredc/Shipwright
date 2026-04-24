@@ -946,5 +946,13 @@ void Menu::DrawElement() {
         freshOpen = false;
     }
     ImGui::End();
+
+    if (sidebar->contains(sectionIndex) && sidebar->at(sectionIndex).markForDelete) {
+        sidebar->erase(sectionIndex);
+        menuEntries.at(headerIndex)
+            .sidebarOrder.erase(std::remove(menuEntries.at(headerIndex).sidebarOrder.begin(),
+                                            menuEntries.at(headerIndex).sidebarOrder.end(), sectionIndex),
+                                menuEntries.at(headerIndex).sidebarOrder.end());
+    }
 }
 } // namespace Ship

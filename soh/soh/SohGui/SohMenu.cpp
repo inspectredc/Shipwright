@@ -22,6 +22,21 @@ void SohMenu::AddSidebarEntry(std::string sectionName, std::string sidebarName, 
     menuEntries.at(sectionName).sidebarOrder.push_back(sidebarName);
 }
 
+void SohMenu::RemoveSidebarEntry(std::string sectionName, std::string sidebarName) {
+    assert(!sectionName.empty());
+    assert(!sidebarName.empty());
+    auto& sidebars = menuEntries.at(sectionName).sidebars;
+    // Delete directly
+    if (sidebars.contains(sidebarName)) {
+        sidebars.erase(sidebarName);
+        auto& sidebarOrder = menuEntries.at(sectionName).sidebarOrder;
+        sidebarOrder.erase(std::remove(sidebarOrder.begin(), sidebarOrder.end(), sidebarName), sidebarOrder.end());
+    } else {
+        // Mark for deletion if not found, will be deleted when encountered in Draw()
+        menuEntries.at(sectionName).sidebars.at(sidebarName).markForDelete = true;
+    }
+}
+
 WidgetInfo& SohMenu::AddWidget(WidgetPath& pathInfo, std::string widgetName, WidgetType widgetType) {
     assert(!widgetName.empty());                        // Must be unique
     assert(menuEntries.contains(pathInfo.sectionName)); // Section/header must already exist
