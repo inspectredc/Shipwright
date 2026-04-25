@@ -41,8 +41,10 @@
 #include <ship/window/FileDropMgr.h>
 #include <ship/window/gui/resource/Font.h>
 #include <ship/utils/StringHelper.h>
+#include "ship/scripting/ScriptLoader.h"
 #include "Enhancements/custom-message/CustomMessageManager.h"
 #include "util.h"
+#include "Notification/Notification.h"
 
 #if not defined(__SWITCH__) && not defined(__WIIU__)
 #include "Extractor/Extract.h"
@@ -335,6 +337,7 @@ typedef enum ExtractSteps {
     ES_EXTRACT_ARGS,
     ES_EXTRACT,
     ES_VERIFY,
+    ES_COMPILE,
 } ExtractSteps;
 
 typedef enum PromptSteps {
@@ -413,6 +416,7 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
     PromptSteps promptStep = PS_FILE_CHECK;
     bool generatedIsMQ = false;
     std::atomic<size_t> extractCount = 0, totalExtract = 0;
+    std::atomic<size_t> compileCount{ 0 };
 
     std::string installPath = Ship::Context::GetAppBundlePath();
     std::string dataPath = Ship::Context::GetAppDirectoryPath(appShortName);
@@ -454,7 +458,7 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
 #endif
 
     while (!extractDone) {
-        if (SohGui::PopupsQueued() > 0 || extractionTask.has_value()) {
+        if (SohGui::PopupsQueued() > 0 || extractionTask.has_value() || mTotalScripts > 0) {
             goto render;
         }
         switch (extractStep) {
@@ -694,7 +698,21 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
                                           "No ROM O2R files detected. Please generate a ROM O2R and relaunch.", "OK",
                                           "", [&]() { exit(0); });
                 }
-                extractDone = true;
+                extractStep = ES_COMPILE;
+                continue;
+            }
+            case ES_COMPILE: {
+                LoadResourceFiles();
+                threadPool->submit_task([&]() -> void {
+                    auto scripting = Ship::Context::GetInstance()->GetScriptLoader();
+                    auto pre = [&](const std::shared_ptr<Ship::Archive>& archive) {
+                        auto& info = archive->GetManifest();
+                        file = info.Name;
+                    };
+                    auto post = [&]() { compileCount++; };
+                    scripting->CompileAll(pre, post);
+                    extractDone = true;
+                });
                 continue;
             }
             default:
@@ -964,6 +982,126 @@ void OTRGlobals::ScaleImGui() {
     ImGui::GetIO().FontGlobalScale = scale;
     previousImGuiScale = scale;
     previousImGuiScaleIndex = imGuiScaleIndex;
+}
+
+void OTRGlobals::LoadResourceFiles() {
+    constexpr int codeVersion = 1;
+    std::unordered_map<std::string, std::string> defines = { { "ENABLE_RUMBLE", "1" }, { "F3DEX_GBI_2", "1" },
+                                                             { "GBI_FLOATS", "1" },      { "_LANGUAGE_C", "1" },
+                                                             { "_USE_MATH_DEFINES", "1" }, { "AVOID_UB", "1" } };
+
+#ifdef _WIN32
+    std::vector<std::string> includePaths = {
+        Ship::Context::GetPathRelativeToAppDirectory(".tcc/include"),
+        Ship::Context::GetPathRelativeToAppDirectory(".tcc/include/tcc"),
+        Ship::Context::GetPathRelativeToAppDirectory(".tcc/include/winapi"),
+        Ship::Context::GetPathRelativeToAppDirectory(".tcc/include/sys"),
+        Ship::Context::GetPathRelativeToAppDirectory(".tcc/include/sec_api"),
+    };
+
+    std::vector<std::string> libraryPaths = {
+        Ship::Context::GetPathRelativeToAppDirectory(".tcc/lib"),
+    };
+
+    std::vector<std::string> libraries = {
+        "Ship.def",
+    };
+
+    context->InitScriptLoader(defines, codeVersion, "-g -Wl", includePaths, libraryPaths, libraries);
+#else
+    context->InitScriptLoader(defines, codeVersion, "-g -Wl", {}, {}, {});
+#endif
+
+    std::string romPath = Ship::Context::LocateFileAcrossAppDirs("oot.o2r", appShortName);
+    if (std::filesystem::exists(romPath)) {
+        context->GetResourceManager()->GetArchiveManager()->AddArchive(romPath);
+    }
+
+    const std::string patches_path = Ship::Context::GetPathRelativeToAppDirectory("mods");
+
+    if (!patches_path.empty()) {
+        if (!std::filesystem::exists(patches_path)) {
+            std::filesystem::create_directories(patches_path);
+        }
+
+        if (std::filesystem::is_directory(patches_path)) {
+            for (const auto& p : std::filesystem::recursive_directory_iterator(patches_path)) {
+                const auto ext = p.path().extension().string();
+                if (StringHelper::IEquals(ext, ".otr") || StringHelper::IEquals(ext, ".o2r")) {
+                    Ship::Context::GetInstance()->GetResourceManager()->GetArchiveManager()->AddArchive(
+                        p.path().generic_string());
+                }
+
+                if (StringHelper::IEquals(ext, ".zip")) {
+                    SPDLOG_WARN("Zip files should be only used for development purposes, not for distribution");
+                    Ship::Context::GetInstance()->GetResourceManager()->GetArchiveManager()->AddArchive(
+                        p.path().generic_string());
+                }
+            }
+
+            for (const auto& p : std::filesystem::directory_iterator(patches_path)) {
+                if (p.is_directory()) {
+                    SPDLOG_INFO("Found mod directory: {}", p.path().generic_string());
+                    Ship::Context::GetInstance()->GetResourceManager()->GetArchiveManager()->AddArchive(
+                        p.path().generic_string());
+                }
+            }
+        }
+    }
+
+    auto archive = Ship::Context::GetInstance()->GetResourceManager()->GetArchiveManager();
+    auto list = archive->GetArchives();
+
+    for (const auto& entry : *list) {
+        const auto& info = entry->GetManifest();
+        if (info.Main.empty()) {
+            continue;
+        }
+
+        mTotalScripts++;
+    }
+}
+
+void OTRGlobals::LoadScripts() {
+    auto scripting = Ship::Context::GetInstance()->GetScriptLoader();
+    Notification::Emit(
+        { .message = "Loading mods this may take a while...", .remainingTime = (mTotalScripts * 5.0f), .mute = true });
+    auto currentScriptName = std::make_shared<std::string>("");
+    auto currentScript = std::make_shared<std::atomic<int>>(0);
+    auto notification = std::make_shared<Notification::Options>();
+    notification->mute = true;
+    notification->remainingTime = 7.0f;
+    try {
+        scripting->CompileAll([&](const std::shared_ptr<Ship::Archive>& archive) {
+            if (!archive)
+                return;
+
+            auto& info = archive->GetManifest();
+            *currentScriptName = info.Name;
+            int scriptNum = ++(*currentScript);
+
+            notification->message =
+                fmt::format("Loading {} ({}/{})", *currentScriptName, scriptNum, mTotalScripts);
+
+            Notification::Emit(*notification);
+        });
+    } catch (std::exception& e) {
+        notification->message =
+            fmt::format("Failed to build {} ({}/{})", *currentScriptName, (*currentScript + 1), mTotalScripts);
+        SPDLOG_ERROR("Failed to build script {}: {}", *currentScriptName, e.what());
+        Notification::Emit(*notification);
+    }
+
+    try {
+        context->GetScriptLoader()->LoadAll();
+        Notification::Emit({ .message = "Finished loading mods!", .remainingTime = 5.0f, .mute = true });
+    } catch (std::exception& e) {
+        SPDLOG_ERROR("Failed to load scripts: {}", e.what());
+        Notification::Emit({ .message = "Failed to load some mods, check logs for details.",
+                             .messageColor = ImVec4(1.0f, 0.5f, 0.5f, 1.0f),
+                             .remainingTime = 5.0f,
+                             .mute = true });
+    }
 }
 
 ImFont* OTRGlobals::CreateDefaultFontWithSize(float size) {

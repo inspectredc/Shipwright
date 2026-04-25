@@ -49,6 +49,8 @@ class OTRGlobals {
   public:
     static OTRGlobals* Instance;
 
+    uint32_t mTotalScripts = 0;
+
     std::shared_ptr<Ship::Context> context;
     std::shared_ptr<SaveStateMgr> gSaveStateMgr;
     std::shared_ptr<Randomizer> gRandomizer;
@@ -72,6 +74,8 @@ class OTRGlobals {
 
     void ScaleImGui();
     void Initialize();
+    void LoadScripts();
+    void LoadResourceFiles();
     void RunExtract(int argc, char* argv[]);
     bool HasMasterQuest();
     bool HasOriginal();
