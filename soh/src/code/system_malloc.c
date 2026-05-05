@@ -1,5 +1,6 @@
 #include "global.h"
 #include <string.h>
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 
 #define LOG_SEVERITY_NOLOG 0
 #define LOG_SEVERITY_ERROR 2
@@ -31,6 +32,7 @@ void* SystemArena_Malloc(size_t size) {
 
 void* SystemArena_MallocDebug(size_t size, const char* file, s32 line) {
     void* ptr = __osMallocDebug(&gSystemArena, size, file, line);
+    GameInteractor_ExecuteOnSystemArenaAlloc((uintptr_t)ptr, size);
 
     SystemArena_CheckPointer(ptr, size, "malloc_DEBUG", "確保"); // "Secure"
     return ptr;
@@ -38,6 +40,7 @@ void* SystemArena_MallocDebug(size_t size, const char* file, s32 line) {
 
 void* SystemArena_MallocR(size_t size) {
     void* ptr = __osMallocR(&gSystemArena, size);
+    GameInteractor_ExecuteOnSystemArenaAllocR((uintptr_t)ptr, size);
 
     SystemArena_CheckPointer(ptr, size, "malloc_r", "確保"); // "Secure"
     return ptr;
@@ -67,6 +70,7 @@ void SystemArena_Free(void* ptr) {
 }
 
 void SystemArena_FreeDebug(void* ptr, const char* file, s32 line) {
+    GameInteractor_ExecuteOnSystemArenaFree((uintptr_t)ptr);
     __osFreeDebug(&gSystemArena, ptr, file, line);
 }
 
