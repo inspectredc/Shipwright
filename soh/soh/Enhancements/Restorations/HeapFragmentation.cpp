@@ -478,6 +478,11 @@ static const std::unordered_map<int16_t, size_t> sHeapFragmentationActorOverlayS
     { ACTOR_OBJ_WARP2BLOCK,        0xCB0},
 };
 
+static void HeapFragmentation_ReadSizes() {
+    u32 systemMaxFree, systemFree, systemAlloc; ArenaImpl_GetSizes(&sHeapFragmentationSystemArena, &systemMaxFree, &systemFree, &systemAlloc);
+    u32 zMaxFree, zFree, zAlloc; ArenaImpl_GetSizes(&sHeapFragmentationZeldaArena, &zMaxFree, &zFree, &zAlloc);
+}
+
 static void HeapFragmentation_SystemAlloc(uintptr_t ptr, size_t size) {
     sHeapFragmentationSystemArenaMap[ptr] = (uintptr_t)__osMalloc(&sHeapFragmentationSystemArena, size);
 }
@@ -501,13 +506,14 @@ static void HeapFragmentation_GameStateRealloc(uintptr_t ptr, size_t size) {
 
 
     __osFree(&sHeapFragmentationSystemArena, (void*)sHeapFragmentationSystemArenaMap[ptr]);
+    sHeapFragmentationSystemArenaMap.erase(ptr);
     if (gameArena != nullptr) {
         __osFree(&sHeapFragmentationSystemArena, gameArena);
     }
     THA_Dt(&sGameStateTHA);
     ArenaImpl_GetSizes(&sHeapFragmentationSystemArena, &systemMaxFree, &systemFree, &systemAlloc);
-    if (size > systemMaxFree - 0x10) {
-        size = systemMaxFree - 0x10;
+    if (size > systemMaxFree - sizeof(GameAllocEntry)) {
+        size = systemMaxFree - sizeof(GameAllocEntry);
     }
 
     gameArena = __osMalloc(&sHeapFragmentationSystemArena, size + sizeof(GameAllocEntry));
