@@ -15,6 +15,8 @@ extern "C" {
 extern "C" PlayState* gPlayState;
 
 #define CVAR_HEAP_FRAGMENTATION_NAME CVAR_ENHANCEMENT("HeapFragmentation")
+#define HEAP_FRAGMENTATION_DEFAULT 0
+#define CVAR_HEAP_FRAGMENTATION_VALUE CVarGetInteger(CVAR_HEAP_FRAGMENTATION_NAME, HEAP_FRAGMENTATION_DEFAULT)
 
 Arena sHeapFragmentationSystemArena;
 Arena sHeapFragmentationZeldaArena;
@@ -698,7 +700,7 @@ static void HeapFragmentation_OnSceneInit(int16_t sceneNum) {
 void RegisterHeapFragmentation() {
     static u8* sHeapFragmentationHeap;
 
-    if (CVAR_HEAP_FRAGMENTATION_NAME) {
+    if (CVAR_HEAP_FRAGMENTATION_VALUE) {
 #ifdef _MSC_VER
         sHeapFragmentationHeap = (u8*)_aligned_malloc(SYSTEM_HEAP_SIZE, 0x10);
 #elif defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L)
@@ -729,33 +731,33 @@ void RegisterHeapFragmentation() {
         }
     }
 
-    COND_HOOK(OnSystemArenaAlloc, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_SystemAlloc);
+    COND_HOOK(OnSystemArenaAlloc, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_SystemAlloc);
 
-    COND_HOOK(OnSystemArenaAllocR, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_SystemAllocR);
+    COND_HOOK(OnSystemArenaAllocR, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_SystemAllocR);
 
-    COND_HOOK(OnSystemArenaFree, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_SystemFree);
+    COND_HOOK(OnSystemArenaFree, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_SystemFree);
 
-    COND_HOOK(OnGameStateRealloc, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_GameStateRealloc);
+    COND_HOOK(OnGameStateRealloc, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_GameStateRealloc);
 
-    COND_HOOK(OnGameStateAlloc, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_GameStateAlloc);
+    COND_HOOK(OnGameStateAlloc, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_GameStateAlloc);
 
-    COND_HOOK(OnZeldaArenaInit, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ZInit);
+    COND_HOOK(OnZeldaArenaInit, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_ZInit);
 
-    COND_HOOK(OnZeldaArenaAlloc, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ZAlloc);
+    COND_HOOK(OnZeldaArenaAlloc, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_ZAlloc);
 
-    COND_HOOK(OnZeldaArenaAllocR, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ZAllocR);
+    COND_HOOK(OnZeldaArenaAllocR, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_ZAllocR);
 
-    COND_HOOK(OnZeldaArenaFree, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ZFree);
+    COND_HOOK(OnZeldaArenaFree, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_ZFree);
 
-    COND_HOOK(OnZeldaArenaCleanup, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ZCleanup);
+    COND_HOOK(OnZeldaArenaCleanup, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_ZCleanup);
 
-    COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ActorOverlayLoad);
+    COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_ActorOverlayLoad);
 
-    COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ActorOverlayFree);
+    COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_ActorOverlayFree);
 
-    COND_HOOK(OnSceneInit, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_OnSceneInit);
+    COND_HOOK(OnSceneInit, CVAR_HEAP_FRAGMENTATION_VALUE, HeapFragmentation_OnSceneInit);
 
-    COND_HOOK(OnPlayDestroy, CVAR_HEAP_FRAGMENTATION_NAME, []() {
+    COND_HOOK(OnPlayDestroy, CVAR_HEAP_FRAGMENTATION_VALUE, []() {
         if (sAbsoluteSpacePtr != (uintptr_t) nullptr) {
             std::vector<int16_t> keysToDelete;
             for (auto& [id, ptr] : sHeapFragmentationRegisteredOverlays) {
@@ -771,7 +773,7 @@ void RegisterHeapFragmentation() {
         }
     });
 
-    COND_VB_SHOULD(VB_LOAD_ACTOR, CVAR_HEAP_FRAGMENTATION_NAME, {
+    COND_VB_SHOULD(VB_LOAD_ACTOR, CVAR_HEAP_FRAGMENTATION_VALUE, {
         Actor* actor = va_arg(args, Actor*);
         uintptr_t actorAddr = (uintptr_t)actor;
         if (!sHeapFragmentationZeldaArenaMap.contains(actorAddr)) {
