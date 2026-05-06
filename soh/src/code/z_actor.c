@@ -3301,6 +3301,8 @@ void Actor_FreeOverlay(ActorDBEntry* dbEntry) {
             dbEntry->reset();
         }
 
+        GameInteractor_ExecuteOnActorOverlayFree(dbEntry->id);
+
         if (HREG(20) != 0) {
             osSyncPrintf("アクタークライアントが０になりました\n"); // "Actor client is now 0"
         }
@@ -3324,6 +3326,8 @@ Actor* Actor_Spawn(ActorContext* actorCtx, PlayState* play, s16 actorId, f32 pos
     u32 temp;
 
     ActorDBEntry* dbEntry = ActorDB_Retrieve(actorId);
+
+    GameInteractor_ExecuteOnActorOverlayLoad(actorId);
 
     assert(dbEntry->valid);
 
@@ -3355,7 +3359,7 @@ Actor* Actor_Spawn(ActorContext* actorCtx, PlayState* play, s16 actorId, f32 pos
 
     actor = ZELDA_ARENA_MALLOC_DEBUG(dbEntry->instanceSize);
 
-    if (actor == NULL) {
+    if (actor == NULL || !GameInteractor_Should(VB_LOAD_ACTOR, true, actor)) {
         // "Actor class cannot be reserved! %s <size＝%d bytes>"
         osSyncPrintf(VT_COL(RED, WHITE) "Ａｃｔｏｒクラス確保できません！ %s <サイズ＝%dバイト>\n", VT_RST,
                      dbEntry->name, dbEntry->instanceSize);

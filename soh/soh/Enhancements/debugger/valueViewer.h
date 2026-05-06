@@ -74,6 +74,9 @@ typedef enum {
     VVE_NEXT_HUD_MOD,
     VVE_TEMP_B_VALUE,
     VVE_BLUE_WARP_TIMER,
+    VVE_HF_OM,
+    VVE_HF_OF,
+    VVE_HF_OA,
     VVE_MAX,
 } ValueViewerEntry;
 
