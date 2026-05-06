@@ -1215,7 +1215,8 @@ void SohMenu::AddMenuEnhancements() {
     AddWidget(path, "Heap Fragmentation", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("HeapFragmentation"))
         .Options(CheckboxOptions().Tooltip(
-            "Restore bugs relating to fragmentation of the heap, stopping certain actors from spawning, such as parts of the graveyard and the light trial block. (May not 100%% accurately emulate the heap.)"));
+            "Restore bugs relating to fragmentation of the heap, stopping certain actors from spawning, such as parts "
+            "of the graveyard and the light trial block. (May not 100%% accurately emulate the heap.)"));
 
     AddWidget(path, "Misc Restorations", WIDGET_SEPARATOR_TEXT);
     AddWidget(path, "Fix L&Z Page Switch in Pause Menu", WIDGET_CVAR_CHECKBOX)
