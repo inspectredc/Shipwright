@@ -3359,7 +3359,7 @@ Actor* Actor_Spawn(ActorContext* actorCtx, PlayState* play, s16 actorId, f32 pos
 
     actor = ZELDA_ARENA_MALLOC_DEBUG(dbEntry->instanceSize);
 
-    if (actor == NULL && GameInteractor_Should(VB_LOAD_ACTOR, true, actor)) {
+    if (actor == NULL || !GameInteractor_Should(VB_LOAD_ACTOR, true, actor)) {
         // "Actor class cannot be reserved! %s <size＝%d bytes>"
         osSyncPrintf(VT_COL(RED, WHITE) "Ａｃｔｏｒクラス確保できません！ %s <サイズ＝%dバイト>\n", VT_RST,
                      dbEntry->name, dbEntry->instanceSize);

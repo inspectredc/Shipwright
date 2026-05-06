@@ -19,6 +19,9 @@ void GfxPrint_SetPos(GfxPrint* printer, s32 x, s32 y);
 s32 GfxPrint_Printf(GfxPrint* printer, const char* fmt, ...);
 }
 
+extern Arena sHeapFragmentationSystemArena;
+extern Arena sHeapFragmentationZeldaArena;
+
 #define CVAR_NAME CVAR_DEVELOPER_TOOLS("ValueViewerEnablePrinting")
 #define CVAR_DEFAULT 0
 #define CVAR_VALUE CVarGetInteger(CVAR_NAME, CVAR_DEFAULT)
@@ -60,6 +63,9 @@ std::array<ValueTableElement, VVE_MAX> valueTable = {{
     { "Next HUD mode",      "gSaveContext.nextHudMode",       "HUD:",    TYPE_S16,   false, []() -> void* { return &gSaveContext.unk_13E8; }},
     { "Temp B Value",       "gSaveContext.buttonStatus[0]",   "TEMPB:",  TYPE_U8,    false, []() -> void* { return &gSaveContext.buttonStatus[0]; }},
     { "Blue Warp Timer",    "DoorWarp1->warpTimer",           "WARPT:",  TYPE_U16,   true,  []() -> void* { DoorWarp1 *actor = (DoorWarp1 *)Actor_Find(&gPlayState->actorCtx, ACTOR_DOOR_WARP1 ,ACTORCAT_ITEMACTION); if(actor) { return &actor->warpTimer; } else { return nullptr; }}},
+    { "Heap-Frag: outMaxFree", "",                            "HF-OM:",  TYPE_U32,   true,  []() -> void* { u32 stairsOutMaxFree, stairsOutFree, stairsOutAlloc; ArenaImpl_GetSizes(&sHeapFragmentationZeldaArena, &stairsOutMaxFree, &stairsOutFree, &stairsOutAlloc); return &stairsOutMaxFree; } },
+    { "Heap-Frag: outFree",    "",                            "HF-OF:",  TYPE_U32,   true,  []() -> void* { u32 stairsOutMaxFree, stairsOutFree, stairsOutAlloc; ArenaImpl_GetSizes(&sHeapFragmentationZeldaArena, &stairsOutMaxFree, &stairsOutFree, &stairsOutAlloc); return &stairsOutFree; } },
+    { "Heap-Frag: outAlloc",   "",                            "HF-OA:",  TYPE_U32,   true,  []() -> void* { u32 stairsOutMaxFree, stairsOutFree, stairsOutAlloc; ArenaImpl_GetSizes(&sHeapFragmentationZeldaArena, &stairsOutMaxFree, &stairsOutFree, &stairsOutAlloc); return &stairsOutAlloc; } },
     /* TODO: Find these (from GZ)
     "Last RNG Value" x32 0x80105A80
     "Analog Stick Angle" s16 0x803AA698

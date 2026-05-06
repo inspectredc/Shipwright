@@ -12,14 +12,22 @@ extern "C" PlayState* gPlayState;
 
 #define CVAR_HEAP_FRAGMENTATION_NAME CVAR_ENHANCEMENT("HeapFragmentation")
 
-static Arena sHeapFragmentationSystemArena;
-static Arena sHeapFragmentationZeldaArena;
+Arena sHeapFragmentationSystemArena;
+Arena sHeapFragmentationZeldaArena;
 static TwoHeadArena sGameStateTHA;
+static uintptr_t sAbsoluteSpacePtr;
 
 static std::unordered_map<uintptr_t, uintptr_t> sHeapFragmentationSystemArenaMap;
 static std::unordered_map<uintptr_t, uintptr_t> sHeapFragmentationZeldaArenaMap;
+static std::unordered_map<uint16_t, uintptr_t> sHeapFragmentationRegisteredOverlays;
 
-// CONST DATA
+// CONSTS
+
+#define ACTOROVL_ALLOC_NORMAL 0
+#define ACTOROVL_ALLOC_ABSOLUTE (1 << 0)
+#define ACTOROVL_ALLOC_PERSISTENT (1 << 1)
+
+#define ACTOROVL_ABSOLUTE_SPACE_SIZE 0x24E0
 
 // NTSC 1.0 Address
 #define _buffersSegmentEnd 0x801C6E60
@@ -492,7 +500,7 @@ static void HeapFragmentation_GameStateRealloc(uintptr_t ptr, size_t size) {
     static void* gameArena = nullptr;
 
 
-    __osFree(&sHeapFragmentationSystemArena, (void*)ptr);
+    __osFree(&sHeapFragmentationSystemArena, (void*)sHeapFragmentationSystemArenaMap[ptr]);
     if (gameArena != nullptr) {
         __osFree(&sHeapFragmentationSystemArena, gameArena);
     }
@@ -531,6 +539,13 @@ static void* HeapFragmentation_GameStateAlloc(size_t size) {
     return ret;
 }
 
+static void HeapFragmentation_ZInit() {
+    size_t zAllocSize = THA_GetSize(&sGameStateTHA);
+    uintptr_t zAlloc = (uintptr_t)HeapFragmentation_GameStateAlloc(zAllocSize);
+    uintptr_t zAllocAligned = (zAlloc + 8) & ~0xF;
+    __osMallocInit(&sHeapFragmentationZeldaArena, (void*)zAllocAligned, zAllocSize - (zAllocAligned - zAlloc));
+}
+
 static void HeapFragmentation_ZAlloc(uintptr_t ptr, size_t size) {
     sHeapFragmentationZeldaArenaMap[ptr] = (uintptr_t)__osMalloc(&sHeapFragmentationZeldaArena, size);
 }
@@ -549,33 +564,78 @@ static void HeapFragmentation_ZFree(uintptr_t ptr) {
 static void HeapFragmentation_ZCleanup() {
     __osMallocCleanup(&sHeapFragmentationZeldaArena);
     sHeapFragmentationZeldaArenaMap.clear();
+    sHeapFragmentationRegisteredOverlays.clear();
 }
 
 static void HeapFragmentation_ActorOverlayLoad(int16_t actorId) {
-    size_t size = 0;
-    // TODO: Get sizes and store overlay ptr
-    return;
-    __osMalloc(&sHeapFragmentationZeldaArena, size);
+    if (!sHeapFragmentationActorOverlaySizes.contains(actorId) || !sHeapFragmentationActorTable.contains(actorId)) {
+        return;
+    }
+
+    size_t size = sHeapFragmentationActorOverlaySizes.at(actorId);
+    uint16_t allocType = sHeapFragmentationActorTable.at(actorId);
+    
+    if (allocType & 0xFFFF) {
+
+    } else if (allocType & ACTOROVL_ALLOC_ABSOLUTE) {
+        if (sAbsoluteSpacePtr == (uintptr_t)nullptr) {
+            sAbsoluteSpacePtr = (uintptr_t)__osMallocR(&sHeapFragmentationZeldaArena, ACTOROVL_ABSOLUTE_SPACE_SIZE);
+        }
+        sHeapFragmentationRegisteredOverlays[actorId] = sAbsoluteSpacePtr;
+    } else if (allocType & ACTOROVL_ALLOC_PERSISTENT) {
+        sHeapFragmentationRegisteredOverlays[actorId] = (uintptr_t)__osMallocR(&sHeapFragmentationZeldaArena, size);
+    } else {
+        sHeapFragmentationRegisteredOverlays[actorId] = (uintptr_t)__osMalloc(&sHeapFragmentationZeldaArena, size);
+    }
 }
 
 static void HeapFragmentation_ActorOverlayFree(int16_t actorId) {
-    // TODO: Get overlay ptr and check ovl persist type
-    uintptr_t ptr = (uintptr_t)nullptr;
-    return;
-    __osFree(&sHeapFragmentationZeldaArena, (void*)ptr);
+    if (!sHeapFragmentationRegisteredOverlays.contains(actorId) || !sHeapFragmentationActorTable.contains(actorId)) {
+        return;
+    }
+
+    uint16_t allocType = sHeapFragmentationActorTable.at(actorId);
+
+    if (allocType & ACTOROVL_ALLOC_PERSISTENT) {
+        // Persistent, do not de-allocate
+    } else if (allocType & ACTOROVL_ALLOC_ABSOLUTE) {
+        // Unregister but do not de-allocate
+        sHeapFragmentationRegisteredOverlays.erase(actorId);
+    } else {
+        // Unregister and free memory
+        uintptr_t ptr = sHeapFragmentationRegisteredOverlays.at(actorId);
+        __osFree(&sHeapFragmentationZeldaArena, (void*)ptr);
+        sHeapFragmentationRegisteredOverlays.erase(actorId);
+    }
 }
 
 void RegisterHeapFragmentation() {
+    static u8* sHeapFragmentationHeap;
+
     if (CVAR_HEAP_FRAGMENTATION_NAME) {
+#ifdef _MSC_VER
+        sHeapFragmentationHeap = (u8*)_aligned_malloc(SYSTEM_HEAP_SIZE, 0x10);
+#elif defined(_POSIX_VERSION) && (_POSIX_VERSION >= 200112L)
+        if (posix_memalign((void**)&sHeapFragmentationHeap, 0x10, SYSTEM_HEAP_SIZE) != 0)
+            sHeapFragmentationHeap = NULL;
+#else
+        sHeapFragmentationHeap = (u8*)memalign(0x10, SYSTEM_HEAP_SIZE);
+#endif
+        assert(sHeapFragmentationHeap != NULL);
         if (!__osMallocIsInitialized(&sHeapFragmentationSystemArena)) {
             uint32_t frameBufferStartAddress = 0x80400000 - (SCREEN_WIDTH * SCREEN_HEIGHT) * 4;
             uint32_t systemHeapSize = frameBufferStartAddress - _buffersSegmentEnd;
+
+            __osMallocInit(&sHeapFragmentationSystemArena, (void*)sHeapFragmentationHeap, systemHeapSize);
         }
     } else {
         if (__osMallocIsInitialized(&sHeapFragmentationSystemArena)) {
             __osMallocCleanup(&sHeapFragmentationSystemArena);
             sHeapFragmentationSystemArenaMap.clear();
             sHeapFragmentationZeldaArenaMap.clear();
+        }
+        if (sHeapFragmentationHeap != NULL) {
+            free(sHeapFragmentationHeap);
         }
     }
 
@@ -589,12 +649,7 @@ void RegisterHeapFragmentation() {
     
     COND_HOOK(OnGameStateAlloc, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_GameStateAlloc);
 
-    COND_HOOK(OnZeldaArenaInit, CVAR_HEAP_FRAGMENTATION_NAME, []() {
-        size_t zAllocSize = THA_GetSize(&sGameStateTHA);
-        uintptr_t zAlloc = (uintptr_t)HeapFragmentation_GameStateAlloc(zAllocSize);
-        uintptr_t zAllocAligned = (zAlloc + 8) & ~0xF;
-        __osMallocInit(&sHeapFragmentationZeldaArena, (void*)zAllocAligned, zAllocSize - (zAllocAligned - zAlloc));
-    });
+    COND_HOOK(OnZeldaArenaInit, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ZInit);
 
     COND_HOOK(OnZeldaArenaAlloc, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ZAlloc);
 
@@ -607,6 +662,22 @@ void RegisterHeapFragmentation() {
     COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ActorOverlayLoad);
 
     COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ActorOverlayFree);
+
+    COND_HOOK(OnPlayDestroy, CVAR_HEAP_FRAGMENTATION_NAME, []() {
+        if (sAbsoluteSpacePtr != (uintptr_t)nullptr) {
+            std::vector<int16_t> keysToDelete;
+            for (auto& [id, ptr] : sHeapFragmentationRegisteredOverlays) {
+                if (ptr == sAbsoluteSpacePtr) {
+                    keysToDelete.emplace_back(id);
+                }
+            }
+            for (auto& id : keysToDelete) {
+                sHeapFragmentationRegisteredOverlays.erase(id);
+            }
+            __osFree(&sHeapFragmentationZeldaArena, (void*)sAbsoluteSpacePtr);
+            sAbsoluteSpacePtr = (uintptr_t)nullptr;
+        }
+    });
 
     COND_VB_SHOULD(VB_LOAD_ACTOR, CVAR_HEAP_FRAGMENTATION_NAME, {
         Actor* actor = va_arg(args, Actor*);
