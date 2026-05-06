@@ -44,8 +44,7 @@ static const std::unordered_map<int16_t, uint16_t> sHeapFragmentationActorTable 
 #undef DEFINE_ACTOR_UNSET
 #undef DEFINE_ACTOR
 
-// using sizes from the debug rom
-// TODO: Make this use NTSC 1.0 sizes
+// Using sizes from NTSC 1.0
 static const std::unordered_map<int16_t, size_t> sHeapFragmentationActorOverlaySizes = {
     { ACTOR_PLAYER, 0x0 },
     { ACTOR_EN_TEST, 0x58B0 },
