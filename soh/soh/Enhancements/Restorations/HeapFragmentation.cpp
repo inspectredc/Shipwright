@@ -1,6 +1,10 @@
 #include <libultraship/bridge/consolevariablebridge.h>
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "soh/resource/type/Scene.h"
+#include "soh/resource/type/scenecommand/SetAlternateHeaders.h"
+#include "soh/resource/type/scenecommand/SetSpecialObjects.h"
 #include "soh/ShipInit.hpp"
+#include "HeapFragmentation.h"
 
 extern "C" {
 #include "variables.h"
@@ -30,7 +34,11 @@ static std::unordered_map<uint16_t, uintptr_t> sHeapFragmentationRegisteredOverl
 #define ACTOROVL_ABSOLUTE_SPACE_SIZE 0x24E0
 
 // NTSC 1.0 Address
-#define _buffersSegmentEnd 0x801C6E60
+#define _buffersSegmentEnd 0x801c6e60
+#define _ovl_kaleido_scopeSegmentStart 0x808137c0
+#define _ovl_kaleido_scopeSegmentEnd 0x808301c0
+#define _ovl_player_actorSegmentStart 0x808301c0
+#define _ovl_player_actorSegmentEnd 0x808567f0
 
 #define DEFINE_ACTOR_INTERNAL(name, id, allocType) { id, allocType },
 #define DEFINE_ACTOR(name, id, allocType) { id, allocType },
@@ -477,6 +485,14 @@ static const std::unordered_map<int16_t, size_t> sHeapFragmentationActorOverlayS
     { ACTOR_OBJ_WARP2BLOCK, 0xB30 },
 };
 
+#define DEFINE_SCENE(file, _1, enum, _3, _4, _5) { enum, (_##file##SegmentRomStart - _##file##SegmentRomEnd) },
+
+static const std::unordered_map<int16_t, size_t> sHeapFragmentationSceneFileSizes = {
+#include "tables/scene_table.h"
+};
+
+#undef DEFINE_SCENE
+
 static void HeapFragmentation_ReadSizes() {
     u32 systemMaxFree, systemFree, systemAlloc;
     ArenaImpl_GetSizes(&sHeapFragmentationSystemArena, &systemMaxFree, &systemFree, &systemAlloc);
@@ -511,6 +527,8 @@ static void HeapFragmentation_GameStateRealloc(uintptr_t ptr, size_t size) {
         __osFree(&sHeapFragmentationSystemArena, gameArena);
     }
     THA_Dt(&sGameStateTHA);
+
+    size = 0x1D4790;
     ArenaImpl_GetSizes(&sHeapFragmentationSystemArena, &systemMaxFree, &systemFree, &systemAlloc);
     if (size > systemMaxFree - sizeof(GameAllocEntry)) {
         size = systemMaxFree - sizeof(GameAllocEntry);
@@ -615,6 +633,68 @@ static void HeapFragmentation_ActorOverlayFree(int16_t actorId) {
     }
 }
 
+static void HeapFragmentation_CheckSceneCommands(SOH::Scene* scene) {
+    for (int i = 0; i < scene->commands.size(); i++) {
+        auto sceneCmd = scene->commands[i];
+
+        if ((int)sceneCmd->cmdId == SCENE_CMD_ID_ALTERNATE_HEADER_LIST) {
+            SOH::SetAlternateHeaders* cmdHeaders = (SOH::SetAlternateHeaders*)sceneCmd.get();
+            if (gSaveContext.sceneSetupIndex != 0) {
+                SOH::Scene* desiredHeader =
+                    std::static_pointer_cast<SOH::Scene>(cmdHeaders->headers[gSaveContext.sceneSetupIndex - 1]).get();
+
+                if (desiredHeader != nullptr) {
+                    HeapFragmentation_CheckSceneCommands(desiredHeader);
+                    break;
+                }
+
+                if (gSaveContext.sceneSetupIndex == 3) {
+                    SOH::Scene* desiredHeader =
+                        std::static_pointer_cast<SOH::Scene>(cmdHeaders->headers[gSaveContext.sceneSetupIndex - 2]).get();
+
+                    if (desiredHeader != nullptr) {
+                        HeapFragmentation_CheckSceneCommands(desiredHeader);
+                        break;
+                    }
+                }
+            }
+        } else if ((int)sceneCmd->cmdId == SCENE_CMD_ID_SPECIAL_FILES) {
+            SOH::SetSpecialObjects* specialCmd = (SOH::SetSpecialObjects*)sceneCmd.get();
+            if (specialCmd->specialObjects.elfMessage == 1) {
+                void* cUpElfMsgs = HeapFragmentation_GameStateAlloc(_elf_message_fieldSegmentRomStart - _elf_message_fieldSegmentRomEnd);
+            } else if (specialCmd->specialObjects.elfMessage == 2) {
+                void* cUpElfMsgs = HeapFragmentation_GameStateAlloc(_elf_message_ydanSegmentRomStart - _elf_message_ydanSegmentRomEnd);
+            }
+        }
+    }
+}
+
+static void HeapFragmentation_OnSceneInit(int16_t sceneNum) {
+    // Allocate extra memory to heap that port skips allocation for
+
+    if (gPlayState == nullptr) {
+        return;
+    }
+
+
+    size_t largestSize = MAX(_ovl_kaleido_scopeSegmentStart - _ovl_kaleido_scopeSegmentEnd, _ovl_player_actorSegmentStart - _ovl_player_actorSegmentEnd);
+    void* kaleidoAreaPtr = HeapFragmentation_GameStateAlloc(largestSize);
+
+    // Scene:
+
+    if (sHeapFragmentationSceneFileSizes.contains(sceneNum)) {
+        void* sceneSegment = HeapFragmentation_GameStateAlloc(sHeapFragmentationSceneFileSizes.at(sceneNum));
+    }
+
+    RoomContext* roomCtx = &gPlayState->roomCtx;
+    SOH::Scene* scene = (SOH::Scene*)roomCtx->roomToLoad;
+
+    HeapFragmentation_CheckSceneCommands(scene);
+
+    // Interface:
+
+}
+
 void RegisterHeapFragmentation() {
     static u8* sHeapFragmentationHeap;
 
@@ -672,6 +752,8 @@ void RegisterHeapFragmentation() {
     COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ActorOverlayLoad);
 
     COND_HOOK(OnActorOverlayLoad, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_ActorOverlayFree);
+
+    COND_HOOK(OnSceneInit, CVAR_HEAP_FRAGMENTATION_NAME, HeapFragmentation_OnSceneInit);
 
     COND_HOOK(OnPlayDestroy, CVAR_HEAP_FRAGMENTATION_NAME, []() {
         if (sAbsoluteSpacePtr != (uintptr_t) nullptr) {
