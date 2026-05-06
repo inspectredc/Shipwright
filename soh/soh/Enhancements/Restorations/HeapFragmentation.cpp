@@ -641,7 +641,11 @@ void RegisterHeapFragmentation() {
             sHeapFragmentationZeldaArenaMap.clear();
         }
         if (sHeapFragmentationHeap != NULL) {
+#ifdef _MSC_VER
+            _aligned_free(sHeapFragmentationHeap);
+#else
             free(sHeapFragmentationHeap);
+#endif
         }
     }
 
