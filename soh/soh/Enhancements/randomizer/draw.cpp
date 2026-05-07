@@ -488,6 +488,10 @@ s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** 
         Gfx* instruction = &res->Instructions[i];
         if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
             outGfx[i] = gsDPSetPrimColor(0, 0x80, 128, 220, 255, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
+        } else if ((instruction->words.w0 >> 24) == G_GEOMETRYMODE && ((instruction->words.w0 & 0xFFFFFF) == 0) && (instruction->words.w1 == (G_FOG | G_LIGHTING))) {
+            outGfx[i] = gsSPClearGeometryMode(G_FOG | G_LIGHTING);
+        } else if ((instruction->words.w0 >> 24) == G_SETCOMBINE) {
+            outGfx[i] = gsDPSetCombineMode(G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
         } else {
             outGfx[i] = *instruction;
         }
@@ -609,7 +613,13 @@ extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItem
               G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
     gDPSetEnvColor(POLY_XLU_DISP++, 128, 220, 255, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
-    gSPSegment(POLY_XLU_DISP++, 0x0C, (uintptr_t)D_80116280);
+
+    Gfx* renderGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, 3 * sizeof(Gfx));
+    renderGfx[0] = gsDPSetRenderMode(G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+    renderGfx[1] = gsDPSetAlphaCompare(G_AC_THRESHOLD);
+    renderGfx[2] = gsSPEndDisplayList();
+
+    gSPSegment(POLY_XLU_DISP++, 0x0C, (uintptr_t)renderGfx);
 
     POLY_XLU_DISP = SkelAnime_DrawFlex(play, skelAnime.skeleton, jointTable, skelAnime.dListCount,
                                        Randomizer_GlitchLinkOverrideLimbDraw, NULL, NULL, POLY_XLU_DISP);
