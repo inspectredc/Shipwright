@@ -40,6 +40,7 @@ extern "C" {
 #include "objects/object_gi_shield_1/object_gi_shield_1.h"
 #include "objects/object_link_child/object_link_child.h"
 #include "objects/object_torch2/object_torch2.h"
+#include "objects/object_warp1/object_warp1.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
 extern PlayState* gPlayState;
 extern SaveContext gSaveContext;
@@ -459,8 +460,12 @@ extern "C" void Randomizer_DrawTriforcePieceGI(PlayState* play, GetItemEntry get
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx,
-                              Gfx** gfx) {
+s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
+                                          void* thisx, Gfx** gfx) {
+    if ((play->gameplayFrames % 50) == limbIndex) {
+        rot->y += 0x2000;
+    }
+
     Gfx* dl = *dList;
 
     if (dl == NULL) {
@@ -482,7 +487,7 @@ s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** 
     for (size_t i = 0; i < size; i++) {
         Gfx* instruction = &res->Instructions[i];
         if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
-            outGfx[i] = gsDPSetPrimColor(0, 0x80, 102, 179, 204, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
+            outGfx[i] = gsDPSetPrimColor(0, 0x80, 128, 220, 255, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
         } else {
             outGfx[i] = *instruction;
         }
@@ -493,8 +498,44 @@ s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** 
     return false;
 }
 
-void Randomizer_GlitchLinkPostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx, Gfx** gfx) {
+s32 Randomizer_GlitchLinkOverrideLimbDrawFaint(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
+                                          void* thisx, Gfx** gfx) {
+    pos->x += sinf(play->gameplayFrames * (M_PI / 10)) * 200.0f;
 
+    if (((play->gameplayFrames - 25) % 50) == limbIndex) {
+        rot->y += 0x2000;
+    }
+
+    Gfx* dl = *dList;
+
+    if (dl == NULL) {
+        return false;
+    }
+
+    char* path = (char*)dl;
+
+    if (ResourceMgr_OTRSigCheck(path) != 1) {
+        return false;
+    }
+
+    ResourceMgr_UnloadOriginalWhenAltExists(path);
+    auto res = std::static_pointer_cast<Fast::DisplayList>(ResourceMgr_GetResourceByNameHandlingMQ(path));
+
+    size_t size = res->Instructions.size();
+    Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, size * sizeof(Gfx));
+
+    for (size_t i = 0; i < size; i++) {
+        Gfx* instruction = &res->Instructions[i];
+        if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
+            outGfx[i] = gsDPSetPrimColor(0, 0x80, 255, 255, 255, 30 + (sinf(play->gameplayFrames * (M_PI / 30)) * 20));
+        } else {
+            outGfx[i] = *instruction;
+        }
+    }
+
+    *dList = outGfx;
+
+    return false;
 }
 
 #define LIMB_COUNT_CHILD_LINK 22
@@ -507,9 +548,12 @@ extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItem
 
     if (!initialized) {
         initialized = true;
-        SkelAnime_InitFlex(play, &skelAnime, (FlexSkeletonHeader*)&gDarkLinkSkel, NULL,
-                       jointTable, morphTable, LIMB_COUNT_CHILD_LINK);
-        LinkAnimation_Change(play, &skelAnime, (LinkAnimationHeader*)&gPlayerAnim_link_normal_wait, 1.0f, 0.0f, 0.0f, ANIMMODE_LOOP, 0.0f);
+        SkelAnime_InitFlex(play, &skelAnime, (FlexSkeletonHeader*)&gDarkLinkSkel, NULL, jointTable, morphTable,
+                           LIMB_COUNT_CHILD_LINK);
+
+        // TODO: Associate animation with getItemEntry
+        LinkAnimation_Change(play, &skelAnime, (LinkAnimationHeader*)&gPlayerAnim_link_normal_wait, 1.0f, 0.0f, 0.0f,
+                             ANIMMODE_LOOP, 0.0f);
     }
 
     if (lastUpdate != play->state.frames) {
@@ -520,17 +564,50 @@ extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItem
     OPEN_DISPS(play->state.gfxCtx);
 
     Gfx_SetupDL_25Xlu(play->state.gfxCtx);
+
+    // Hologram base
+    gSPSegment(POLY_XLU_DISP++, 0x09, (uintptr_t)MATRIX_NEWMTX(play->state.gfxCtx));
+    Matrix_Push();
+    Matrix_Translate(0.0f, -40.0f, 0.0f, MTXMODE_APPLY);
+    Matrix_Scale(0.4f, 0.4f, 0.4f, MTXMODE_APPLY);
+
+    gDPSetPrimColor(POLY_XLU_DISP++, 0x00, 0x80, 255, 255, 255, 30);
+    gDPSetEnvColor(POLY_XLU_DISP++, 0, 255, 255, 80);
+
+    gSPSegment(POLY_XLU_DISP++, 0x08,
+               (uintptr_t)Gfx_TwoTexScrollEx(play->state.gfxCtx, 0, (play->gameplayFrames * 5) % 300, -((play->gameplayFrames * 10) % 600), 0x100,
+                                             0x100, 1, (play->gameplayFrames * 5) % 300, -((play->gameplayFrames * 10) % 600), 0x100, 0x100, 10,
+                                             -1, 10, -1));
+    gSPSegment(POLY_XLU_DISP++, 0x0A, (uintptr_t)MATRIX_NEWMTX(play->state.gfxCtx));
+
+    gSPDisplayList(POLY_XLU_DISP++, (Gfx*)gWarpPortalDL);
+    Matrix_Pop();
+
+    // Hologram Link
     Matrix_Translate(0.0f, -20.0f, 0.0f, MTXMODE_APPLY);
     Matrix_RotateY(play->gameplayFrames * 0.05f, MTXMODE_APPLY);
-    Matrix_Scale(0.025f, 0.025f, 0.025f, MTXMODE_APPLY);
+    Matrix_Scale(0.015f, 0.015f, 0.015f, MTXMODE_APPLY);
 
     gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, (char*)__FILE__, __LINE__),
               G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
-    gDPSetEnvColor(POLY_XLU_DISP++, 255, 0, 0, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
+    gDPSetEnvColor(POLY_XLU_DISP++, 128, 220, 255, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
     gSPSegment(POLY_XLU_DISP++, 0x0C, (uintptr_t)D_80116280);
 
-    POLY_XLU_DISP = SkelAnime_DrawFlex(play, skelAnime.skeleton, jointTable, skelAnime.dListCount, Randomizer_GlitchLinkOverrideLimbDraw, NULL, NULL, POLY_XLU_DISP);
+    POLY_XLU_DISP = SkelAnime_DrawFlex(play, skelAnime.skeleton, jointTable, skelAnime.dListCount,
+                                       Randomizer_GlitchLinkOverrideLimbDraw, NULL, NULL, POLY_XLU_DISP);
+
+    // Faint Lag/Offset Holo-Link
+    Matrix_Push();
+    Matrix_Scale(1.03f, 1.03f, 1.03f, MTXMODE_APPLY);
+    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, (char*)__FILE__, __LINE__),
+              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+    gDPSetEnvColor(POLY_XLU_DISP++, 255, 255, 255, 30 + (sinf(play->gameplayFrames * (M_PI / 30)) * 20));
+
+    POLY_XLU_DISP = SkelAnime_DrawFlex(play, skelAnime.skeleton, jointTable, skelAnime.dListCount,
+                                       Randomizer_GlitchLinkOverrideLimbDrawFaint, NULL, NULL, POLY_XLU_DISP);
+    Matrix_Pop();
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

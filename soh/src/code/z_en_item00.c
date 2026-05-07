@@ -1268,6 +1268,17 @@ void EnItem00_CustomItemsParticles(Actor* Parent, PlayState* play, GetItemEntry 
                 case RG_BOTTLE_WITH_BLUE_POTION:
                     colorIndex = PARTICLE_BLUE;
                     break;
+                case RG_ABILITY_ISG:
+                case RG_ABILITY_OI:
+                case RG_ABILITY_QPA:
+                case RG_ABILITY_HESS:
+                case RG_ABILITY_SUPERSLIDE:
+                case RG_ABILITY_HOVER:
+                case RG_ABILITY_EQUIP_SWAP:
+                case RG_ABILITY_GROUND_JUMP:
+                case RG_ABILITY_WEIRDSHOT:
+                    colorIndex = PARTICLE_CYAN;
+                    break;
                 default:
                     return;
             }
