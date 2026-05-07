@@ -5,6 +5,7 @@
 #include "soh_assets.h"
 #include "soh/ResourceManagerHelpers.h"
 #include "soh/Enhancements/cosmetics/cosmeticsTypes.h"
+#include <fast/resource/type/DisplayList.h>
 
 extern "C" {
 #include "z64.h"
@@ -37,6 +38,9 @@ extern "C" {
 #include "objects/object_tw/object_tw.h"
 #include "objects/object_ganon2/object_ganon2.h"
 #include "objects/object_gi_shield_1/object_gi_shield_1.h"
+#include "objects/object_link_child/object_link_child.h"
+#include "objects/object_torch2/object_torch2.h"
+#include "objects/gameplay_keep/gameplay_keep.h"
 extern PlayState* gPlayState;
 extern SaveContext gSaveContext;
 }
@@ -451,6 +455,82 @@ extern "C" void Randomizer_DrawTriforcePieceGI(PlayState* play, GetItemEntry get
     } else if (current == required && triforcePieceScale > 0.00008f) {
         gSPDisplayList(POLY_XLU_DISP++, (Gfx*)gTriforcePieceCompletedDL);
     }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx,
+                              Gfx** gfx) {
+    Gfx* dl = *dList;
+
+    if (dl == NULL) {
+        return false;
+    }
+
+    char* path = (char*)dl;
+
+    if (ResourceMgr_OTRSigCheck(path) != 1) {
+        return false;
+    }
+
+    ResourceMgr_UnloadOriginalWhenAltExists(path);
+    auto res = std::static_pointer_cast<Fast::DisplayList>(ResourceMgr_GetResourceByNameHandlingMQ(path));
+
+    size_t size = res->Instructions.size();
+    Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, size * sizeof(Gfx));
+
+    for (size_t i = 0; i < size; i++) {
+        Gfx* instruction = &res->Instructions[i];
+        if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
+            outGfx[i] = gsDPSetPrimColor(0, 0x80, 102, 179, 204, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
+        } else {
+            outGfx[i] = *instruction;
+        }
+    }
+
+    *dList = outGfx;
+
+    return false;
+}
+
+void Randomizer_GlitchLinkPostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx, Gfx** gfx) {
+
+}
+
+#define LIMB_COUNT_CHILD_LINK 22
+extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItemEntry) {
+    static bool initialized = false;
+    static SkelAnime skelAnime;
+    static Vec3s jointTable[LIMB_COUNT_CHILD_LINK];
+    static Vec3s morphTable[LIMB_COUNT_CHILD_LINK];
+    static u32 lastUpdate = 0;
+
+    if (!initialized) {
+        initialized = true;
+        SkelAnime_InitFlex(play, &skelAnime, (FlexSkeletonHeader*)&gDarkLinkSkel, NULL,
+                       jointTable, morphTable, LIMB_COUNT_CHILD_LINK);
+        LinkAnimation_Change(play, &skelAnime, (LinkAnimationHeader*)&gPlayerAnim_link_normal_wait, 1.0f, 0.0f, 0.0f, ANIMMODE_LOOP, 0.0f);
+    }
+
+    if (lastUpdate != play->state.frames) {
+        lastUpdate = play->state.frames;
+        LinkAnimation_Update(play, &skelAnime);
+    }
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL_25Xlu(play->state.gfxCtx);
+    Matrix_Translate(0.0f, -20.0f, 0.0f, MTXMODE_APPLY);
+    Matrix_RotateY(play->gameplayFrames * 0.05f, MTXMODE_APPLY);
+    Matrix_Scale(0.025f, 0.025f, 0.025f, MTXMODE_APPLY);
+
+    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, (char*)__FILE__, __LINE__),
+              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+    gDPSetEnvColor(POLY_XLU_DISP++, 255, 0, 0, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
+    gSPSegment(POLY_XLU_DISP++, 0x0C, (uintptr_t)D_80116280);
+
+    POLY_XLU_DISP = SkelAnime_DrawFlex(play, skelAnime.skeleton, jointTable, skelAnime.dListCount, Randomizer_GlitchLinkOverrideLimbDraw, NULL, NULL, POLY_XLU_DISP);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
