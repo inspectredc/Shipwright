@@ -500,40 +500,38 @@ s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** 
 
 s32 Randomizer_GlitchLinkOverrideLimbDrawFaint(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
                                           void* thisx, Gfx** gfx) {
-    pos->x += sinf(play->gameplayFrames * (M_PI / 10)) * 200.0f;
-
     if (((play->gameplayFrames - 25) % 50) == limbIndex) {
         rot->y += 0x2000;
     }
 
-    Gfx* dl = *dList;
+    // Gfx* dl = *dList;
 
-    if (dl == NULL) {
-        return false;
-    }
+    // if (dl == NULL) {
+    //     return false;
+    // }
 
-    char* path = (char*)dl;
+    // char* path = (char*)dl;
 
-    if (ResourceMgr_OTRSigCheck(path) != 1) {
-        return false;
-    }
+    // if (ResourceMgr_OTRSigCheck(path) != 1) {
+    //     return false;
+    // }
 
-    ResourceMgr_UnloadOriginalWhenAltExists(path);
-    auto res = std::static_pointer_cast<Fast::DisplayList>(ResourceMgr_GetResourceByNameHandlingMQ(path));
+    // ResourceMgr_UnloadOriginalWhenAltExists(path);
+    // auto res = std::static_pointer_cast<Fast::DisplayList>(ResourceMgr_GetResourceByNameHandlingMQ(path));
 
-    size_t size = res->Instructions.size();
-    Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, size * sizeof(Gfx));
+    // size_t size = res->Instructions.size();
+    // Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, size * sizeof(Gfx));
 
-    for (size_t i = 0; i < size; i++) {
-        Gfx* instruction = &res->Instructions[i];
-        if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
-            outGfx[i] = gsDPSetPrimColor(0, 0x80, 255, 255, 255, 30 + (sinf(play->gameplayFrames * (M_PI / 30)) * 20));
-        } else {
-            outGfx[i] = *instruction;
-        }
-    }
+    // for (size_t i = 0; i < size; i++) {
+    //     Gfx* instruction = &res->Instructions[i];
+    //     if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
+    //         outGfx[i] = gsDPSetPrimColor(0, 0x80, 255, 255, 255, 30 + (sinf(play->gameplayFrames * (M_PI / 30)) * 20));
+    //     } else {
+    //         outGfx[i] = *instruction;
+    //     }
+    // }
 
-    *dList = outGfx;
+    // *dList = outGfx;
 
     return false;
 }
@@ -551,8 +549,27 @@ extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItem
         SkelAnime_InitFlex(play, &skelAnime, (FlexSkeletonHeader*)&gDarkLinkSkel, NULL, jointTable, morphTable,
                            LIMB_COUNT_CHILD_LINK);
 
-        // TODO: Associate animation with getItemEntry
-        LinkAnimation_Change(play, &skelAnime, (LinkAnimationHeader*)&gPlayerAnim_link_normal_wait, 1.0f, 0.0f, 0.0f,
+        // TODO: Associate animations with getItemEntry
+        LinkAnimationHeader* animation;
+        switch (getItemEntry->drawItemId) {
+            case RG_ABILITY_OI:
+                animation = (LinkAnimationHeader*)&gPlayerAnim_link_normal_okarina_swing;
+                break;
+            case RG_ABILITY_HESS:
+                animation = (LinkAnimationHeader*)&gPlayerAnim_link_normal_45_turn_free;
+                break;
+            case RG_ABILITY_SUPERSLIDE:
+            case RG_ABILITY_ISG:
+            case RG_ABILITY_QPA:
+            case RG_ABILITY_HOVER:
+            case RG_ABILITY_EQUIP_SWAP:
+            case RG_ABILITY_GROUND_JUMP:
+            case RG_ABILITY_WEIRDSHOT:
+            default:
+                animation = (LinkAnimationHeader*)&gPlayerAnim_link_normal_wait;
+                break;
+        }
+        LinkAnimation_Change(play, &skelAnime, animation, 1.0f, 0.0f, 0.0f,
                              ANIMMODE_LOOP, 0.0f);
     }
 
