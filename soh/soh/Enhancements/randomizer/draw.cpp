@@ -460,6 +460,47 @@ extern "C" void Randomizer_DrawTriforcePieceGI(PlayState* play, GetItemEntry get
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
+s32 Randomizer_GlitchLinkPatchDisplayList(PlayState* play, char* path, Gfx* gfx) {
+    if (path == NULL) {
+        return false;
+    }
+
+    ResourceMgr_UnloadOriginalWhenAltExists(path);
+    auto res = std::static_pointer_cast<Fast::DisplayList>(ResourceMgr_GetResourceByNameHandlingMQ(path));
+
+    size_t size = res->Instructions.size();
+
+    if (size > 0x100) {
+        return false;
+    }
+
+    Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, size * sizeof(Gfx));
+
+    for (size_t i = 0; i < size; i++) {
+        Gfx* instruction = &res->Instructions[i];
+        if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
+            outGfx[i] =
+                gsDPSetPrimColor(0, 0x80, 128, 220, 255, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
+        } else if ((instruction->words.w0 >> 24) == G_GEOMETRYMODE && ((instruction->words.w0 & 0xFFFFFF) == 0) &&
+                   (instruction->words.w1 == (G_FOG | G_LIGHTING))) {
+            outGfx[i] = gsSPClearGeometryMode(G_FOG | G_LIGHTING);
+        } else if ((instruction->words.w0 >> 24) == G_SETCOMBINE) {
+            outGfx[i] = gsDPSetCombineMode(G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
+        } else if ((instruction->words.w0 >> 24) == G_DL_OTR_FILEPATH) {
+            char* dlPath = (char*)instruction->words.w1;
+            if (!Randomizer_GlitchLinkPatchDisplayList(play, dlPath, &outGfx[i])) {
+                outGfx[i] = *instruction;
+            }
+        } else {
+            outGfx[i] = *instruction;
+        }
+    }
+
+    *gfx = gsSPDisplayList(outGfx);
+
+    return true;
+}
+
 s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
                                           void* thisx, Gfx** gfx) {
     if ((play->gameplayFrames % 50) == limbIndex) {
@@ -478,24 +519,11 @@ s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** 
         return false;
     }
 
-    ResourceMgr_UnloadOriginalWhenAltExists(path);
-    auto res = std::static_pointer_cast<Fast::DisplayList>(ResourceMgr_GetResourceByNameHandlingMQ(path));
-
-    size_t size = res->Instructions.size();
-    Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, size * sizeof(Gfx));
-
-    for (size_t i = 0; i < size; i++) {
-        Gfx* instruction = &res->Instructions[i];
-        if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
-            outGfx[i] = gsDPSetPrimColor(0, 0x80, 128, 220, 255, 150 - (sinf(play->gameplayFrames * (M_PI / 30)) * 100));
-        } else if ((instruction->words.w0 >> 24) == G_GEOMETRYMODE && ((instruction->words.w0 & 0xFFFFFF) == 0) && (instruction->words.w1 == (G_FOG | G_LIGHTING))) {
-            outGfx[i] = gsSPClearGeometryMode(G_FOG | G_LIGHTING);
-        } else if ((instruction->words.w0 >> 24) == G_SETCOMBINE) {
-            outGfx[i] = gsDPSetCombineMode(G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
-        } else {
-            outGfx[i] = *instruction;
-        }
+    Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, 2 * sizeof(Gfx));
+    if (!Randomizer_GlitchLinkPatchDisplayList(play, path, &outGfx[0])) {
+        return false;
     }
+    outGfx[1] = gsSPEndDisplayList();
 
     *dList = outGfx;
 
@@ -503,39 +531,10 @@ s32 Randomizer_GlitchLinkOverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** 
 }
 
 s32 Randomizer_GlitchLinkOverrideLimbDrawFaint(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot,
-                                          void* thisx, Gfx** gfx) {
+                                               void* thisx, Gfx** gfx) {
     if (((play->gameplayFrames - 25) % 50) == limbIndex) {
         rot->y += 0x2000;
     }
-
-    // Gfx* dl = *dList;
-
-    // if (dl == NULL) {
-    //     return false;
-    // }
-
-    // char* path = (char*)dl;
-
-    // if (ResourceMgr_OTRSigCheck(path) != 1) {
-    //     return false;
-    // }
-
-    // ResourceMgr_UnloadOriginalWhenAltExists(path);
-    // auto res = std::static_pointer_cast<Fast::DisplayList>(ResourceMgr_GetResourceByNameHandlingMQ(path));
-
-    // size_t size = res->Instructions.size();
-    // Gfx* outGfx = (Gfx*)Graph_Alloc(play->state.gfxCtx, size * sizeof(Gfx));
-
-    // for (size_t i = 0; i < size; i++) {
-    //     Gfx* instruction = &res->Instructions[i];
-    //     if ((instruction->words.w0 >> 24) == G_SETPRIMCOLOR) {
-    //         outGfx[i] = gsDPSetPrimColor(0, 0x80, 255, 255, 255, 30 + (sinf(play->gameplayFrames * (M_PI / 30)) * 20));
-    //     } else {
-    //         outGfx[i] = *instruction;
-    //     }
-    // }
-
-    // *dList = outGfx;
 
     return false;
 }
@@ -573,8 +572,7 @@ extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItem
                 animation = (LinkAnimationHeader*)&gPlayerAnim_link_normal_wait;
                 break;
         }
-        LinkAnimation_Change(play, &skelAnime, animation, 1.0f, 0.0f, 0.0f,
-                             ANIMMODE_LOOP, 0.0f);
+        LinkAnimation_Change(play, &skelAnime, animation, 1.0f, 0.0f, 0.0f, ANIMMODE_LOOP, 0.0f);
     }
 
     if (lastUpdate != play->state.frames) {
@@ -596,9 +594,10 @@ extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItem
     gDPSetEnvColor(POLY_XLU_DISP++, 0, 255, 255, 80);
 
     gSPSegment(POLY_XLU_DISP++, 0x08,
-               (uintptr_t)Gfx_TwoTexScrollEx(play->state.gfxCtx, 0, (play->gameplayFrames * 5) % 300, -((play->gameplayFrames * 10) % 600), 0x100,
-                                             0x100, 1, (play->gameplayFrames * 5) % 300, -((play->gameplayFrames * 10) % 600), 0x100, 0x100, 10,
-                                             -1, 10, -1));
+               (uintptr_t)Gfx_TwoTexScrollEx(play->state.gfxCtx, 0, (play->gameplayFrames * 5) % 300,
+                                             -((play->gameplayFrames * 10) % 600), 0x100, 0x100, 1,
+                                             (play->gameplayFrames * 5) % 300, -((play->gameplayFrames * 10) % 600),
+                                             0x100, 0x100, 10, -1, 10, -1));
     gSPSegment(POLY_XLU_DISP++, 0x0A, (uintptr_t)MATRIX_NEWMTX(play->state.gfxCtx));
 
     gSPDisplayList(POLY_XLU_DISP++, (Gfx*)gWarpPortalDL);
@@ -626,7 +625,7 @@ extern "C" void Randomizer_DrawGlitchLink(PlayState* play, GetItemEntry* getItem
 
     // Faint Lag/Offset Holo-Link
     Matrix_Push();
-    Matrix_Scale(1.03f, 1.03f, 1.03f, MTXMODE_APPLY);
+    Matrix_Scale(0.97f, 0.97f, 0.97f, MTXMODE_APPLY);
     gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, (char*)__FILE__, __LINE__),
               G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
