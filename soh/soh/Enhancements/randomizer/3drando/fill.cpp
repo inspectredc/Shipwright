@@ -408,6 +408,9 @@ bool AddCheckToLogic(LocationAccess& locPair, GetAccessibleLocationsStruct& gals
 
         if (locItem == RG_NONE || logic->CalculatingAvailableChecks) {
             gals.accessibleLocations.push_back(loc); // Empty location, consider for placement
+            if (gals.locationDepths.find(loc) == gals.locationDepths.end()) {
+                gals.locationDepths[loc] = gals.currentSphere;
+            }
         }
         if (locItem != RG_NONE) {
             // If ignore has a value, we want to check if the item location should be considered or not
@@ -514,7 +517,8 @@ std::vector<RandomizerCheck> ReachabilitySearch(const std::vector<RandomizerChec
                                                 RandomizerGet ignore /* = RG_NONE*/,
                                                 bool calculatingAvailableChecks /* = false */,
                                                 RandomizerRegion startingRegion /* = RR_ROOT */,
-                                                RandoAgeTime startingAgeTime /* = RAT_NONE*/) {
+                                                RandoAgeTime startingAgeTime /* = RAT_NONE*/,
+                                                std::map<RandomizerCheck, int>* locationDepthsOut /* = nullptr */) {
     auto ctx = Rando::Context::GetInstance();
     GetAccessibleLocationsStruct gals(0);
     ResetLogic(ctx, gals, !calculatingAvailableChecks);
@@ -557,6 +561,9 @@ std::vector<RandomizerCheck> ReachabilitySearch(const std::vector<RandomizerChec
         }
         return true;
     });
+    if (locationDepthsOut != nullptr) {
+        *locationDepthsOut = gals.locationDepths;
+    }
     return gals.accessibleLocations;
 }
 
@@ -830,6 +837,8 @@ static void FastFill(std::vector<RandomizerGet> items, std::vector<RandomizerChe
     }
 }
 
+#include "soh/Enhancements/randomizer/item_priority.h"
+
 /*
 | The algorithm places items in the world in reverse.
 | This means we first assume we have every item in the item pool and
@@ -880,22 +889,48 @@ static void AssumedFill(const std::vector<RandomizerGet>& items, const std::vect
 
         // shuffle the order of items to place
         Shuffle(itemsToPlace);
+        
+        // Sort items by priority if the setting is enabled
+        if (!ctx->GetOption(RSK_KEY_ITEM_PRIORITY).Is(RO_KEY_PRIORITY_OFF)) {
+            std::stable_sort(itemsToPlace.begin(), itemsToPlace.end(), [](RandomizerGet a, RandomizerGet b) {
+                return static_cast<int>(GetItemPriority(a)) > static_cast<int>(GetItemPriority(b));
+            });
+        }
+
+        RandomizerCheckArea lastPlacedArea = RCAREA_INVALID;
+
         while (!itemsToPlace.empty()) {
             RandomizerGet item = std::move(itemsToPlace.back());
             Rando::StaticData::RetrieveItem(item).SetAsPlaythrough();
             itemsToPlace.pop_back();
 
-            // assume we have all unplaced items
-            logic->Reset();
-            for (RandomizerGet unplacedItem : itemsToPlace) {
-                Rando::StaticData::RetrieveItem(unplacedItem).ApplyEffect();
-            }
-            for (RandomizerGet unplacedItem : itemsToNotPlace) {
-                Rando::StaticData::RetrieveItem(unplacedItem).ApplyEffect();
+            int assumedItemsTarget = itemsToPlace.size();
+            if (ctx->GetOption(RSK_ITEM_PROGRESSION_RATE).Is(RO_PROGRESSION_RATE_FAST)) {
+                assumedItemsTarget = itemsToPlace.size() / 2;
             }
 
-            // get all accessible locations that are allowed
-            const std::vector<RandomizerCheck> accessibleLocations = ReachabilitySearch(allowedLocations);
+            std::vector<RandomizerCheck> accessibleLocations;
+            std::map<RandomizerCheck, int> locationDepths;
+
+            while (true) {
+                // assume we have all unplaced items (up to assumedItemsTarget)
+                logic->Reset();
+                for (size_t i = 0; i < assumedItemsTarget; i++) {
+                    Rando::StaticData::RetrieveItem(itemsToPlace[i]).ApplyEffect();
+                }
+                for (RandomizerGet unplacedItem : itemsToNotPlace) {
+                    Rando::StaticData::RetrieveItem(unplacedItem).ApplyEffect();
+                }
+
+                // get all accessible locations that are allowed
+                accessibleLocations = ReachabilitySearch(allowedLocations, RG_NONE, false, RR_ROOT, RAT_NONE, &locationDepths);
+
+                if (accessibleLocations.empty() && assumedItemsTarget < itemsToPlace.size()) {
+                    assumedItemsTarget++; // Increase assumed items and try again
+                } else {
+                    break;
+                }
+            }
 
             // retry if there are no more locations to place items
             if (accessibleLocations.empty()) {
@@ -912,27 +947,78 @@ static void AssumedFill(const std::vector<RandomizerGet>& items, const std::vect
                 break;
             }
 
-            // place the item within one of the allowed locations
-            RandomizerCheck selectedLocation = RandomElement(accessibleLocations);
-            ctx->PlaceItemInLocation(selectedLocation, item);
-            attemptedLocations.push_back(selectedLocation);
-
-            // This tells us the location went through the randomization algorithm
-            // to distinguish it from locations which did not or that the player already
-            // knows
-            if (setLocationsAsHintable) {
-                ctx->GetItemLocation(selectedLocation)->SetAsHintable();
+            int itemsToPlaceThisPass = 1;
+            if (ctx->GetOption(RSK_ITEM_PROGRESSION_RATE).Is(RO_PROGRESSION_RATE_SLOW)) {
+                itemsToPlaceThisPass = 2; // place up to 2 items
             }
 
-            // If ALR is off, then we check beatability after placing the item.
-            // If the game is beatable, then we can stop placing items with logic.
-            if (!ctx->GetOption(RSK_ALL_LOCATIONS_REACHABLE)) {
-                logic->Reset();
-                if (CheckBeatable()) {
-                    SPDLOG_DEBUG("Game beatable, now placing items randomly. {} major items remaining",
-                                 itemsToPlace.size());
-                    FastFill(itemsToPlace, GetEmptyLocations(allowedLocations), true);
-                    return;
+            for (int pass = 0; pass < itemsToPlaceThisPass; pass++) {
+                RandomizerCheck selectedLocation = RC_UNKNOWN_CHECK;
+                uint8_t placementStyle = ctx->GetOption(RSK_ITEM_PLACEMENT_STYLE).Get();
+
+                if (placementStyle == RO_PLACEMENT_STYLE_NEUTRAL) {
+                    selectedLocation = RandomElement(accessibleLocations);
+                } else {
+                    int maxDepth = -1;
+                    for (RandomizerCheck loc : accessibleLocations) {
+                        if (locationDepths[loc] > maxDepth) {
+                            maxDepth = locationDepths[loc];
+                        }
+                    }
+                    
+                    std::vector<RandomizerCheck> maxDepthLocations;
+                    for (RandomizerCheck loc : accessibleLocations) {
+                        if (locationDepths[loc] == maxDepth) {
+                            maxDepthLocations.push_back(loc);
+                        }
+                    }
+                    
+                    if (placementStyle == RO_PLACEMENT_STYLE_FORCED) {
+                        selectedLocation = RandomElement(maxDepthLocations);
+                    } else if (placementStyle == RO_PLACEMENT_STYLE_LOCAL) {
+                        std::vector<RandomizerCheck> localLocations;
+                        if (lastPlacedArea != RCAREA_INVALID) {
+                            for (RandomizerCheck loc : maxDepthLocations) {
+                                if (Rando::StaticData::GetLocation(loc)->GetArea() == lastPlacedArea) {
+                                    localLocations.push_back(loc);
+                                }
+                            }
+                        }
+                        if (!localLocations.empty()) {
+                            selectedLocation = RandomElement(localLocations);
+                        } else {
+                            selectedLocation = RandomElement(maxDepthLocations);
+                        }
+                    }
+                }
+
+                ctx->PlaceItemInLocation(selectedLocation, item);
+                attemptedLocations.push_back(selectedLocation);
+                lastPlacedArea = Rando::StaticData::GetLocation(selectedLocation)->GetArea();
+
+                if (setLocationsAsHintable) {
+                    ctx->GetItemLocation(selectedLocation)->SetAsHintable();
+                }
+
+                // If ALR is off, then we check beatability after placing the item.
+                if (!ctx->GetOption(RSK_ALL_LOCATIONS_REACHABLE)) {
+                    logic->Reset();
+                    if (CheckBeatable()) {
+                        SPDLOG_DEBUG("Game beatable, now placing items randomly. {} major items remaining",
+                                     itemsToPlace.size());
+                        FastFill(itemsToPlace, GetEmptyLocations(allowedLocations), true);
+                        return;
+                    }
+                }
+
+                std::erase(accessibleLocations, selectedLocation);
+                
+                if (pass < itemsToPlaceThisPass - 1 && !itemsToPlace.empty() && !accessibleLocations.empty()) {
+                    item = std::move(itemsToPlace.back());
+                    Rando::StaticData::RetrieveItem(item).SetAsPlaythrough();
+                    itemsToPlace.pop_back();
+                } else {
+                    break;
                 }
             }
         }

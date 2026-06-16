@@ -19,6 +19,8 @@ struct GetAccessibleLocationsStruct {
     std::vector<Rando::ItemLocation*> newItemLocations;
     bool logicUpdated;
     bool resetSphere;
+    int currentSphere;
+    std::map<RandomizerCheck, int> locationDepths;
 
     // Variables For Validating Entrences
     bool haveTimeAccess;
@@ -41,6 +43,7 @@ struct GetAccessibleLocationsStruct {
         maxGsCount = _maxGsCount;
         logicUpdated = false;
         resetSphere = false;
+        currentSphere = 0;
     }
 
     void InitLoop() {
@@ -51,6 +54,7 @@ struct GetAccessibleLocationsStruct {
         newItemLocations.clear();
         itemSphere.clear();
         entranceSphere.clear();
+        currentSphere++;
     }
 };
 
@@ -67,7 +71,8 @@ void ProcessRegion(Region* region, GetAccessibleLocationsStruct& gals, Randomize
 std::vector<RandomizerCheck> ReachabilitySearch(const std::vector<RandomizerCheck>& allowedLocations,
                                                 RandomizerGet ignore = RG_NONE, bool calculatingAvailableChecks = false,
                                                 RandomizerRegion startingRegion = RR_ROOT,
-                                                RandoAgeTime startingAgeTime = RAT_NONE);
+                                                RandoAgeTime startingAgeTime = RAT_NONE,
+                                                std::map<RandomizerCheck, int>* locationDepthsOut = nullptr);
 
 void GeneratePlaythrough();
 

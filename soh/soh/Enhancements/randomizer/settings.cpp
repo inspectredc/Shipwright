@@ -1317,6 +1317,86 @@ void Settings::CreateOptions() {
     OPT_BOOL(RSK_SKELETON_KEY, "Skeleton Key", CVAR_RANDOMIZER_SETTING("SkeletonKey"), mOptionDescriptions[RSK_SKELETON_KEY]);
     OPT_BOOL(RSK_SLINGBOW_BREAK_BEEHIVES, "Slingshot/Bow Can Break Beehives", CVAR_RANDOMIZER_SETTING("SlingBowBeehives"), mOptionDescriptions[RSK_SLINGBOW_BREAK_BEEHIVES]);
     OPT_U8(RSK_ITEM_POOL, "Item Pool", {"Plentiful", "Balanced", "Scarce", "Minimal"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ItemPool"), mOptionDescriptions[RSK_ITEM_POOL], WIDGET_CVAR_COMBOBOX, RO_ITEM_POOL_BALANCED);
+    OPT_U8(RSK_ITEM_PROGRESSION_RATE, "Item Progression Rate", {"Uniform", "Fast", "Slow"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ItemProgressionRate"), "Controls how quickly the randomizer tries to place advancement items. Uniform spreads them out evenly. Fast attempts to place them as early as possible. Slow spreads them out further with junk items.", WIDGET_CVAR_COMBOBOX, RO_PROGRESSION_RATE_UNIFORM);
+    OPT_U8(RSK_ITEM_PLACEMENT_STYLE, "Item Placement Style", {"Neutral", "Forced", "Local"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("ItemPlacementStyle"), "Controls where advancement items are placed. Neutral is random among reachable locations. Forced prefers placing items deeper in logic. Local prefers placing items in the same area as the previous item to cluster progression.", WIDGET_CVAR_COMBOBOX, RO_PLACEMENT_STYLE_NEUTRAL);
+    OPT_U8(RSK_KEY_ITEM_PRIORITY, "Key Item Priority", {"Off", "Tricky", "Custom"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("KeyItemPriority"), "Biases certain major items to appear earlier or later in the seed. Tricky is based on the Super Metroid Map Randomizer Tricky preset.", WIDGET_CVAR_COMBOBOX, RO_KEY_PRIORITY_OFF);
+    OPT_CALLBACK(RSK_KEY_ITEM_PRIORITY, {
+        if (CVarGetInteger(CVAR_RANDOMIZER_SETTING("KeyItemPriority"), RO_KEY_PRIORITY_OFF) == RO_KEY_PRIORITY_CUSTOM) {
+            mOptions[RSK_KEY_PRIORITY_SLINGSHOT].Unhide();
+            mOptions[RSK_KEY_PRIORITY_BOMB_BAG].Unhide();
+            mOptions[RSK_KEY_PRIORITY_BOOMERANG].Unhide();
+            mOptions[RSK_KEY_PRIORITY_BOW].Unhide();
+            mOptions[RSK_KEY_PRIORITY_HOOKSHOT].Unhide();
+            mOptions[RSK_KEY_PRIORITY_LENS_OF_TRUTH].Unhide();
+            mOptions[RSK_KEY_PRIORITY_OCARINA].Unhide();
+            mOptions[RSK_KEY_PRIORITY_HAMMER].Unhide();
+            mOptions[RSK_KEY_PRIORITY_FIRE_ARROWS].Unhide();
+            mOptions[RSK_KEY_PRIORITY_ICE_ARROWS].Unhide();
+            mOptions[RSK_KEY_PRIORITY_LIGHT_ARROWS].Unhide();
+            mOptions[RSK_KEY_PRIORITY_DINS_FIRE].Unhide();
+            mOptions[RSK_KEY_PRIORITY_FARORES_WIND].Unhide();
+            mOptions[RSK_KEY_PRIORITY_NAYRUS_LOVE].Unhide();
+            mOptions[RSK_KEY_PRIORITY_IRON_BOOTS].Unhide();
+            mOptions[RSK_KEY_PRIORITY_HOVER_BOOTS].Unhide();
+            mOptions[RSK_KEY_PRIORITY_MAGIC_METER].Unhide();
+            mOptions[RSK_KEY_PRIORITY_MIRROR_SHIELD].Unhide();
+            mOptions[RSK_KEY_PRIORITY_GORON_TUNIC].Unhide();
+            mOptions[RSK_KEY_PRIORITY_ZORA_TUNIC].Unhide();
+            mOptions[RSK_KEY_PRIORITY_STRENGTH_UPGRADES].Unhide();
+            mOptions[RSK_KEY_PRIORITY_SCALE_UPGRADES].Unhide();
+            mOptions[RSK_KEY_PRIORITY_BOMBCHUS].Unhide();
+        } else {
+            mOptions[RSK_KEY_PRIORITY_SLINGSHOT].Hide();
+            mOptions[RSK_KEY_PRIORITY_BOMB_BAG].Hide();
+            mOptions[RSK_KEY_PRIORITY_BOOMERANG].Hide();
+            mOptions[RSK_KEY_PRIORITY_BOW].Hide();
+            mOptions[RSK_KEY_PRIORITY_HOOKSHOT].Hide();
+            mOptions[RSK_KEY_PRIORITY_LENS_OF_TRUTH].Hide();
+            mOptions[RSK_KEY_PRIORITY_OCARINA].Hide();
+            mOptions[RSK_KEY_PRIORITY_HAMMER].Hide();
+            mOptions[RSK_KEY_PRIORITY_FIRE_ARROWS].Hide();
+            mOptions[RSK_KEY_PRIORITY_ICE_ARROWS].Hide();
+            mOptions[RSK_KEY_PRIORITY_LIGHT_ARROWS].Hide();
+            mOptions[RSK_KEY_PRIORITY_DINS_FIRE].Hide();
+            mOptions[RSK_KEY_PRIORITY_FARORES_WIND].Hide();
+            mOptions[RSK_KEY_PRIORITY_NAYRUS_LOVE].Hide();
+            mOptions[RSK_KEY_PRIORITY_IRON_BOOTS].Hide();
+            mOptions[RSK_KEY_PRIORITY_HOVER_BOOTS].Hide();
+            mOptions[RSK_KEY_PRIORITY_MAGIC_METER].Hide();
+            mOptions[RSK_KEY_PRIORITY_MIRROR_SHIELD].Hide();
+            mOptions[RSK_KEY_PRIORITY_GORON_TUNIC].Hide();
+            mOptions[RSK_KEY_PRIORITY_ZORA_TUNIC].Hide();
+            mOptions[RSK_KEY_PRIORITY_STRENGTH_UPGRADES].Hide();
+            mOptions[RSK_KEY_PRIORITY_SCALE_UPGRADES].Hide();
+            mOptions[RSK_KEY_PRIORITY_BOMBCHUS].Hide();
+        }
+    });
+
+    std::vector<std::string> priorityOpts = {"Late", "Default", "Early"};
+    OPT_U8(RSK_KEY_PRIORITY_SLINGSHOT, "Slingshot Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PrioritySlingshot"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_BOMB_BAG, "Bomb Bag Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityBombBag"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_BOOMERANG, "Boomerang Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityBoomerang"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_BOW, "Bow Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityBow"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_HOOKSHOT, "Hookshot Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityHookshot"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_LENS_OF_TRUTH, "Lens of Truth Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityLens"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_OCARINA, "Ocarina Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityOcarina"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_HAMMER, "Megaton Hammer Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityHammer"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_FIRE_ARROWS, "Fire Arrows Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityFireArrows"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_ICE_ARROWS, "Ice Arrows Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityIceArrows"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_LIGHT_ARROWS, "Light Arrows Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityLightArrows"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_DINS_FIRE, "Din's Fire Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityDinsFire"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_FARORES_WIND, "Farore's Wind Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityFaroresWind"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_NAYRUS_LOVE, "Nayru's Love Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityNayrusLove"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_IRON_BOOTS, "Iron Boots Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityIronBoots"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_HOVER_BOOTS, "Hover Boots Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityHoverBoots"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_MAGIC_METER, "Magic Meter Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityMagicMeter"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_MIRROR_SHIELD, "Mirror Shield Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityMirrorShield"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_GORON_TUNIC, "Goron Tunic Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityGoronTunic"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_ZORA_TUNIC, "Zora Tunic Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityZoraTunic"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_STRENGTH_UPGRADES, "Strength Upgrades Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityStrengthUpgrades"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_SCALE_UPGRADES, "Scale Upgrades Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityScaleUpgrades"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+    OPT_U8(RSK_KEY_PRIORITY_BOMBCHUS, "Bombchus Priority", priorityOpts, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("PriorityBombchus"), "", WIDGET_CVAR_COMBOBOX, RO_ITEM_PRIORITY_DEFAULT);
+
     OPT_BOOL(RSK_BASE_ICE_TRAPS, "Base Ice Traps", CVAR_RANDOMIZER_SETTING("BaseIceTraps"), mOptionDescriptions[RSK_BASE_ICE_TRAPS], IMFLAG_NONE, WIDGET_CVAR_COMBOBOX, RO_GENERIC_ON);
     OPT_U8(RSK_ADDITIONAL_ICE_TRAPS, "Additional Ice Traps", {NumOpts(0, 100)}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("AdditionalIceTraps"), mOptionDescriptions[RSK_ADDITIONAL_ICE_TRAPS], WIDGET_CVAR_SLIDER_INT, 0);
     OPT_U8(RSK_ICE_TRAP_PERCENT, "Ice Trap Percent", {NumOpts(0, 100)}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("IceTrapPercent"), mOptionDescriptions[RSK_ICE_TRAP_PERCENT], WIDGET_CVAR_SLIDER_INT, 0);
@@ -1772,6 +1852,7 @@ void Settings::CreateOptions() {
     mOptionGroups[RSG_MENU_COLUMN_LOGIC_WINCON] = OptionGroup::SubGroup("",
                                                                         std::initializer_list<OptionGroup*>{
                                                                             &mOptionGroups[RSG_ITEM_POOL],
+                                                                            &mOptionGroups[RSG_ITEM_PROGRESSION],
                                                                             &mOptionGroups[RSG_MENU_SECTION_LOGIC],
                                                                             &mOptionGroups[RSG_MENU_SECTION_WINCON],
                                                                         },
@@ -2335,6 +2416,34 @@ void Settings::CreateOptions() {
                                           });
     mOptionGroups[RSG_ITEM_POOL] =
         OptionGroup("Item Pool Settings", std::initializer_list<Option*>({ &mOptions[RSK_ITEM_POOL] }));
+    mOptionGroups[RSG_ITEM_PROGRESSION] = OptionGroup("Item Progression", std::initializer_list<Option*>({
+        &mOptions[RSK_ITEM_PROGRESSION_RATE],
+        &mOptions[RSK_ITEM_PLACEMENT_STYLE],
+        &mOptions[RSK_KEY_ITEM_PRIORITY],
+        &mOptions[RSK_KEY_PRIORITY_SLINGSHOT],
+        &mOptions[RSK_KEY_PRIORITY_BOMB_BAG],
+        &mOptions[RSK_KEY_PRIORITY_BOOMERANG],
+        &mOptions[RSK_KEY_PRIORITY_BOW],
+        &mOptions[RSK_KEY_PRIORITY_HOOKSHOT],
+        &mOptions[RSK_KEY_PRIORITY_LENS_OF_TRUTH],
+        &mOptions[RSK_KEY_PRIORITY_OCARINA],
+        &mOptions[RSK_KEY_PRIORITY_HAMMER],
+        &mOptions[RSK_KEY_PRIORITY_FIRE_ARROWS],
+        &mOptions[RSK_KEY_PRIORITY_ICE_ARROWS],
+        &mOptions[RSK_KEY_PRIORITY_LIGHT_ARROWS],
+        &mOptions[RSK_KEY_PRIORITY_DINS_FIRE],
+        &mOptions[RSK_KEY_PRIORITY_FARORES_WIND],
+        &mOptions[RSK_KEY_PRIORITY_NAYRUS_LOVE],
+        &mOptions[RSK_KEY_PRIORITY_IRON_BOOTS],
+        &mOptions[RSK_KEY_PRIORITY_HOVER_BOOTS],
+        &mOptions[RSK_KEY_PRIORITY_MAGIC_METER],
+        &mOptions[RSK_KEY_PRIORITY_MIRROR_SHIELD],
+        &mOptions[RSK_KEY_PRIORITY_GORON_TUNIC],
+        &mOptions[RSK_KEY_PRIORITY_ZORA_TUNIC],
+        &mOptions[RSK_KEY_PRIORITY_STRENGTH_UPGRADES],
+        &mOptions[RSK_KEY_PRIORITY_SCALE_UPGRADES],
+        &mOptions[RSK_KEY_PRIORITY_BOMBCHUS],
+    }));
     // TODO: Progressive Goron Sword, Remove Double Defense
     mOptionGroups[RSG_EXCLUDES_KOKIRI_FOREST] =
         OptionGroup::SubGroup("Kokiri Forest", mExcludeLocationsOptionsAreas[RCAREA_KOKIRI_FOREST]);
