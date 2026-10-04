@@ -449,6 +449,60 @@
                     "Progressive shuffles two copies: first only opens small chests, second also opens big chests."
                 ]
             },
+            "shuffle_isg": {
+                "name": "Shuffle ISG",
+                "description": [
+                    "Shuffles the ability to use the Infinite Sword Glitch (ISG) into the item pool."
+                ]
+            },
+            "shuffle_oi": {
+                "name": "Shuffle OI",
+                "description": [
+                    "Shuffles the ability to use the glitch Ocarina Items into the item pool."
+                ]
+            },
+            "shuffle_qpa": {
+                "name": "Shuffle QPA",
+                "description": [
+                    "Shuffles the ability to use Quick Putaway Glitched Damage into the item pool."
+                ]
+            },
+            "shuffle_hess": {
+                "name": "Shuffle HESS",
+                "description": [
+                    "Shuffles the ability to perform an Extended Superslide into the item pool."
+                ]
+            },
+            "shuffle_superslide": {
+                "name": "Shuffle Superslide",
+                "description": [
+                    "Shuffles the ability to Superslide into the item pool."
+                ]
+            },
+            "shuffle_hover": {
+                "name": "Shuffle Hovering",
+                "description": [
+                    "Shuffles the ability to Hover into the item pool."
+                ]
+            },
+            "shuffle_equip_swap": {
+                "name": "Shuffle Equip Swap",
+                "description": [
+                    "Shuffles the ability to Equip Swap into the item pool."
+                ]
+            },
+            "shuffle_ground_jump": {
+                "name": "Shuffle Ground Jump",
+                "description": [
+                    "Shuffles the ability to Ground Jump into the item pool."
+                ]
+            },
+            "shuffle_weirdshot": {
+                "name": "Shuffle Weirdshot",
+                "description": [
+                    "Shuffles the ability to Weirdshot into the item pool."
+                ]
+            },
             "shuffle_weird_egg": {
                 "name": "Shuffle Weird Egg",
                 "description": [

@@ -2830,13 +2830,6 @@ void RandomizerOnKaleidoscopeUpdateHandler(int16_t inDungeonScene) {
     prevKaleidoState = gPlayState->pauseCtx.state;
 }
 
-void RandomizerOnCuccoOrChickenHatch() {
-    if (LINK_IS_CHILD) {
-        Flags_UnsetRandomizerInf(RAND_INF_CHILD_TRADES_HAS_WEIRD_EGG);
-        Flags_SetRandomizerInf(RAND_INF_CHILD_TRADES_HAS_CHICKEN);
-    }
-}
-
 void RandomizerOnLinkAnimEnd(SkelAnime* skelAnime) {
     if (!Flags_GetRandomizerInf(RAND_INF_CAN_ISG)) {
         Player* player = GET_PLAYER(gPlayState);
@@ -2888,7 +2881,7 @@ void RandomizerShouldHover(bool* should) {
     }
 }
 
-void RandomizerOnKaleidoMoveCursorFromSpecialPos(PauseContext* pauseCtx, uint16_t* cursorItem) {
+void RandomizerOnKaleidoMoveCursorFromSpecialPos(void* pauseCtx, uint16_t* cursorItem) {
     if (!Flags_GetRandomizerInf(RAND_INF_CAN_EQUIP_SWAP)) {
         *cursorItem = PAUSE_ITEM_NONE;
         // PAUSE_ITEM_NONE feels more accurate to intended behaviour, but alternative here also works
@@ -2933,7 +2926,6 @@ static void RandomizerRegisterHooks() {
     static uint32_t onPlayDestroyHook = 0;
     static uint32_t onExitGameHook = 0;
     static uint32_t onKaleidoUpdateHook = 0;
-    static uint32_t onCuccoOrChickenHatchHook = 0;
     static uint32_t onLinkAnimEndHook = 0;
     static uint32_t onQPADamageHook = 0;
     static uint32_t onESSHook = 0;
@@ -2973,7 +2965,6 @@ static void RandomizerRegisterHooks() {
         GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnPlayDestroy>(onPlayDestroyHook);
         GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnExitGame>(onExitGameHook);
         GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnKaleidoscopeUpdate>(onKaleidoUpdateHook);
-        GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnCuccoOrChickenHatch>(onCuccoOrChickenHatchHook);
         GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnLinkAnimEnd>(onLinkAnimEndHook);
         GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnQPADamage>(onQPADamageHook);
         GameInteractor::Instance->UnregisterGameHook<GameInteractor::OnESS>(onESSHook);
@@ -3001,7 +2992,6 @@ static void RandomizerRegisterHooks() {
         onPlayDestroyHook = 0;
         onExitGameHook = 0;
         onKaleidoUpdateHook = 0;
-        onCuccoOrChickenHatchHook = 0;
         onLinkAnimEndHook = 0;
 
         if (!IS_RANDO)
@@ -3052,8 +3042,6 @@ static void RandomizerRegisterHooks() {
             GameInteractor::Instance->RegisterGameHook<GameInteractor::OnExitGame>(RandomizerOnExitGameHandler);
         onKaleidoUpdateHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnKaleidoscopeUpdate>(
             RandomizerOnKaleidoscopeUpdateHandler);
-        onCuccoOrChickenHatchHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnCuccoOrChickenHatch>(
-            RandomizerOnCuccoOrChickenHatch);
         onLinkAnimEndHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnLinkAnimEnd>(
             [](SkelAnime* skelAnime) { RandomizerOnLinkAnimEnd(skelAnime); });
         onQPADamageHook = GameInteractor::Instance->RegisterGameHook<GameInteractor::OnQPADamage>(
@@ -3063,7 +3051,7 @@ static void RandomizerRegisterHooks() {
             GameInteractor::Instance->RegisterGameHook<GameInteractor::OnWaitForPutaway>(RandomizerOnWaitForPutaway);
         onKaleidoMoveCursorFromSpecialPosHook =
             GameInteractor::Instance->RegisterGameHook<GameInteractor::OnKaleidoMoveCursorFromSpecialPos>(
-                [](PauseContext* pauseCtx, uint16_t* cursorItem) {
+                [](void* pauseCtx, uint16_t* cursorItem) {
                     RandomizerOnKaleidoMoveCursorFromSpecialPos(pauseCtx, cursorItem);
                 });
         onAnimationSetLoadFrameHook =

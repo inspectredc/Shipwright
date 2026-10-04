@@ -91,7 +91,7 @@ DEFINE_HOOK(OnGenerationCompletion, ());
 DEFINE_HOOK(OnSetGameLanguage, ());
 DEFINE_HOOK(OnAssetAltChange, ());
 DEFINE_HOOK(OnKaleidoUpdate, ());
-DEFINE_HOOK(OnKaleidoMoveCursorFromSpecialPos, (PauseContext * pauseCtx, uint16_t* cursorItem));
+DEFINE_HOOK(OnKaleidoMoveCursorFromSpecialPos, (void * pauseCtx, uint16_t* cursorItem));
 
 // Messages
 DEFINE_HOOK(OnOpenText, (uint16_t * textId, bool* loadFromMessageTable));

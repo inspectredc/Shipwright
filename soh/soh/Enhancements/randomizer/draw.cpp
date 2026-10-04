@@ -2,6 +2,7 @@
 #include "soh/OTRGlobals.h"
 #include "soh/Enhancements/cosmetics/cosmeticsTypes.h"
 #include <fast/resource/type/DisplayList.h>
+#include "soh/ResourceManagerHelpers.h"
 #include "soh/Enhancements/randomizer/randomizer.h"
 #include "dungeon.h"
 #include "logic.h"

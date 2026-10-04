@@ -3819,7 +3819,6 @@ typedef enum {
     // #### `args`
     // - None
     VB_HOVER_WITH_ISG,
-} GIVanillaBehavior;
 
     // #### `result`
     // ```c
